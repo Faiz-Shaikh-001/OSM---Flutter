@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../pages/inventory_page.dart';
+import 'pages/dashboard_screen.dart'; // Import your new dashboard
 
 void main() {
   runApp(const MyApp());
@@ -12,7 +12,16 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Optics Store Management',
-      home: DefaultTabController(length: 2, child: InventoryPage()),
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.blue,
+          brightness: Brightness.light,
+        ),
+        useMaterial3: true,
+      ),
+      home: const DashboardScreen(), // 👈 Set Dashboard as home
     );
   }
 }
+
