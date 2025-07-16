@@ -8,65 +8,68 @@ class InventoryPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const AddStockPage()),
-          );
-        },
-        backgroundColor: Colors.blueAccent,
-        foregroundColor: Colors.white,
-        tooltip: 'Add Stock',
-        child: Icon(Icons.add),
-      ),
-      appBar: AppBar(
-        title: const Text('Inventory'),
-        bottom: const TabBar(
-          tabs: [
-            Tab(
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+    return DefaultTabController( // ✅ Wrap with DefaultTabController
+      length: 2,
+      child: Scaffold(
+        floatingActionButton: FloatingActionButton(
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const AddStockPage()),
+            );
+          },
+          backgroundColor: Colors.blueAccent,
+          foregroundColor: Colors.white,
+          tooltip: 'Add Stock',
+          child: const Icon(Icons.add),
+        ),
+        appBar: AppBar(
+          title: const Text('Inventory'),
+          bottom: const TabBar(
+            tabs: [
+              Tab(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.gpp_good_outlined),
+                    SizedBox(width: 5),
+                    Text('Frames'),
+                  ],
+                ),
+              ),
+              Tab(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.lens_outlined),
+                    SizedBox(width: 5),
+                    Text('Lenses'),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        body: const TabBarView(
+          children: [
+            Center(
+              child: Column(
                 children: [
-                  Icon(Icons.gpp_good_outlined),
-                  SizedBox(width: 5),
-                  Text('Frames'),
+                  SearchBarWidget(),
+                  Expanded(child: GridViewWidget()),
                 ],
               ),
             ),
-            Tab(
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+            Center(
+              child: Column(
                 children: [
-                  Icon(Icons.lens_outlined),
-                  SizedBox(width: 5),
-                  Text('Lenses'),
+                  SearchBarWidget(),
+                  Expanded(child: GridViewWidget()),
                 ],
               ),
             ),
           ],
         ),
-      ),
-      body: const TabBarView(
-        children: [
-          Center(
-            child: Column(
-              children: [
-                SearchBarWidget(),
-                Expanded(child: GridViewWidget()),
-              ],
-            ),
-          ),
-          Center(
-            child: Column(
-              children: [
-                SearchBarWidget(),
-                Expanded(child: GridViewWidget()),
-              ],
-            ),
-          ),
-        ],
       ),
     );
   }
