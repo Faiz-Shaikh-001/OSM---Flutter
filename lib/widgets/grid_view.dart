@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:osm/pages/item_page.dart';
 import 'package:osm/widgets/grid_card.dart';
 
 class GridViewWidget extends StatefulWidget {
@@ -15,7 +16,18 @@ class _GridViewWidgetState extends State<GridViewWidget> {
       crossAxisCount: 2,
       childAspectRatio: .8,
       children: List.generate(100, (index) {
-        return GridCard(index: index);
+        return GridCard(
+          index: index,
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) =>
+                    ItemPage(title: "Item$index", index: index),
+              ),
+            );
+          },
+        );
       }),
     );
   }

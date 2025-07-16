@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:osm/pages/add_stock_page.dart';
 import '../widgets/search_bar.dart';
 import '../widgets/grid_view.dart';
 
@@ -10,11 +11,10 @@ class InventoryPage extends StatelessWidget {
     return Scaffold(
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          // Add stock logic
-
-          ScaffoldMessenger.of(
+          Navigator.push(
             context,
-          ).showSnackBar(const SnackBar(content: Text('FAB Pressed!')));
+            MaterialPageRoute(builder: (context) => const AddStockPage()),
+          );
         },
         backgroundColor: Colors.blueAccent,
         foregroundColor: Colors.white,
@@ -58,7 +58,14 @@ class InventoryPage extends StatelessWidget {
               ],
             ),
           ),
-          Center(child: Column(children: [SearchBarWidget()])),
+          Center(
+            child: Column(
+              children: [
+                SearchBarWidget(),
+                Expanded(child: GridViewWidget()),
+              ],
+            ),
+          ),
         ],
       ),
     );
