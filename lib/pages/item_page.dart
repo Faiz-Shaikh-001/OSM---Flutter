@@ -44,42 +44,42 @@ class ItemPage extends StatelessWidget {
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Image.network(
-              "https://picsum.dev/image/$index/view",
-              fit: BoxFit.cover,
-              width: 400,
-              height: 300,
-              loadingBuilder:
-                  (
-                    BuildContext context,
-                    Widget child,
-                    ImageChunkEvent? loadingProgress,
-                  ) {
-                    if (loadingProgress == null) return child;
-                    return Center(
-                      child: CircularProgressIndicator(
-                        value: loadingProgress.expectedTotalBytes != null
-                            ? loadingProgress.cumulativeBytesLoaded /
-                                  loadingProgress.expectedTotalBytes!
-                            : null,
-                      ),
-                    );
-                  },
-              errorBuilder:
-                  (
-                    BuildContext context,
-                    Object exception,
-                    StackTrace? stackTrace,
-                  ) {
-                    return Text('Error loading image!');
-                  },
-            ),
-            SafeArea(
-              child: Padding(
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Image.network(
+                "https://picsum.dev/image/$index/view",
+                fit: BoxFit.cover,
+                width: 400,
+                height: 300,
+                loadingBuilder:
+                    (
+                      BuildContext context,
+                      Widget child,
+                      ImageChunkEvent? loadingProgress,
+                    ) {
+                      if (loadingProgress == null) return child;
+                      return Center(
+                        child: CircularProgressIndicator(
+                          value: loadingProgress.expectedTotalBytes != null
+                              ? loadingProgress.cumulativeBytesLoaded /
+                                    loadingProgress.expectedTotalBytes!
+                              : null,
+                        ),
+                      );
+                    },
+                errorBuilder:
+                    (
+                      BuildContext context,
+                      Object exception,
+                      StackTrace? stackTrace,
+                    ) {
+                      return Text('Error loading image!');
+                    },
+              ),
+              Padding(
                 padding: EdgeInsets.all(15.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -92,6 +92,7 @@ class ItemPage extends StatelessWidget {
                       ),
                     ),
                     Text(
+                      // TODO: Replace with actual sku
                       'SKU: ',
                       style: TextStyle(fontSize: 20, color: Colors.grey),
                     ),
@@ -101,6 +102,7 @@ class ItemPage extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Text(
+                          // TODO: Replace with dynamic price
                           '\$99.99',
                           style: TextStyle(
                             fontSize: 25,
@@ -109,6 +111,7 @@ class ItemPage extends StatelessWidget {
                           ),
                         ),
                         Text(
+                          // TODO: Replace with actual stock
                           'In Stock: 99',
                           style: TextStyle(
                             fontSize: 20,
@@ -166,20 +169,18 @@ class ItemPage extends StatelessWidget {
                   ],
                 ),
               ),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 15.0),
-              child: SizedBox(
-                height: 50,
-                width: 400,
-                child: Expanded(
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 15.0),
+                child: SizedBox(
+                  height: 50,
+                  width: 400,
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.blueAccent,
                       foregroundColor: Colors.white,
                       minimumSize: const Size(double.infinity, 50),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadiusGeometry.circular(15),
+                        borderRadius: BorderRadius.circular(15),
                       ),
                     ),
                     onPressed: () {},
@@ -187,21 +188,19 @@ class ItemPage extends StatelessWidget {
                   ),
                 ),
               ),
-            ),
-            SizedBox(height: 10),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 15.0),
-              child: SizedBox(
-                height: 50,
-                width: 400,
-                child: Expanded(
+              SizedBox(height: 10),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 15.0),
+                child: SizedBox(
+                  height: 50,
+                  width: 400,
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Color(0xfff0f4f9),
                       foregroundColor: Colors.black,
                       minimumSize: const Size(double.infinity, 50),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadiusGeometry.circular(15),
+                        borderRadius: BorderRadius.circular(15),
                       ),
                     ),
                     onPressed: () {},
@@ -219,20 +218,18 @@ class ItemPage extends StatelessWidget {
                   ),
                 ),
               ),
-            ),
-            SizedBox(height: 25),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 15.0),
-              child: SizedBox(
-                height: 50,
-                width: 400,
-                child: Expanded(
+              SizedBox(height: 25),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 15.0),
+                child: SizedBox(
+                  height: 50,
+                  width: 400,
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
                       foregroundColor: Colors.red,
                       minimumSize: const Size(double.infinity, 50),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadiusGeometry.circular(15),
+                        borderRadius: BorderRadius.circular(15),
                         side: const BorderSide(color: Colors.red, width: .2),
                       ),
                     ),
@@ -248,40 +245,40 @@ class ItemPage extends StatelessWidget {
                   ),
                 ),
               ),
-            ),
-            SizedBox(height: 25),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 15.0),
-              child: SizedBox(
-                height: 50,
-                width: 400,
-                child: Container(
-                  decoration: BoxDecoration(
-                    border: Border.all(width: .2, color: Colors.red),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Icon(Icons.warning, color: Colors.red),
-                        SizedBox(width: 10),
-                        SizedBox(
-                          width: 279,
-                          child: Text(
-                            'Deleting this product will permanently remove it from the inventory. This action cannot be undone.',
-                            style: TextStyle(color: Colors.red),
+              SizedBox(height: 25),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 15.0),
+                child: SizedBox(
+                  height: 50,
+                  width: 400,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      border: Border.all(width: .2, color: Colors.red),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Icon(Icons.warning, color: Colors.red),
+                          SizedBox(width: 10),
+                          SizedBox(
+                            width: 279,
+                            child: Text(
+                              'Deleting this product will permanently remove it from the inventory. This action cannot be undone.',
+                              style: TextStyle(color: Colors.red),
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
-            SizedBox(height: 20),
-          ],
+              SizedBox(height: 20),
+            ],
+          ),
         ),
       ),
     );
