@@ -8,7 +8,7 @@ class InventoryPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return DefaultTabController( // ✅ Wrap with DefaultTabController
+    return DefaultTabController(
       length: 2,
       child: Scaffold(
         floatingActionButton: FloatingActionButton(
@@ -21,6 +21,9 @@ class InventoryPage extends StatelessWidget {
           backgroundColor: Colors.blueAccent,
           foregroundColor: Colors.white,
           tooltip: 'Add Stock',
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(50),
+          ),
           child: const Icon(Icons.add),
         ),
         appBar: AppBar(
@@ -50,27 +53,25 @@ class InventoryPage extends StatelessWidget {
             ],
           ),
         ),
-        body: const TabBarView(
-          children: [
-            Center(
-              child: Column(
-                children: [
-                  SearchBarWidget(),
-                  Expanded(child: GridViewWidget()),
-                ],
-              ),
-            ),
-            Center(
-              child: Column(
-                children: [
-                  SearchBarWidget(),
-                  Expanded(child: GridViewWidget()),
-                ],
-              ),
-            ),
-          ],
-        ),
+        body: const TabBarView(children: [InventoryTab(), InventoryTab()]),
       ),
     );
+  }
+}
+
+class InventoryTab extends StatelessWidget {
+  // final String type;
+  const InventoryTab({super.key}); // <- Add this.type here
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Column(
+        children: [
+          SearchBarWidget(),
+          Expanded(child: GridViewWidget()),
+        ],
+      ),
+    ); // Pass type when required
   }
 }
