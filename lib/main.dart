@@ -18,9 +18,8 @@ class MyApp extends StatelessWidget {
           seedColor: Colors.blue,
           brightness: Brightness.light,
         ),
-        useMaterial3: true,
       ),
-      home: const DashboardScreen(), // 👈 Set Dashboard as home
+      home: const DashboardScreen(),
     );
   }
 }

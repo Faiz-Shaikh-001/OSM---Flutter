@@ -18,7 +18,10 @@ class _GridViewWidgetState extends State<GridViewWidget> {
       children: List.generate(100, (index) {
         return GridCard(
           index: index,
-          onTap: () {
+          onTap: () async {
+            final image = NetworkImage("https://picsum.dev/image$index/view");
+            await precacheImage(image, context);
+
             Navigator.push(
               context,
               MaterialPageRoute(

@@ -1,7 +1,13 @@
 import 'package:flutter/material.dart';
 
 class ColorDropDownWidget extends StatefulWidget {
-  const ColorDropDownWidget({super.key});
+  final String initialColor;
+  final ValueChanged<String>? onColorChanged;
+  const ColorDropDownWidget({
+    super.key,
+    this.initialColor = 'Red',
+    this.onColorChanged,
+  });
 
   @override
   State<ColorDropDownWidget> createState() => _ColorDropDownWidgetState();
@@ -16,7 +22,15 @@ class _ColorDropDownWidgetState extends State<ColorDropDownWidget> {
     'Yellow': Colors.yellow,
   };
 
-  String selectedColorName = 'Red';
+  late String selectedColorName = 'Red';
+
+  @override
+  void initState() {
+    super.initState();
+    selectedColorName = colorMap.containsKey(widget.initialColor)
+        ? widget.initialColor
+        : colorMap.keys.first;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -30,13 +44,13 @@ class _ColorDropDownWidgetState extends State<ColorDropDownWidget> {
           icon: Icon(Icons.arrow_drop_down),
           borderRadius: BorderRadius.circular(8.0),
           onChanged: (String? newValue) {
-            setState(() {
-              selectedColorName = newValue!;
-            });
+            if (newValue == null) return;
+            setState(() => selectedColorName = newValue);
+            widget.onColorChanged?.call(newValue);
           },
-          items: colorMap.keys.map((String colorName) {
+          items: colorMap.entries.map((entry) {
             return DropdownMenuItem(
-              value: colorName,
+              value: entry.key,
               child: Row(
                 children: [
                   Container(
@@ -44,12 +58,12 @@ class _ColorDropDownWidgetState extends State<ColorDropDownWidget> {
                     height: 16,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: colorMap[colorName],
+                      color: entry.value,
                       border: Border.all(color: Colors.grey),
                     ),
                   ),
                   SizedBox(width: 10),
-                  Text(colorName),
+                  Text(entry.key),
                 ],
               ),
             );

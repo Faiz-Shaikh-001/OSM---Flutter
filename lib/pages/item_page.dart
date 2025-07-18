@@ -1,8 +1,10 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:osm/pages/utils/qr_generator.dart';
-import 'dart:ffi' hide Size;
+import 'package:osm/utils/qr_generator.dart';
 import '../widgets/color_dropdown_widget.dart';
 import '../widgets/size_dropdown_widget.dart';
+import '../widgets/custom_button.dart';
+import '../models/frame_model.dart';
 
 class ItemPage extends StatelessWidget {
   final String title;
@@ -21,30 +23,7 @@ class ItemPage extends StatelessWidget {
           },
         ),
         actions: [
-          // Add the PopupMenuButton here for the three-dot menu
-          PopupMenuButton<String>(
-            onSelected: (String result) {
-              // Handle the selected menu item here
-              ScaffoldMessenger.of(
-                context,
-              ).showSnackBar(SnackBar(content: Text('Selected: $result')));
-            },
-            itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-              const PopupMenuItem<String>(
-                value: 'Option 1',
-                child: Text('Option 1'),
-              ),
-              const PopupMenuItem<String>(
-                value: 'Option 2',
-                child: Text('Option 2'),
-              ),
-              const PopupMenuDivider(),
-              const PopupMenuItem<String>(
-                value: 'More Info',
-                child: Text('More Info'),
-              ),
-            ],
-          ),
+          IconButton(onPressed: () {}, icon: Icon(Icons.notifications)),
         ],
       ),
       body: SafeArea(
@@ -52,35 +31,27 @@ class ItemPage extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Image.network(
-                "https://picsum.dev/image/$index/view",
-                fit: BoxFit.cover,
-                width: 400,
-                height: 300,
-                loadingBuilder:
-                    (
-                      BuildContext context,
-                      Widget child,
-                      ImageChunkEvent? loadingProgress,
-                    ) {
-                      if (loadingProgress == null) return child;
-                      return Center(
-                        child: CircularProgressIndicator(
-                          value: loadingProgress.expectedTotalBytes != null
-                              ? loadingProgress.cumulativeBytesLoaded /
-                                    loadingProgress.expectedTotalBytes!
-                              : null,
-                        ),
-                      );
-                    },
-                errorBuilder:
-                    (
-                      BuildContext context,
-                      Object exception,
-                      StackTrace? stackTrace,
-                    ) {
-                      return Text('Error loading image!');
-                    },
+              Hero(
+                tag: 'itemIndex_$index',
+                child: CachedNetworkImage(
+                  imageUrl: "https://picsum.dev/image/$index/view",
+                  fit: BoxFit.cover,
+                  width: double.infinity,
+                  height: 300,
+                  placeholder: (context, url) =>
+                      const Center(child: CircularProgressIndicator()),
+                  errorWidget: (context, url, error) => const SizedBox(
+                    width: double.infinity,
+                    height: 300,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.error),
+                        Text('Error loading image'),
+                      ],
+                    ),
+                  ),
+                ),
               ),
               Padding(
                 padding: EdgeInsets.all(15.0),
@@ -99,7 +70,7 @@ class ItemPage extends StatelessWidget {
                       'SKU: ',
                       style: TextStyle(fontSize: 20, color: Colors.grey),
                     ),
-                    SizedBox(height: 15),
+                    const SizedBox(height: 15),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       crossAxisAlignment: CrossAxisAlignment.center,
@@ -123,10 +94,10 @@ class ItemPage extends StatelessWidget {
                         ),
                       ],
                     ),
-                    SizedBox(height: 25),
+                    const SizedBox(height: 25),
                     ColorDropDownWidget(),
                     SizeDropdownWidget(),
-                    SizedBox(height: 15),
+                    const SizedBox(height: 15),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -140,131 +111,79 @@ class ItemPage extends StatelessWidget {
                         Text('Aviator', style: TextStyle(fontSize: 15)),
                       ],
                     ),
-                    SizedBox(height: 15),
+                    const SizedBox(height: 15),
                   ],
                 ),
               ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 15.0),
-                child: SizedBox(
-                  height: 50,
-                  width: 400,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blueAccent,
-                      foregroundColor: Colors.white,
-                      minimumSize: const Size(double.infinity, 50),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(15),
-                      ),
+              CustomButton(onPressed: () {}, label: 'Update Stock'),
+              const SizedBox(height: 10),
+              CustomButton(
+                onPressed: () {
+                  final frame = Frame(
+                    frameType: FrameType.halfRimless,
+                    name: "Aviator Steel",
+                    code: "AV123",
+                    color: "Black",
+                    size: 48,
+                  ); // Output: FRAME-2-AV123-Blac-48
+
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => QrGeneratorWidget(frame: frame),
                     ),
-                    onPressed: () {},
-                    child: Text('Update Stock', style: TextStyle(fontSize: 15)),
-                  ),
-                ),
+                  );
+                },
+                label: 'Generate QR Code',
+                icon: Icons.qr_code,
+                background: Color(0xfff0f4f9),
+                foreGround: Colors.black,
               ),
-              SizedBox(height: 10),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 15.0),
-                child: SizedBox(
-                  height: 50,
-                  width: 400,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Color(0xfff0f4f9),
-                      foregroundColor: Colors.black,
-                      minimumSize: const Size(double.infinity, 50),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(15),
-                      ),
-                    ),
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => QrGeneratorWidget(
-                            itemName: title,
-                            sku: 'SKU123',
-                            color: "selectedColorName",
-                            size: "selectedSize",
-                          ),
-                        ),
-                      );
-                    },
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.qr_code),
-                        SizedBox(width: 5),
-                        Text(
-                          'Generate QR Code',
-                          style: TextStyle(fontSize: 15),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
+              const SizedBox(height: 25),
+              CustomButton(
+                onPressed: () {},
+                label: 'Delete Product',
+                icon: Icons.delete_forever_outlined,
+                background: Color(0xfff0f4f9),
+                foreGround: Colors.red,
               ),
-              SizedBox(height: 25),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 15.0),
-                child: SizedBox(
-                  height: 50,
-                  width: 400,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      foregroundColor: Colors.red,
-                      minimumSize: const Size(double.infinity, 50),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(15),
-                        side: const BorderSide(color: Colors.red, width: .2),
-                      ),
-                    ),
-                    onPressed: () {},
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.delete_forever_outlined),
-                        SizedBox(width: 5),
-                        Text('Delete Product', style: TextStyle(fontSize: 15)),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              SizedBox(height: 25),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 15.0),
-                child: SizedBox(
-                  width: 400,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      border: Border.all(width: .2, color: Colors.red),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Icon(Icons.warning, color: Colors.red),
-                          SizedBox(width: 10),
-                          Expanded(
-                            child: Text(
-                              'Deleting this product will permanently remove it from the inventory. This action cannot be undone.',
-                              style: TextStyle(color: Colors.red),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              SizedBox(height: 20),
+              const SizedBox(height: 25),
+              DeleteWarningBanner(),
+              const SizedBox(height: 20),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class DeleteWarningBanner extends StatelessWidget {
+  const DeleteWarningBanner({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Container(
+        decoration: BoxDecoration(
+          border: Border.all(width: .2, color: Colors.red),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        width: MediaQuery.of(context).size.width * .9,
+        padding: const EdgeInsets.all(8.0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Icon(Icons.warning, color: Colors.red),
+            const SizedBox(width: 10),
+            Expanded(
+              child: const Text(
+                'Deleting this product will permanently remove it from the inventory. This action cannot be undone.',
+                style: TextStyle(color: Colors.red),
+              ),
+            ),
+          ],
         ),
       ),
     );
