@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:ffi' hide Size;
+import '../widgets/color_dropdown_widget.dart';
+import '../widgets/size_dropdown_widget.dart';
 
 class ItemPage extends StatelessWidget {
   final String title;
@@ -120,39 +122,10 @@ class ItemPage extends StatelessWidget {
                         ),
                       ],
                     ),
+                    SizedBox(height: 25),
+                    ColorDropDownWidget(),
+                    SizeDropdownWidget(),
                     SizedBox(height: 15),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Text(
-                          'Color',
-                          style: TextStyle(
-                            fontSize: 15,
-                            color: Colors.blueGrey,
-                          ),
-                        ),
-                        Row(
-                          children: [
-                            Icon(Icons.lens),
-                            Text('Black', style: TextStyle(fontSize: 15)),
-                          ],
-                        ),
-                      ],
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'Size',
-                          style: TextStyle(
-                            fontSize: 15,
-                            color: Colors.blueGrey,
-                          ),
-                        ),
-                        Text('US 10', style: TextStyle(fontSize: 15)),
-                      ],
-                    ),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -166,6 +139,7 @@ class ItemPage extends StatelessWidget {
                         Text('Aviator', style: TextStyle(fontSize: 15)),
                       ],
                     ),
+                    SizedBox(height: 15),
                   ],
                 ),
               ),
