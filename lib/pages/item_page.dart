@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:osm/pages/utils/qr_generator.dart';
 import 'dart:ffi' hide Size;
 import '../widgets/color_dropdown_widget.dart';
 import '../widgets/size_dropdown_widget.dart';
@@ -177,7 +178,19 @@ class ItemPage extends StatelessWidget {
                         borderRadius: BorderRadius.circular(15),
                       ),
                     ),
-                    onPressed: () {},
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => QrGeneratorWidget(
+                            itemName: title,
+                            sku: 'SKU123',
+                            color: "selectedColorName",
+                            size: "selectedSize",
+                          ),
+                        ),
+                      );
+                    },
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
