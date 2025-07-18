@@ -249,7 +249,6 @@ class ItemPage extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 15.0),
                 child: SizedBox(
-                  height: 50,
                   width: 400,
                   child: Container(
                     decoration: BoxDecoration(
@@ -260,11 +259,11 @@ class ItemPage extends StatelessWidget {
                       padding: const EdgeInsets.all(8.0),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Icon(Icons.warning, color: Colors.red),
                           SizedBox(width: 10),
-                          SizedBox(
-                            width: 279,
+                          Expanded(
                             child: Text(
                               'Deleting this product will permanently remove it from the inventory. This action cannot be undone.',
                               style: TextStyle(color: Colors.red),
