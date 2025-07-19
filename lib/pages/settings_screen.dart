@@ -6,9 +6,7 @@ class SettingsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Settings'),
-      ),
+      appBar: AppBar(title: const Text('Settings')),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
@@ -41,10 +39,16 @@ class SettingsPage extends StatelessWidget {
     );
   }
 
-  Widget _buildSettingsItem(IconData icon, String title,
-      {bool isDestructive = false}) {
+  Widget _buildSettingsItem(
+    IconData icon,
+    String title, {
+    bool isDestructive = false,
+  }) {
     return ListTile(
-      leading: Icon(icon, color: isDestructive ? Colors.red : Colors.blueAccent),
+      leading: Icon(
+        icon,
+        color: isDestructive ? Colors.red : Colors.blueAccent,
+      ),
       title: Text(
         title,
         style: TextStyle(

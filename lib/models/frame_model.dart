@@ -1,5 +1,3 @@
-import '../utils/get_product_code.dart';
-
 enum FrameType { rimless, halfRimless, fullMetal, fullShell, goggles }
 
 class Frame {

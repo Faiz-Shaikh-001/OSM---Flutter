@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:osm/pages/item_page.dart';
+import 'package:osm/pages/item_screen.dart';
 import 'package:osm/widgets/grid_card.dart';
 
-class GridViewWidget extends StatefulWidget {
-  const GridViewWidget({super.key});
+class ProductGrid extends StatefulWidget {
+  const ProductGrid({super.key});
 
   @override
-  State<GridViewWidget> createState() => _GridViewWidgetState();
+  State<ProductGrid> createState() => _ProductGridState();
 }
 
-class _GridViewWidgetState extends State<GridViewWidget> {
+class _ProductGridState extends State<ProductGrid> {
   @override
   Widget build(BuildContext context) {
     return GridView.count(
