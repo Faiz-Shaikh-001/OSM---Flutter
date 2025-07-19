@@ -2,6 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:osm/pages/inventory_screen.dart';
 import 'package:osm/pages/settings_screen.dart';
+import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'dart:math';
 
 class DashboardScreen extends StatefulWidget {
