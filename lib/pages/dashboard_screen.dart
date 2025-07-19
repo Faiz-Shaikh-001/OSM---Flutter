@@ -48,31 +48,27 @@ class _DashboardScreenState extends State<DashboardScreen> {
           if (_isDialOpen && _selectedIndex == 2) ..._buildFloatingActions(),
         ],
       ),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _selectedIndex,
-        onDestinationSelected: (index) {
+      bottomNavigationBar: CurvedNavigationBar(
+        index: _selectedIndex,
+        height: 55,
+        backgroundColor: Colors.transparent,
+        color: Colors.blueAccent,
+        buttonBackgroundColor: Colors.blueAccent,
+        animationCurve: Curves.easeInOut,
+        animationDuration: const Duration(milliseconds: 300),
+        items: const [
+          Icon(Icons.receipt_long, size: 30, color: Colors.white),
+          Icon(Icons.store, size: 30, color: Colors.white),
+          Icon(Icons.dashboard, size: 30, color: Colors.white),
+          Icon(Icons.people_alt, size: 30, color: Colors.white),
+          Icon(Icons.settings, size: 30, color: Colors.white),
+        ],
+        onTap: (index) {
           setState(() {
             _selectedIndex = index;
-            _isDialOpen = false;
+            _isDialOpen = false; // Close the dial when switching tabs
           });
         },
-        height: 70,
-        destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.receipt_long),
-            label: 'Orders',
-          ),
-          NavigationDestination(icon: Icon(Icons.store), label: 'Inventory'),
-          NavigationDestination(
-            icon: Icon(Icons.dashboard),
-            label: 'Dashboard',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.people_alt),
-            label: 'Customers',
-          ),
-          NavigationDestination(icon: Icon(Icons.settings), label: 'Settings'),
-        ],
       ),
       floatingActionButton: _selectedIndex == 2
           ? FloatingActionButton(

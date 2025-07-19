@@ -33,7 +33,7 @@ class GridCard extends StatelessWidget {
 }
 
 class _BuildImageSection extends StatelessWidget {
-  const _BuildImageSection({super.key, required this.index});
+  const _BuildImageSection({required this.index});
 
   final int index;
 
@@ -62,7 +62,7 @@ class _BuildImageSection extends StatelessWidget {
 }
 
 class _BuildDetailsSection extends StatelessWidget {
-  const _BuildDetailsSection({super.key});
+  const _BuildDetailsSection();
 
   @override
   Widget build(BuildContext context) {
@@ -85,7 +85,7 @@ class _BuildDetailsSection extends StatelessWidget {
 }
 
 class _BuildTitleAndBadge extends StatelessWidget {
-  const _BuildTitleAndBadge({super.key});
+  const _BuildTitleAndBadge();
 
   @override
   Widget build(BuildContext context) {
@@ -110,7 +110,7 @@ class _BuildTitleAndBadge extends StatelessWidget {
 }
 
 class _BuildPriceAndStock extends StatelessWidget {
-  const _BuildPriceAndStock({super.key});
+  const _BuildPriceAndStock();
 
   @override
   Widget build(BuildContext context) {
