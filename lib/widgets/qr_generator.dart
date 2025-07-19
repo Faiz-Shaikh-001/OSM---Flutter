@@ -10,7 +10,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter/rendering.dart';
 
 import '../models/frame_model.dart';
-import '../widgets/custom_button.dart';
+import 'custom_button.dart';
 
 class QrGeneratorWidget extends StatelessWidget {
   final Frame frame;

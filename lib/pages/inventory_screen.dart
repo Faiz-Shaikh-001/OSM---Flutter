@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:osm/pages/add_stock_page.dart';
+import 'package:osm/pages/add_stock_screen.dart';
 import '../widgets/search_bar.dart';
-import '../widgets/grid_view.dart';
+import '../widgets/product_grid.dart';
 
-class InventoryPage extends StatelessWidget {
-  const InventoryPage({super.key});
+class InventoryScreen extends StatelessWidget {
+  const InventoryScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -15,7 +15,7 @@ class InventoryPage extends StatelessWidget {
           onPressed: () {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => const AddStockPage()),
+              MaterialPageRoute(builder: (context) => const AddStockScreen()),
             );
           },
           backgroundColor: Colors.blueAccent,
@@ -69,7 +69,7 @@ class InventoryTab extends StatelessWidget {
       child: Column(
         children: [
           SearchBarWidget(),
-          Expanded(child: GridViewWidget()),
+          Expanded(child: ProductGrid()),
         ],
       ),
     ); // Pass type when required
