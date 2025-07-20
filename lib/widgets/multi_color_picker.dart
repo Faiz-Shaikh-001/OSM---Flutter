@@ -6,10 +6,10 @@ class MultiColorPicker extends StatefulWidget {
   final Function(List<Color>) onColorsChanged;
 
   const MultiColorPicker({
-    Key? key,
+    super.key,
     required this.initialColors,
     required this.onColorsChanged,
-  }) : super(key: key);
+  });
 
   @override
   State<MultiColorPicker> createState() => _MultiColorPickerState();

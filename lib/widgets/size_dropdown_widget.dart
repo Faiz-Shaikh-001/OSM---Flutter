@@ -1,7 +1,14 @@
 import 'package:flutter/material.dart';
 
 class SizeDropdownWidget extends StatefulWidget {
-  const SizeDropdownWidget({super.key});
+  final Map<String, dynamic>? initialSize;
+  final Function(Map<String, dynamic>)? onSizeChanged;
+
+  const SizeDropdownWidget({
+    super.key,
+    this.initialSize,
+    this.onSizeChanged,
+  });
 
   @override
   State<SizeDropdownWidget> createState() => _SizeDropdownWidgetState();
@@ -36,7 +43,7 @@ class _SizeDropdownWidgetState extends State<SizeDropdownWidget> {
   @override
   void initState() {
     super.initState();
-    selectedSize = frameSizes[0];
+    selectedSize = widget.initialSize ?? frameSizes[0];
   }
 
   @override
@@ -44,7 +51,7 @@ class _SizeDropdownWidgetState extends State<SizeDropdownWidget> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text('Size', style: TextStyle(fontSize: 15, color: Colors.blueGrey)),
+        const Text('Size', style: TextStyle(fontSize: 15, color: Colors.blueGrey)),
         DropdownButton<Map<String, dynamic>>(
           value: selectedSize,
           borderRadius: BorderRadius.circular(8.0),
@@ -53,6 +60,9 @@ class _SizeDropdownWidgetState extends State<SizeDropdownWidget> {
               setState(() {
                 selectedSize = newValue;
               });
+              if (widget.onSizeChanged != null) {
+                widget.onSizeChanged!(newValue);
+              }
             }
           },
           items: frameSizes.map((size) {

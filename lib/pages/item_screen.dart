@@ -5,6 +5,7 @@ import '../widgets/color_dropdown_widget.dart';
 import '../widgets/size_dropdown_widget.dart';
 import '../widgets/custom_button.dart';
 import '../models/frame_model.dart';
+import 'package:osm/pages/update_stock_screen.dart';
 
 class ItemPage extends StatefulWidget {
   final String title;
@@ -42,7 +43,32 @@ class _ItemPageState extends State<ItemPage> {
                 padding: EdgeInsets.all(15.0),
                 child: _buildProductDetails(context),
               ),
-              CustomButton(onPressed: () {}, label: 'Update Stock'),
+
+              //Update Stock Button Navigation
+              CustomButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const UpdateStockScreen(),
+                      settings: RouteSettings(
+                        arguments: {
+                          'name': widget.title,
+                          'quantity': 10,
+                          'color': 'Red',
+                          'size': 'Medium',
+                          'purchase_price': 50.0,
+                          'selling_price': 99.99,
+                          'stock': 99,
+                          'image': "https://picsum.dev/image/${widget.index}/view",
+                        },
+                      ),
+                    ),
+                  );
+                },
+                label: 'Edit Stock',
+              ),
+
               const SizedBox(height: 10),
               CustomButton(
                 onPressed: () async {
@@ -55,7 +81,7 @@ class _ItemPageState extends State<ItemPage> {
                     quantity: 10,
                     purchasePrice: 100,
                     salesPrice: 100,
-                  ); // Output: FRAME-2-AV123-Blac-48
+                  );
 
                   if (!mounted) return;
 
@@ -126,7 +152,7 @@ class _ItemPageState extends State<ItemPage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(widget.title, style: titleStyle),
-        Text('SKU: ', style: labelStyle), // TODO: Replace with actual sku
+        Text('SKU: ', style: labelStyle),
         const SizedBox(height: 15),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -135,11 +161,11 @@ class _ItemPageState extends State<ItemPage> {
             Text(
               '\$99.99',
               style: priceStyle,
-            ), // TODO: Replace with dynamic price
+            ),
             Text(
               'In Stock: 99',
               style: stockStyle,
-            ), // TODO: Replace with actual stock
+            ),
           ],
         ),
         const SizedBox(height: 25),
@@ -153,7 +179,7 @@ class _ItemPageState extends State<ItemPage> {
             Text(
               'Aviator',
               style: TextStyle(fontSize: 15),
-            ), // TODO: replace with actual category
+            ),
           ],
         ),
         const SizedBox(height: 15),
