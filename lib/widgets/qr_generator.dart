@@ -67,53 +67,56 @@ class QrGeneratorWidget extends StatelessWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  RepaintBoundary(
-                    key: qrKey,
-                    child: Container(
-                      margin: const EdgeInsets.all(16),
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        border: Border.all(width: 2, color: Colors.black),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          // QR Code
-                          Container(
-                            height: 150,
-                            width: 150,
-                            padding: const EdgeInsets.all(8),
-                            child: SvgPicture.string(svg),
-                          ),
-                          const SizedBox(width: 12),
-                          // Product Info
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                frame.name,
-                                style: const TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: RepaintBoundary(
+                      key: qrKey,
+                      child: Container(
+                        margin: const EdgeInsets.all(16),
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          border: Border.all(width: 2, color: Colors.black),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            // QR Code
+                            Container(
+                              height: 150,
+                              width: 150,
+                              padding: const EdgeInsets.all(8),
+                              child: SvgPicture.string(svg),
+                            ),
+                            const SizedBox(width: 12),
+                            // Product Info
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  frame.name,
+                                  style: const TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                "Size: ${frame.size}",
-                                style: const TextStyle(fontSize: 16),
-                              ),
-                              Text(
-                                "Color: ${frame.color}",
-                                style: const TextStyle(fontSize: 16),
-                              ),
-                              Text(
-                                "SKU: ${frame.code}",
-                                style: const TextStyle(fontSize: 16),
-                              ),
-                            ],
-                          ),
-                        ],
+                                const SizedBox(height: 8),
+                                Text(
+                                  "Size: ${frame.size}",
+                                  style: const TextStyle(fontSize: 16),
+                                ),
+                                Text(
+                                  "Color: ${frame.colorName}",
+                                  style: const TextStyle(fontSize: 16),
+                                ),
+                                Text(
+                                  "SKU: $productCode",
+                                  style: const TextStyle(fontSize: 16),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
