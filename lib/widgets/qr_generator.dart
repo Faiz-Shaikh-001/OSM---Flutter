@@ -13,10 +13,11 @@ import '../models/frame_model.dart';
 import 'custom_button.dart';
 
 class QrGeneratorWidget extends StatelessWidget {
-  final Frame frame;
+  final FrameModel frame;
+  final FrameVariant variant;
   final GlobalKey qrKey = GlobalKey();
 
-  QrGeneratorWidget({super.key, required this.frame});
+  QrGeneratorWidget({super.key, required this.frame, required this.variant});
 
   Future<void> _printQrWithDetails() async {
     final pdf = pw.Document();
@@ -49,14 +50,11 @@ class QrGeneratorWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final barcode = Barcode.qrCode();
-    final productCode = frame.getProductCode();
+    final productCode = variant.getProductCode(frame.frameType);
 
-    final svg = barcode.toSvg(
-      productCode,
-      width: 150,
-      height: 150,
-      drawText: false,
-    );
+    final code = frame.id + productCode;
+
+    final svg = barcode.toSvg(code, width: 150, height: 150, drawText: false);
 
     return Scaffold(
       appBar: AppBar(title: const Text("Product QR")),
@@ -94,7 +92,7 @@ class QrGeneratorWidget extends StatelessWidget {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  frame.name,
+                                  "${frame.companyName} - ${frame.name}",
                                   style: const TextStyle(
                                     fontSize: 18,
                                     fontWeight: FontWeight.bold,
@@ -102,11 +100,11 @@ class QrGeneratorWidget extends StatelessWidget {
                                 ),
                                 const SizedBox(height: 8),
                                 Text(
-                                  "Size: ${frame.size}",
+                                  "Size: ${variant.size}",
                                   style: const TextStyle(fontSize: 16),
                                 ),
                                 Text(
-                                  "Color: ${frame.colorName}",
+                                  "Color: ${variant.colorName}",
                                   style: const TextStyle(fontSize: 16),
                                 ),
                                 Text(

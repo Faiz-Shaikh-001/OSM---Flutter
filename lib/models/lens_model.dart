@@ -24,6 +24,12 @@ abstract class BaseLens {
   });
 
   String get productCode => 'Unknown';
+
+  String _shorten(String value) {
+    return value.length > 5
+        ? value.substring(0, 5).toUpperCase()
+        : value.toUpperCase();
+  }
 }
 
 class SingleVision extends BaseLens {
@@ -45,7 +51,7 @@ class SingleVision extends BaseLens {
 
   @override
   String get productCode =>
-      'LENS-SV-${name.substring(0, 5).toUpperCase()}-${companyName.substring(0, 5).toUpperCase()}';
+      'LENS-SV-${_shorten(name)}-${_shorten(companyName)}';
 }
 
 class Bifocal extends SingleVision {
@@ -69,7 +75,7 @@ class Bifocal extends SingleVision {
 
   @override
   String get productCode =>
-      'LENS-BF-${name.substring(0, 5).toUpperCase()}-${companyName.substring(0, 5).toUpperCase()}';
+      'LENS-BF-${_shorten(name)}-${_shorten(companyName)}';
 }
 
 class ContactLens extends BaseLens {
@@ -91,7 +97,7 @@ class ContactLens extends BaseLens {
 
   @override
   String get productCode =>
-      'LENS-CL-${name.substring(0, 5).toUpperCase()}-${companyName.substring(0, 5).toUpperCase()}';
+      'LENS-CL-${_shorten(name)}-${_shorten(companyName)}';
 }
 
 class Progressive extends Bifocal {
@@ -115,5 +121,5 @@ class Progressive extends Bifocal {
 
   @override
   String get productCode =>
-      'LENS-PG-${name.substring(0, 5).toUpperCase()}-${companyName.substring(0, 5).toUpperCase()}';
+      'LENS-PG-${_shorten(name)}-${_shorten(companyName)}';
 }

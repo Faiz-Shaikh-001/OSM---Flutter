@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:osm/widgets/frame_form_widget.dart';
+import 'package:osm/pages/addStockScreens/bifocal_form_section.dart';
+import 'package:osm/pages/addStockScreens/contact_lens_form_section.dart';
+import 'package:osm/pages/addStockScreens/frame_form_widget.dart';
+import 'package:osm/pages/addStockScreens/progressive_form_section.dart';
+import 'package:osm/pages/addStockScreens/single_vision_form_section.dart';
 import 'dart:io';
-import '../models/frame_model.dart';
+import '../../models/frame_model.dart';
 
 enum ProductType {
   frame,
@@ -100,13 +104,13 @@ class _AddStockScreenState extends State<AddStockScreen> {
       case ProductType.frame:
         return AddFrameFormSection();
       case ProductType.singleVisionLens:
-        return const Text("Single Vision form goes here");
+        return SingleVisionFormSection();
       case ProductType.bifocalLens:
-        return const Text("Bifocal form goes here");
+        return BifocalFormSection();
       case ProductType.progressiveLens:
-        return const Text("Progressive form goes here");
+        return ProgressiveFormSection();
       case ProductType.contactLens:
-        return const Text("Contact Lens form goes here");
+        return ContactLensFormSection();
     }
   }
 }
@@ -114,24 +118,24 @@ class _AddStockScreenState extends State<AddStockScreen> {
 class AddFrameFormSection extends StatelessWidget {
   const AddFrameFormSection({super.key});
 
-  void _handleSubmit({
-    required DateTime date,
-    required FrameType frameType,
-    required String name,
-    required String code,
-    required Color color,
-    required int size,
-    required int quantity,
-    required double purchasePrice,
-    required double salesPrice,
-    required List<File> images,
-  }) {
+  void _handleSubmit(FrameModel frame, List<FrameVariant> variants) {
     // Handle saving to backend or DB
-    print('Saving Frame: $name ($code), $quantity pcs');
+    // You can also use the variants list as needed
   }
 
   @override
   Widget build(BuildContext context) {
-    return BuildFrameForm(onSubmit: _handleSubmit);
+    return FrameFormWidget(onSubmit: _handleSubmit);
   }
 }
+
+// class AddSingleVisionFormSection extends StatelessWidget {
+//   const AddSingleVisionFormSection({super.key});
+
+//   void _handleSubmit({required DateTime date}) {}
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return const Placeholder();
+//   }
+// }

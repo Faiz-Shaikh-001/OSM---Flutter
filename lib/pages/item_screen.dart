@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:osm/widgets/qr_generator.dart';
+
 import '../widgets/color_dropdown_widget.dart';
 import '../widgets/size_dropdown_widget.dart';
 import '../widgets/custom_button.dart';
@@ -46,23 +47,29 @@ class _ItemPageState extends State<ItemPage> {
               const SizedBox(height: 10),
               CustomButton(
                 onPressed: () async {
-                  final frame = await Frame.createWithColorName(
-                    frameType: FrameType.halfRimless,
-                    name: "Aviator Steel",
+                  final frame = FrameModel(
+                    companyName: 'Rayban',
+                    frameType: FrameType.rimless,
+                    name: "Aviator",
+                    id: '2',
+                  ); // however you construct it
+
+                  final variant = await FrameFactory.createVariantWithColorName(
+                    frame: frame,
                     code: "AV123",
                     color: Color(0xff472910),
                     size: 48,
                     quantity: 10,
                     purchasePrice: 100,
                     salesPrice: 100,
-                  ); // Output: FRAME-2-AV123-Blac-48
-
+                  );
                   if (!mounted) return;
 
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => QrGeneratorWidget(frame: frame),
+                      builder: (context) =>
+                          QrGeneratorWidget(frame: frame, variant: variant),
                     ),
                   );
                 },

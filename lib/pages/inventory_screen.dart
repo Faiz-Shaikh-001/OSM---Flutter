@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:osm/pages/add_stock_screen.dart';
+import 'package:osm/pages/addStockScreens/add_stock_screen.dart';
 import '../widgets/search_bar.dart';
 import '../widgets/product_grid.dart';
 
