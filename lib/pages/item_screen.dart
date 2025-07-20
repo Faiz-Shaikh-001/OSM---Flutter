@@ -63,15 +63,18 @@ class _ItemPageState extends State<ItemPage> {
                     purchasePrice: 100,
                     salesPrice: 100,
                   );
-                  if (!mounted) return;
 
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) =>
-                          QrGeneratorWidget(frame: frame, variant: variant),
-                    ),
-                  );
+                  if (mounted) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            QrGeneratorWidget(frame: frame, variant: variant),
+                      ),
+                    );
+                  } else {
+                    return;
+                  }
                 },
                 label: 'Generate QR Code',
                 icon: Icons.qr_code,

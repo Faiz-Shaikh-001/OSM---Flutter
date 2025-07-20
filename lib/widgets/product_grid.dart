@@ -22,13 +22,17 @@ class _ProductGridState extends State<ProductGrid> {
             final image = NetworkImage("https://picsum.dev/image$index/view");
             await precacheImage(image, context);
 
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) =>
-                    ItemPage(title: "Item$index", index: index),
-              ),
-            );
+            if (mounted) {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) =>
+                      ItemPage(title: "Item$index", index: index),
+                ),
+              );
+            } else {
+              return;
+            }
           },
         );
       }),

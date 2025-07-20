@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'pages/dashboard_screen.dart'; // Import your new dashboard
+import 'pages/dashboard_screen.dart';
 
 void main() {
   runApp(const MyApp());

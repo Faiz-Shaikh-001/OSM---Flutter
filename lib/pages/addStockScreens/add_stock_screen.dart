@@ -4,7 +4,6 @@ import 'package:osm/pages/addStockScreens/contact_lens_form_section.dart';
 import 'package:osm/pages/addStockScreens/frame_form_widget.dart';
 import 'package:osm/pages/addStockScreens/progressive_form_section.dart';
 import 'package:osm/pages/addStockScreens/single_vision_form_section.dart';
-import 'dart:io';
 import '../../models/frame_model.dart';
 
 enum ProductType {
@@ -128,14 +127,3 @@ class AddFrameFormSection extends StatelessWidget {
     return FrameFormWidget(onSubmit: _handleSubmit);
   }
 }
-
-// class AddSingleVisionFormSection extends StatelessWidget {
-//   const AddSingleVisionFormSection({super.key});
-
-//   void _handleSubmit({required DateTime date}) {}
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return const Placeholder();
-//   }
-// }

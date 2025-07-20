@@ -1,8 +1,8 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
-import 'package:permission_handler/permission_handler.dart';
+import 'package:osm/widgets/build_text_field_widget.dart';
+import 'package:osm/widgets/image_selector_widget.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import '../../models/frame_model.dart';
 import '../../widgets/custom_button.dart';
@@ -34,7 +34,6 @@ class VariantFormData {
 
 class _FrameFormWidgetState extends State<FrameFormWidget> {
   final _formKey = GlobalKey<FormState>();
-  final _picker = ImagePicker();
 
   DateTime _selectedDate = DateTime.now();
   FrameType? _frameType;
@@ -45,21 +44,6 @@ class _FrameFormWidgetState extends State<FrameFormWidget> {
   final _codeController = TextEditingController();
 
   final List<VariantFormData> _variantForms = [];
-
-  Future<void> _pickImages() async {
-    final permission = await Permission.photos.request();
-    if (!permission.isGranted) {
-      openAppSettings();
-      return;
-    }
-
-    final images = await _picker.pickMultiImage();
-    if (images.isNotEmpty) {
-      setState(() {
-        _selectedImages.addAll(images.map((x) => File(x.path)));
-      });
-    }
-  }
 
   Future<void> _pickDate() async {
     final picked = await showDatePicker(
@@ -121,29 +105,6 @@ class _FrameFormWidgetState extends State<FrameFormWidget> {
     }
 
     widget.onSubmit(frame, variants);
-  }
-
-  Widget _buildTextField(
-    String label,
-    TextEditingController controller, {
-    bool isNumeric = false,
-    bool isDecimal = false,
-  }) {
-    return TextFormField(
-      controller: controller,
-      keyboardType: isDecimal
-          ? const TextInputType.numberWithOptions(decimal: true)
-          : isNumeric
-          ? TextInputType.number
-          : TextInputType.text,
-      decoration: InputDecoration(labelText: label),
-      validator: (value) {
-        if (value == null || value.trim().isEmpty) return 'Enter $label';
-        if (isNumeric && int.tryParse(value) == null) return 'Invalid number';
-        if (isDecimal && double.tryParse(value) == null) return 'Invalid price';
-        return null;
-      },
-    );
   }
 
   Widget _buildVariantRow(int index) {
@@ -242,56 +203,26 @@ class _FrameFormWidgetState extends State<FrameFormWidget> {
       key: _formKey,
       child: Column(
         children: [
-          const Text(
-            'Upload Product Images',
-            style: TextStyle(fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 10),
-          GestureDetector(
-            onTap: _pickImages,
-            child: Container(
-              height: 150,
-              color: Colors.grey.shade200,
-              child: _selectedImages.isEmpty
-                  ? const Center(
-                      child: Icon(Icons.add_photo_alternate_outlined, size: 40),
-                    )
-                  : ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: _selectedImages.length,
-                      itemBuilder: (context, index) => Stack(
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Image.file(
-                              _selectedImages[index],
-                              height: 150,
-                            ),
-                          ),
-                          Positioned(
-                            top: 5,
-                            right: 5,
-                            child: GestureDetector(
-                              onTap: () => setState(
-                                () => _selectedImages.removeAt(index),
-                              ),
-                              child: const Icon(
-                                Icons.cancel,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
+          ImageSelectorWidget(
+            selectedImages: _selectedImages,
+            onImagesChanged: (imgs) => setState(
+              () => _selectedImages
+                ..clear()
+                ..addAll(imgs),
             ),
           ),
           const SizedBox(height: 10),
           ListTile(
             onTap: _pickDate,
-            title: const Text('Date'),
-            trailing: Text(DateFormat.yMMMd().format(_selectedDate)),
+            title: Row(
+              children: [Icon(Icons.calendar_month_outlined), Text('Date')],
+            ),
+            trailing: Text(
+              DateFormat.yMMMd().format(_selectedDate),
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
           ),
+
           DropdownButtonFormField<FrameType>(
             decoration: const InputDecoration(labelText: 'Frame Type'),
             value: _frameType,
@@ -301,9 +232,19 @@ class _FrameFormWidgetState extends State<FrameFormWidget> {
             onChanged: (type) => setState(() => _frameType = type),
             validator: (value) => value == null ? 'Select frame type' : null,
           ),
-          _buildTextField("Company Name", _companyController),
-          _buildTextField("Model Name", _nameController),
-          _buildTextField("Model Code", _codeController),
+
+          BuildTextFieldWidget(
+            label: "Company Name",
+            controller: _companyController,
+          ),
+          BuildTextFieldWidget(
+            label: "Model Name",
+            controller: _nameController,
+          ),
+          BuildTextFieldWidget(
+            label: "Model Code",
+            controller: _codeController,
+          ),
 
           const SizedBox(height: 20),
           Row(
@@ -320,11 +261,9 @@ class _FrameFormWidgetState extends State<FrameFormWidget> {
               ),
             ],
           ),
-          ..._variantForms
-              .asMap()
-              .entries
-              .map((entry) => _buildVariantRow(entry.key))
-              .toList(),
+          ..._variantForms.asMap().entries.map(
+            (entry) => _buildVariantRow(entry.key),
+          ),
           const SizedBox(height: 20),
           CustomButton(
             onPressed: _handleSubmit,

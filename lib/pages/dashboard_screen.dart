@@ -171,8 +171,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
 // Dashboard content
 class _BuildDashboardContent extends StatelessWidget {
-  const _BuildDashboardContent({super.key});
-
   @override
   Widget build(BuildContext context) {
     return Column(
