@@ -6,12 +6,17 @@ import '../widgets/size_dropdown_widget.dart';
 import '../widgets/custom_button.dart';
 import '../models/frame_model.dart';
 
-class ItemPage extends StatelessWidget {
+class ItemPage extends StatefulWidget {
   final String title;
   final int index;
 
   const ItemPage({super.key, required this.title, required this.index});
 
+  @override
+  State<ItemPage> createState() => _ItemPageState();
+}
+
+class _ItemPageState extends State<ItemPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -32,7 +37,7 @@ class ItemPage extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildHeroImage(index),
+              _buildHeroImage(widget.index),
               Padding(
                 padding: EdgeInsets.all(15.0),
                 child: _buildProductDetails(context),
@@ -40,14 +45,19 @@ class ItemPage extends StatelessWidget {
               CustomButton(onPressed: () {}, label: 'Update Stock'),
               const SizedBox(height: 10),
               CustomButton(
-                onPressed: () {
-                  final frame = Frame(
+                onPressed: () async {
+                  final frame = await Frame.createWithColorName(
                     frameType: FrameType.halfRimless,
                     name: "Aviator Steel",
                     code: "AV123",
-                    color: "Black",
+                    color: Color(0xff472910),
                     size: 48,
+                    quantity: 10,
+                    purchasePrice: 100,
+                    salesPrice: 100,
                   ); // Output: FRAME-2-AV123-Blac-48
+
+                  if (!mounted) return;
 
                   Navigator.push(
                     context,
@@ -115,7 +125,7 @@ class ItemPage extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(title, style: titleStyle),
+        Text(widget.title, style: titleStyle),
         Text('SKU: ', style: labelStyle), // TODO: Replace with actual sku
         const SizedBox(height: 15),
         Row(

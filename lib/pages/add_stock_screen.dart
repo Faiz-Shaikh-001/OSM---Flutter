@@ -3,6 +3,31 @@ import 'package:osm/widgets/frame_form_widget.dart';
 import 'dart:io';
 import '../models/frame_model.dart';
 
+enum ProductType {
+  frame,
+  singleVisionLens,
+  bifocalLens,
+  progressiveLens,
+  contactLens,
+}
+
+extension ProductTypeExtension on ProductType {
+  String get label {
+    switch (this) {
+      case ProductType.frame:
+        return 'Frame';
+      case ProductType.singleVisionLens:
+        return 'Single Vision Lens';
+      case ProductType.bifocalLens:
+        return 'Bifocal Lens';
+      case ProductType.progressiveLens:
+        return 'Progressive Lens';
+      case ProductType.contactLens:
+        return 'Contact Lens';
+    }
+  }
+}
+
 class AddStockScreen extends StatefulWidget {
   const AddStockScreen({super.key});
 
@@ -11,15 +36,9 @@ class AddStockScreen extends StatefulWidget {
 }
 
 class _AddStockScreenState extends State<AddStockScreen> {
-  String? selectedType;
+  ProductType? selectedType;
 
-  final List<String> productTypes = [
-    'Frame',
-    'Single Vision Lens',
-    'Bifocal Lens',
-    'Progressive Lens',
-    'Contact Lens',
-  ];
+  final List<ProductType> productTypes = ProductType.values;
 
   @override
   Widget build(BuildContext context) {
@@ -45,17 +64,23 @@ class _AddStockScreenState extends State<AddStockScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   DropdownButtonFormField<String>(
-                    value: selectedType,
+                    value: selectedType?.label,
                     decoration: const InputDecoration(
                       labelText: 'Select Product Type',
                       border: OutlineInputBorder(),
                     ),
                     items: productTypes.map((type) {
-                      return DropdownMenuItem(value: type, child: Text(type));
+                      return DropdownMenuItem(
+                        value: type.label,
+                        child: Text(type.label),
+                      );
                     }).toList(),
                     onChanged: (value) {
                       setState(() {
-                        selectedType = value;
+                        selectedType = productTypes.firstWhere(
+                          (type) => type.label == value,
+                          orElse: () => ProductType.frame,
+                        );
                       });
                     },
                   ),
@@ -70,33 +95,31 @@ class _AddStockScreenState extends State<AddStockScreen> {
     );
   }
 
-  Widget _buildForm(String type) {
+  Widget _buildForm(ProductType type) {
     switch (type) {
-      case 'Frame':
-        return AddFrameStockScreen();
-      case 'Single Vision Lens':
+      case ProductType.frame:
+        return AddFrameFormSection();
+      case ProductType.singleVisionLens:
         return const Text("Single Vision form goes here");
-      case 'Bifocal Lens':
+      case ProductType.bifocalLens:
         return const Text("Bifocal form goes here");
-      case 'Progressive Lens':
+      case ProductType.progressiveLens:
         return const Text("Progressive form goes here");
-      case 'Contact Lens':
+      case ProductType.contactLens:
         return const Text("Contact Lens form goes here");
-      default:
-        return const SizedBox();
     }
   }
 }
 
-class AddFrameStockScreen extends StatelessWidget {
-  const AddFrameStockScreen({super.key});
+class AddFrameFormSection extends StatelessWidget {
+  const AddFrameFormSection({super.key});
 
   void _handleSubmit({
     required DateTime date,
     required FrameType frameType,
     required String name,
     required String code,
-    required String color,
+    required Color color,
     required int size,
     required int quantity,
     required double purchasePrice,

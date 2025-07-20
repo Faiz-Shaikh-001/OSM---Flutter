@@ -1,10 +1,10 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:osm/widgets/custom_button.dart';
+import 'package:osm/widgets/multi_color_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:intl/intl.dart';
 import 'package:image_picker/image_picker.dart';
-
 import '../models/frame_model.dart';
 
 class BuildFrameForm extends StatefulWidget {
@@ -13,7 +13,7 @@ class BuildFrameForm extends StatefulWidget {
     required FrameType frameType,
     required String name,
     required String code,
-    required String color,
+    required Color color,
     required int size,
     required int quantity,
     required double purchasePrice,
@@ -32,13 +32,13 @@ class _BuildFrameFormState extends State<BuildFrameForm> {
   final _formKey = GlobalKey<FormState>();
   final ImagePicker _picker = ImagePicker();
 
+  final List<Color> _selectedColors = [];
+  final List<File> _selectedImages = [];
   DateTime _selectedDate = DateTime.now();
   FrameType? _frameType;
-  List<File> _selectedImages = [];
 
   final _nameController = TextEditingController();
   final _codeController = TextEditingController();
-  final _colorController = TextEditingController();
   final _sizeController = TextEditingController();
   final _quantityController = TextEditingController();
   final _purchasePriceController = TextEditingController();
@@ -49,13 +49,8 @@ class _BuildFrameFormState extends State<BuildFrameForm> {
 
     if (!mounted) return;
 
-    if (!permissionStatus.isGranted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("Permission denied. Please enable access to photos."),
-        ),
-      );
-      return;
+    if (permissionStatus.isPermanentlyDenied) {
+      openAppSettings();
     }
 
     final List<XFile> pickedImages = await _picker.pickMultiImage();
@@ -88,18 +83,32 @@ class _BuildFrameFormState extends State<BuildFrameForm> {
 
   void _submitForm() {
     if (_formKey.currentState!.validate() && _frameType != null) {
-      widget.onSubmit(
-        date: _selectedDate,
-        images: _selectedImages,
-        frameType: _frameType!,
-        name: _nameController.text.trim(),
-        code: _codeController.text.trim(),
-        color: _colorController.text.trim(),
-        size: int.parse(_sizeController.text),
-        quantity: int.parse(_quantityController.text),
-        purchasePrice: double.parse(_purchasePriceController.text),
-        salesPrice: double.parse(_salesPriceController.text),
-      );
+      final sharedData = {
+        'date': _selectedDate,
+        'images': _selectedImages,
+        'frameType': _frameType!,
+        'name': _nameController.text.trim(),
+        'code': _codeController.text.trim(),
+        'size': int.parse(_sizeController.text),
+        'quantity': int.parse(_quantityController.text),
+        'purchasePrice': double.parse(_purchasePriceController.text),
+        'salesPrice': double.parse(_salesPriceController.text),
+      };
+
+      for (Color color in _selectedColors) {
+        widget.onSubmit(
+          date: _selectedDate,
+          images: _selectedImages,
+          frameType: _frameType!,
+          name: _nameController.text.trim(),
+          code: _codeController.text.trim(),
+          color: color,
+          size: int.parse(_sizeController.text),
+          quantity: int.parse(_quantityController.text),
+          purchasePrice: double.parse(_purchasePriceController.text),
+          salesPrice: double.parse(_salesPriceController.text),
+        );
+      }
     }
   }
 
@@ -223,13 +232,35 @@ class _BuildFrameFormState extends State<BuildFrameForm> {
             validator: (value) =>
                 value == null ? 'Please select a frame type' : null,
           ),
-          _buildTextField(_nameController, 'Name'),
-          _buildTextField(_codeController, 'Code'),
-          _buildTextField(_colorController, 'Color'),
-          _buildTextField(_sizeController, 'Size'),
+          _buildTextField(_nameController, 'Model Name'),
+          _buildTextField(_codeController, 'Model Code'),
+          MultiColorPicker(
+            initialColors: _selectedColors,
+            onColorsChanged: (colors) {
+              setState(() {
+                _selectedColors
+                  ..clear()
+                  ..addAll(colors);
+              });
+            },
+          ),
+          _buildTextField(_sizeController, 'Model Size'),
           _buildTextField(_quantityController, 'Quantity'),
-          _buildTextField(_purchasePriceController, 'Purchase Price'),
-          _buildTextField(_salesPriceController, 'Sales Price'),
+          Row(
+            children: [
+              SizedBox(
+                width: MediaQuery.of(context).size.width * .4,
+                child: _buildTextField(
+                  _purchasePriceController,
+                  'Purchase Price',
+                ),
+              ),
+              const SizedBox(width: 15),
+              Expanded(
+                child: _buildTextField(_salesPriceController, 'Sales Price'),
+              ),
+            ],
+          ),
 
           const SizedBox(height: 20),
 
