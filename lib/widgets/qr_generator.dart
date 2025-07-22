@@ -13,11 +13,18 @@ import '../models/frame_model.dart';
 import 'custom_button.dart';
 
 class QrGeneratorWidget extends StatelessWidget {
+<<<<<<< HEAD
   final FrameModel frame;
   final FrameVariant variant;
   final GlobalKey qrKey = GlobalKey();
 
   QrGeneratorWidget({super.key, required this.frame, required this.variant});
+=======
+  final Frame frame;
+  final GlobalKey qrKey = GlobalKey();
+
+  QrGeneratorWidget({super.key, required this.frame});
+>>>>>>> 376ec89504a7769a91a0771f6a84244fdf219659
 
   Future<void> _printQrWithDetails() async {
     final pdf = pw.Document();
@@ -50,11 +57,22 @@ class QrGeneratorWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final barcode = Barcode.qrCode();
+<<<<<<< HEAD
     final productCode = variant.getProductCode(frame.frameType);
 
     final code = frame.id + productCode;
 
     final svg = barcode.toSvg(code, width: 150, height: 150, drawText: false);
+=======
+    final productCode = frame.getProductCode();
+
+    final svg = barcode.toSvg(
+      productCode,
+      width: 150,
+      height: 150,
+      drawText: false,
+    );
+>>>>>>> 376ec89504a7769a91a0771f6a84244fdf219659
 
     return Scaffold(
       appBar: AppBar(title: const Text("Product QR")),
@@ -92,7 +110,11 @@ class QrGeneratorWidget extends StatelessWidget {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
+<<<<<<< HEAD
                                   "${frame.companyName} - ${frame.name}",
+=======
+                                  frame.name,
+>>>>>>> 376ec89504a7769a91a0771f6a84244fdf219659
                                   style: const TextStyle(
                                     fontSize: 18,
                                     fontWeight: FontWeight.bold,
@@ -100,11 +122,19 @@ class QrGeneratorWidget extends StatelessWidget {
                                 ),
                                 const SizedBox(height: 8),
                                 Text(
+<<<<<<< HEAD
                                   "Size: ${variant.size}",
                                   style: const TextStyle(fontSize: 16),
                                 ),
                                 Text(
                                   "Color: ${variant.colorName}",
+=======
+                                  "Size: ${frame.size}",
+                                  style: const TextStyle(fontSize: 16),
+                                ),
+                                Text(
+                                  "Color: ${frame.colorName}",
+>>>>>>> 376ec89504a7769a91a0771f6a84244fdf219659
                                   style: const TextStyle(fontSize: 16),
                                 ),
                                 Text(

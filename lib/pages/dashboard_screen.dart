@@ -171,6 +171,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
 // Dashboard content
 class _BuildDashboardContent extends StatelessWidget {
+  const _BuildDashboardContent();
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -209,21 +211,37 @@ class _BuildDashboardContent extends StatelessWidget {
         const SizedBox(height: 10),
         Expanded(
           child: ListView(
-            children: const [
-              ListTile(
-                title: Text('New Order #1234'),
-                subtitle: Text('John Doe • Progressive Lenses'),
-                trailing: Text('2 mins ago'),
+            children: [
+              InkWell(
+                onTap: () {
+                  print('Tapped on New Order #1234');
+                  // You can add navigation or custom logic here
+                },
+                child: ListTile(
+                  title: Text('New Order #1234'),
+                  subtitle: Text('John Doe • Progressive Lenses'),
+                  trailing: Text('2 mins ago'),
+                ),
               ),
-              ListTile(
-                title: Text('Payment received'),
-                subtitle: Text('Order #1233 • \$350.00'),
-                trailing: Text('10 mins ago'),
+              InkWell(
+                onTap: () {
+                  print('Tapped on Payment received');
+                },
+                child: ListTile(
+                  title: Text('Payment received'),
+                  subtitle: Text('Order #1233 • \$350.00'),
+                  trailing: Text('10 mins ago'),
+                ),
               ),
-              ListTile(
-                title: Text('Low stock alert'),
-                subtitle: Text('Ray-Ban Frames - 3 items left'),
-                trailing: Text('2 hours ago'),
+              InkWell(
+                onTap: () {
+                  print('Tapped on Low stock alert');
+                },
+                child: ListTile(
+                  title: Text('Low stock alert'),
+                  subtitle: Text('Ray-Ban Frames - 3 items left'),
+                  trailing: Text('2 hours ago'),
+                ),
               ),
             ],
           ),

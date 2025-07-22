@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:osm/widgets/qr_generator.dart';
-
 import '../widgets/color_dropdown_widget.dart';
 import '../widgets/size_dropdown_widget.dart';
 import '../widgets/custom_button.dart';
 import '../models/frame_model.dart';
+import 'package:osm/pages/update_stock_screen.dart';
 
 class ItemPage extends StatefulWidget {
   final String title;
@@ -43,7 +43,33 @@ class _ItemPageState extends State<ItemPage> {
                 padding: EdgeInsets.all(15.0),
                 child: _buildProductDetails(context),
               ),
-              CustomButton(onPressed: () {}, label: 'Update Stock'),
+
+              //Update Stock Button Navigation
+              CustomButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const UpdateStockScreen(),
+                      settings: RouteSettings(
+                        arguments: {
+                          'name': widget.title,
+                          'quantity': 10,
+                          'color': 'Red',
+                          'size': 'Medium',
+                          'purchase_price': 50.0,
+                          'selling_price': 99.99,
+                          'stock': 99,
+                          'image':
+                              "https://picsum.dev/image/${widget.index}/view",
+                        },
+                      ),
+                    ),
+                  );
+                },
+                label: 'Edit Stock',
+              ),
+
               const SizedBox(height: 10),
               CustomButton(
                 onPressed: () async {
