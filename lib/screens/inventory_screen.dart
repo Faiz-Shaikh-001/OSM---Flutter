@@ -1,9 +1,5 @@
 import 'package:flutter/material.dart';
-<<<<<<< HEAD
-import 'package:osm/pages/addStockScreens/add_stock_screen.dart';
-=======
-import 'package:osm/pages/add_stock_screen.dart';
->>>>>>> 376ec89504a7769a91a0771f6a84244fdf219659
+import 'package:osm/screens/addStockScreens/add_stock_screen.dart';
 import '../widgets/search_bar.dart';
 import '../widgets/product_grid.dart';
 

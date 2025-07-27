@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:osm/pages/addStockScreens/bifocal_form_section.dart';
-import 'package:osm/pages/addStockScreens/contact_lens_form_section.dart';
-import 'package:osm/pages/addStockScreens/frame_form_widget.dart';
-import 'package:osm/pages/addStockScreens/progressive_form_section.dart';
-import 'package:osm/pages/addStockScreens/single_vision_form_section.dart';
-import '../../models/frame_model.dart';
+import 'package:osm/screens/addStockScreens/bifocal_form_section.dart';
+import 'package:osm/screens/addStockScreens/contact_lens_form_section.dart';
+import 'package:osm/screens/addStockScreens/frame_form_widget.dart';
+import 'package:osm/screens/addStockScreens/progressive_form_section.dart';
+import 'package:osm/screens/addStockScreens/single_vision_form_section.dart';
+import '../../data/models/frame_model.dart';
 
 enum ProductType {
   frame,

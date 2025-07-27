@@ -31,12 +31,15 @@ class _UpdateStockScreenState extends State<UpdateStockScreen> {
         ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
 
     nameController = TextEditingController(text: item['name']);
-    quantityController =
-        TextEditingController(text: item['quantity'].toString());
-    purchasePriceController =
-        TextEditingController(text: item['purchase_price'].toString());
-    sellingPriceController =
-        TextEditingController(text: item['selling_price'].toString());
+    quantityController = TextEditingController(
+      text: item['quantity'].toString(),
+    );
+    purchasePriceController = TextEditingController(
+      text: item['purchase_price'].toString(),
+    );
+    sellingPriceController = TextEditingController(
+      text: item['selling_price'].toString(),
+    );
     colorController = TextEditingController(text: item['color']);
     sizeController = TextEditingController(text: item['size']);
 
@@ -100,11 +103,11 @@ class _UpdateStockScreenState extends State<UpdateStockScreen> {
       'image': newImageFile?.path ?? imageUrl,
     };
 
-    print('Updated Item: $updatedData');
+    debugPrint('Updated Item: $updatedData');
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Stock updated successfully')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Stock updated successfully')));
 
     Navigator.of(context).pop(updatedData);
   }
@@ -112,28 +115,20 @@ class _UpdateStockScreenState extends State<UpdateStockScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Edit Stock'),
-      ),
+      appBar: AppBar(title: const Text('Edit Stock')),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: ListView(
           children: [
             Text(
               'Current Stock: $stockCount',
-              style: const TextStyle(
-                fontWeight: FontWeight.w600,
-                fontSize: 16,
-              ),
+              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
             ),
             const SizedBox(height: 24),
 
             const Text(
               'Edit Image:',
-              style: TextStyle(
-                fontWeight: FontWeight.w600,
-                fontSize: 16,
-              ),
+              style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
             ),
             const SizedBox(height: 8),
 
@@ -153,16 +148,14 @@ class _UpdateStockScreenState extends State<UpdateStockScreen> {
                               fit: BoxFit.cover,
                             )
                           : imageUrl.isNotEmpty
-                              ? DecorationImage(
-                                  image: NetworkImage(imageUrl),
-                                  fit: BoxFit.cover,
-                                )
-                              : null,
+                          ? DecorationImage(
+                              image: NetworkImage(imageUrl),
+                              fit: BoxFit.cover,
+                            )
+                          : null,
                     ),
                     child: (newImageFile == null && imageUrl.isEmpty)
-                        ? const Center(
-                            child: Icon(Icons.add_a_photo, size: 50),
-                          )
+                        ? const Center(child: Icon(Icons.add_a_photo, size: 50))
                         : null,
                   ),
                   Positioned(
@@ -174,7 +167,11 @@ class _UpdateStockScreenState extends State<UpdateStockScreen> {
                         shape: BoxShape.circle,
                         color: Colors.black54,
                       ),
-                      child: const Icon(Icons.edit, color: Colors.white, size: 18),
+                      child: const Icon(
+                        Icons.edit,
+                        color: Colors.white,
+                        size: 18,
+                      ),
                     ),
                   ),
                 ],
@@ -244,7 +241,7 @@ class _UpdateStockScreenState extends State<UpdateStockScreen> {
               style: ElevatedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 backgroundColor: Colors.blueAccent,
-                foregroundColor: Colors.white
+                foregroundColor: Colors.white,
               ),
               onPressed: _updateStock,
               child: const Text('Edit Stock'),

@@ -1,23 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:osm/data/models/lens_enums.dart';
 import 'package:osm/widgets/build_text_field_widget.dart';
 import 'package:osm/widgets/button_increment_decrement_widget.dart';
 import 'package:osm/widgets/custom_button.dart';
 import 'package:osm/widgets/image_selector_widget.dart';
 import 'dart:io';
 
-import '../../models/lens_model.dart';
+import '../../data/models/lens_model.dart';
 
-class BifocalFormSection extends StatefulWidget {
-  const BifocalFormSection({super.key});
+class ProgressiveFormSection extends StatefulWidget {
+  const ProgressiveFormSection({super.key});
 
   @override
-  State<BifocalFormSection> createState() => _BifocalFormSectionState();
+  State<ProgressiveFormSection> createState() => _ProgressiveFormSectionState();
 }
 
-class _BifocalFormSectionState extends State<BifocalFormSection> {
+class _ProgressiveFormSectionState extends State<ProgressiveFormSection> {
   final _formKey = GlobalKey<FormState>();
 
   LensMaterialType? _materialType;
+  ProgressiveLensSide? _progressiveLensSide;
   final TextEditingController _companyNameController = TextEditingController();
   final TextEditingController _productNameController = TextEditingController();
   final TextEditingController _indexController = TextEditingController();
@@ -137,6 +139,20 @@ class _BifocalFormSectionState extends State<BifocalFormSection> {
                       ),
                     ),
                   ],
+                ),
+                DropdownButtonFormField(
+                  decoration: InputDecoration(labelText: 'Select Side'),
+                  value: _progressiveLensSide,
+                  items: ProgressiveLensSide.values.map((type) {
+                    return DropdownMenuItem(
+                      value: type,
+                      child: Text(type.displayName),
+                    );
+                  }).toList(),
+                  onChanged: (type) =>
+                      setState(() => _progressiveLensSide = type),
+                  validator: (value) =>
+                      value == null ? 'Select Material Type' : null,
                 ),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,

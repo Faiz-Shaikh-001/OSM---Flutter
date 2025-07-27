@@ -1,4 +1,4 @@
-import '../models/frame_model.dart' show FrameType;
+import 'package:osm/data/models/frame_enums.dart';
 
 String generateFrameCode({
   required String prefix,

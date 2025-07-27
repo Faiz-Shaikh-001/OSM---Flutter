@@ -1,10 +1,12 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:osm/data/models/frame_enums.dart';
+import 'package:osm/services/color_api_service.dart';
 import 'package:osm/widgets/build_text_field_widget.dart';
 import 'package:osm/widgets/image_selector_widget.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
-import '../../models/frame_model.dart';
+import '../../data/models/frame_model.dart';
 import '../../widgets/custom_button.dart';
 
 class FrameFormWidget extends StatefulWidget {
@@ -45,6 +47,15 @@ class _FrameFormWidgetState extends State<FrameFormWidget> {
 
   final List<VariantFormData> _variantForms = [];
 
+  @override
+  void dispose() {
+    _companyController.dispose();
+    _nameController.dispose();
+    _codeController.dispose();
+    // Dispose controllers for VariantFormData if you make them TextEditingControllers
+    super.dispose();
+  }
+
   Future<void> _pickDate() async {
     final picked = await showDatePicker(
       context: context,
@@ -72,7 +83,18 @@ class _FrameFormWidgetState extends State<FrameFormWidget> {
   }
 
   void _handleSubmit() async {
-    if (!_formKey.currentState!.validate() || _frameType == null) return;
+    if (!_formKey.currentState!.validate() || _frameType == null) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Please fll all required fields and select a frame type.',
+            ),
+          ),
+        );
+      }
+      return;
+    }
 
     if (_variantForms.isEmpty || _selectedImages.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -83,28 +105,71 @@ class _FrameFormWidgetState extends State<FrameFormWidget> {
       return;
     }
 
-    final frame = FrameModel(
-      date: _selectedDate,
-      companyName: _companyController.text.trim(),
-      frameType: _frameType!,
-      name: _nameController.text.trim(),
-    );
+    if (_selectedImages.isEmpty) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Please upload at least one image.")),
+        );
+      }
+      return;
+    }
 
-    final List<FrameVariant> variants = [];
+    final String companyName = _companyController.text.trim();
+    final String modelName = _nameController.text.trim();
+    final String modelCode = _codeController.text.trim();
+
+    final colorApiService = ColorApiService();
+
+    final List<FrameVariant> variantsToSave = [];
+    final List<String> imageUrlsToSave = _selectedImages
+        .map((file) => file.path)
+        .toList();
+
     for (final data in _variantForms) {
-      final variant = await FrameFactory.createVariantWithColorName(
-        frame: frame,
-        code: _codeController.text.trim(),
+      final colorName = await colorApiService.getColorName(color: data.color);
+
+      final String computedProductCode = FrameVariant.generateProductCode(
+        _frameType!,
+        companyName,
+        modelName,
+        modelCode,
+        colorName,
+        data.size,
+      );
+
+      final FrameVariant variant = FrameVariant(
+        code: modelCode,
         color: data.color,
+        colorName: colorName,
+        productCode: computedProductCode,
         size: data.size,
         quantity: data.quantity,
         purchasePrice: data.purchasePrice,
         salesPrice: data.salesPrice,
+        imageUrls: imageUrlsToSave,
+        localImagesPaths: imageUrlsToSave,
       );
-      variants.add(variant.copyWith(localImages: _selectedImages));
+
+      variantsToSave.add(variant);
     }
 
-    widget.onSubmit(frame, variants);
+    final frameModel = FrameModel(
+      date: _selectedDate,
+      companyName: companyName,
+      frameType: _frameType!,
+      name: modelName,
+      variants: variantsToSave,
+    );
+
+    widget.onSubmit(frameModel, variantsToSave);
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Frame stock saved succesfully!")),
+      );
+
+      // Navigator.pop(context);
+    }
   }
 
   Widget _buildVariantRow(int index) {
@@ -199,78 +264,80 @@ class _FrameFormWidgetState extends State<FrameFormWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return Form(
-      key: _formKey,
-      child: Column(
-        children: [
-          ImageSelectorWidget(
-            selectedImages: _selectedImages,
-            onImagesChanged: (imgs) => setState(
-              () => _selectedImages
-                ..clear()
-                ..addAll(imgs),
-            ),
-          ),
-          const SizedBox(height: 10),
-          ListTile(
-            onTap: _pickDate,
-            title: Row(
-              children: [Icon(Icons.calendar_month_outlined), Text('Date')],
-            ),
-            trailing: Text(
-              DateFormat.yMMMd().format(_selectedDate),
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-          ),
-
-          DropdownButtonFormField<FrameType>(
-            decoration: const InputDecoration(labelText: 'Frame Type'),
-            value: _frameType,
-            items: FrameType.values.map((type) {
-              return DropdownMenuItem(value: type, child: Text(type.name));
-            }).toList(),
-            onChanged: (type) => setState(() => _frameType = type),
-            validator: (value) => value == null ? 'Select frame type' : null,
-          ),
-
-          BuildTextFieldWidget(
-            label: "Company Name",
-            controller: _companyController,
-          ),
-          BuildTextFieldWidget(
-            label: "Model Name",
-            controller: _nameController,
-          ),
-          BuildTextFieldWidget(
-            label: "Model Code",
-            controller: _codeController,
-          ),
-
-          const SizedBox(height: 20),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text(
-                "Variants",
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+    return SingleChildScrollView(
+      child: Form(
+        key: _formKey,
+        child: Column(
+          children: [
+            ImageSelectorWidget(
+              selectedImages: _selectedImages,
+              onImagesChanged: (imgs) => setState(
+                () => _selectedImages
+                  ..clear()
+                  ..addAll(imgs),
               ),
-              TextButton.icon(
-                onPressed: _addVariant,
-                icon: const Icon(Icons.add),
-                label: const Text("Add Variant"),
+            ),
+            const SizedBox(height: 10),
+            ListTile(
+              onTap: _pickDate,
+              title: Row(
+                children: [Icon(Icons.calendar_month_outlined), Text('Date')],
               ),
-            ],
-          ),
-          ..._variantForms.asMap().entries.map(
-            (entry) => _buildVariantRow(entry.key),
-          ),
-          const SizedBox(height: 20),
-          CustomButton(
-            onPressed: _handleSubmit,
-            label: 'Save Stock',
-            icon: Icons.check,
-          ),
-        ],
+              trailing: Text(
+                DateFormat.yMMMd().format(_selectedDate),
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+            ),
+
+            DropdownButtonFormField<FrameType>(
+              decoration: const InputDecoration(labelText: 'Frame Type'),
+              value: _frameType,
+              items: FrameType.values.map((type) {
+                return DropdownMenuItem(value: type, child: Text(type.name));
+              }).toList(),
+              onChanged: (type) => setState(() => _frameType = type),
+              validator: (value) => value == null ? 'Select frame type' : null,
+            ),
+
+            BuildTextFieldWidget(
+              label: "Company Name",
+              controller: _companyController,
+            ),
+            BuildTextFieldWidget(
+              label: "Model Name",
+              controller: _nameController,
+            ),
+            BuildTextFieldWidget(
+              label: "Model Code",
+              controller: _codeController,
+            ),
+
+            const SizedBox(height: 20),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  "Variants",
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+                TextButton.icon(
+                  onPressed: _addVariant,
+                  icon: const Icon(Icons.add),
+                  label: const Text("Add Variant"),
+                ),
+              ],
+            ),
+            ..._variantForms.asMap().entries.map(
+              (entry) => _buildVariantRow(entry.key),
+            ),
+            const SizedBox(height: 20),
+            CustomButton(
+              onPressed: _handleSubmit,
+              label: 'Save Stock',
+              icon: Icons.check,
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -1,17 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:osm/data/models/frame_enums.dart';
 import 'package:osm/widgets/qr_generator.dart';
 import '../widgets/color_dropdown_widget.dart';
 import '../widgets/size_dropdown_widget.dart';
 import '../widgets/custom_button.dart';
-import '../models/frame_model.dart';
-import 'package:osm/pages/update_stock_screen.dart';
+import '../data/models/frame_model.dart';
+import 'package:osm/screens/update_stock_screen.dart';
 
 class ItemPage extends StatefulWidget {
-  final String title;
-  final int index;
+  final FrameModel frameModel;
+  final FrameVariant frameVariant;
 
-  const ItemPage({super.key, required this.title, required this.index});
+  const ItemPage({
+    super.key,
+    required this.frameModel,
+    required this.frameVariant,
+  });
 
   @override
   State<ItemPage> createState() => _ItemPageState();
@@ -20,6 +25,8 @@ class ItemPage extends StatefulWidget {
 class _ItemPageState extends State<ItemPage> {
   @override
   Widget build(BuildContext context) {
+    final FrameModel currentFrame = widget.frameModel;
+    final FrameVariant currentVariant = widget.frameVariant;
     return Scaffold(
       appBar: AppBar(
         title: Center(child: Text("Product Details")),
@@ -38,10 +45,18 @@ class _ItemPageState extends State<ItemPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildHeroImage(widget.index),
+              _buildHeroImage(
+                currentVariant.imageUrls.isNotEmpty
+                    ? currentVariant.imageUrls.first
+                    : "https://placehold.co/600x400/cccccc/000000?text=No+Image",
+              ),
               Padding(
                 padding: EdgeInsets.all(15.0),
-                child: _buildProductDetails(context),
+                child: _buildProductDetails(
+                  context,
+                  currentFrame,
+                  currentVariant,
+                ),
               ),
 
               //Update Stock Button Navigation
@@ -53,15 +68,16 @@ class _ItemPageState extends State<ItemPage> {
                       builder: (context) => const UpdateStockScreen(),
                       settings: RouteSettings(
                         arguments: {
-                          'name': widget.title,
+                          'name': currentFrame.name,
                           'quantity': 10,
                           'color': 'Red',
                           'size': 'Medium',
                           'purchase_price': 50.0,
                           'selling_price': 99.99,
                           'stock': 99,
-                          'image':
-                              "https://picsum.dev/image/${widget.index}/view",
+                          'image': currentVariant.imageUrls.isNotEmpty
+                              ? currentVariant.imageUrls.first
+                              : null,
                         },
                       ),
                     ),
@@ -73,29 +89,14 @@ class _ItemPageState extends State<ItemPage> {
               const SizedBox(height: 10),
               CustomButton(
                 onPressed: () async {
-                  final frame = FrameModel(
-                    companyName: 'Rayban',
-                    frameType: FrameType.rimless,
-                    name: "Aviator",
-                    id: '2',
-                  ); // however you construct it
-
-                  final variant = await FrameFactory.createVariantWithColorName(
-                    frame: frame,
-                    code: "AV123",
-                    color: Color(0xff472910),
-                    size: 48,
-                    quantity: 10,
-                    purchasePrice: 100,
-                    salesPrice: 100,
-                  );
-
                   if (mounted) {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) =>
-                            QrGeneratorWidget(frame: frame, variant: variant),
+                        builder: (context) => QrGeneratorWidget(
+                          frame: currentFrame,
+                          variant: currentVariant,
+                        ),
                       ),
                     );
                   } else {
@@ -109,7 +110,11 @@ class _ItemPageState extends State<ItemPage> {
               ),
               const SizedBox(height: 25),
               CustomButton(
-                onPressed: () {},
+                onPressed: () {
+                  debugPrint(
+                    'Delete product: ${currentFrame.name} - ${currentVariant.productCode}',
+                  );
+                },
                 label: 'Delete Product',
                 icon: Icons.delete_forever_outlined,
                 background: Color(0xfff0f4f9),
@@ -125,11 +130,12 @@ class _ItemPageState extends State<ItemPage> {
     );
   }
 
-  Widget _buildHeroImage(int index) {
+  Widget _buildHeroImage(String imageUrl) {
     return Hero(
-      tag: 'itemIndex_$index',
+      tag:
+          'itemIndex_${widget.frameModel.id}_${widget.frameVariant.productCode}',
       child: CachedNetworkImage(
-        imageUrl: "https://picsum.dev/image/$index/view",
+        imageUrl: imageUrl,
         fit: BoxFit.cover,
         width: double.infinity,
         height: 300,
@@ -147,7 +153,11 @@ class _ItemPageState extends State<ItemPage> {
     );
   }
 
-  Widget _buildProductDetails(BuildContext context) {
+  Widget _buildProductDetails(
+    BuildContext context,
+    FrameModel frame,
+    FrameVariant variant,
+  ) {
     final titleStyle = TextStyle(fontSize: 30, fontWeight: FontWeight.bold);
     final labelStyle = TextStyle(fontSize: 20, color: Colors.grey);
     final priceStyle = TextStyle(
@@ -161,35 +171,29 @@ class _ItemPageState extends State<ItemPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(widget.title, style: titleStyle),
-        Text('SKU: ', style: labelStyle), // TODO: Replace with actual sku
+        Text("${frame.companyName} - ${frame.name}", style: titleStyle),
+        Text('SKU: ${variant.productCode}', style: labelStyle),
         const SizedBox(height: 15),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Text(
-              '\$99.99',
+              '\$${variant.salesPrice?.toStringAsFixed(2)}',
               style: priceStyle,
-            ), // TODO: Replace with dynamic price
-            Text(
-              'In Stock: 99',
-              style: stockStyle,
-            ), // TODO: Replace with actual stock
+            ),
+            Text('In Stock: ${variant.quantity}', style: stockStyle),
           ],
         ),
         const SizedBox(height: 25),
-        const ColorDropDownWidget(),
-        const SizeDropdownWidget(),
+        const ColorDropDownWidget(), // TODO: Make these dynamic
+        const SizeDropdownWidget(), // TODO: make these dynamic
         const SizedBox(height: 15),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text('Category', style: captionStyle),
-            Text(
-              'Aviator',
-              style: TextStyle(fontSize: 15),
-            ), // TODO: replace with actual category
+            Text(frame.frameType.displayName, style: TextStyle(fontSize: 15)),
           ],
         ),
         const SizedBox(height: 15),

@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:osm/data/models/lens_enums.dart';
 import 'package:osm/widgets/build_text_field_widget.dart';
 import 'package:osm/widgets/button_increment_decrement_widget.dart';
 import 'package:osm/widgets/custom_button.dart';
 import 'package:osm/widgets/image_selector_widget.dart';
 import 'dart:io';
-
-import '../../models/lens_model.dart';
 
 class SingleVisionFormSection extends StatefulWidget {
   const SingleVisionFormSection({super.key});

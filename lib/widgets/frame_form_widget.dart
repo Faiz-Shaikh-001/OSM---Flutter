@@ -1,24 +1,29 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:osm/data/models/frame_enums.dart';
+import 'package:osm/data/models/frame_model.dart';
+import 'package:osm/services/color_api_service.dart';
 import 'package:osm/widgets/custom_button.dart';
 import 'package:osm/widgets/multi_color_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:intl/intl.dart';
 import 'package:image_picker/image_picker.dart';
-import '../models/frame_model.dart';
 
 class BuildFrameForm extends StatefulWidget {
   final void Function({
     required DateTime date,
     required FrameType frameType,
+    required String companyName,
     required String name,
     required String code,
     required Color color,
+    required String colorName,
     required int size,
     required int quantity,
     required double purchasePrice,
     required double salesPrice,
     required List<File> images,
+    required String productCode,
   })
   onSubmit;
 
@@ -38,11 +43,24 @@ class _BuildFrameFormState extends State<BuildFrameForm> {
   FrameType? _frameType;
 
   final _nameController = TextEditingController();
+  final _companyNameController = TextEditingController();
   final _codeController = TextEditingController();
   final _sizeController = TextEditingController();
   final _quantityController = TextEditingController();
   final _purchasePriceController = TextEditingController();
   final _salesPriceController = TextEditingController();
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _codeController.dispose();
+    _sizeController.dispose();
+    _quantityController.dispose();
+    _purchasePriceController.dispose();
+    _salesPriceController.dispose();
+    _companyNameController.dispose();
+    super.dispose();
+  }
 
   Future<void> _pickMultipleImage() async {
     final permissionStatus = await Permission.photos.request();
@@ -81,32 +99,46 @@ class _BuildFrameFormState extends State<BuildFrameForm> {
     }
   }
 
-  void _submitForm() {
+  void _submitForm() async {
     if (_formKey.currentState!.validate() && _frameType != null) {
-      final sharedData = {
-        'date': _selectedDate,
-        'images': _selectedImages,
-        'frameType': _frameType!,
-        'name': _nameController.text.trim(),
-        'code': _codeController.text.trim(),
-        'size': int.parse(_sizeController.text),
-        'quantity': int.parse(_quantityController.text),
-        'purchasePrice': double.parse(_purchasePriceController.text),
-        'salesPrice': double.parse(_salesPriceController.text),
-      };
+      final String companyName = _companyNameController.text.trim();
+      final String modelName = _nameController.text.trim();
+      final String modelCode = _codeController.text.trim();
+      final int size = int.parse(_sizeController.text);
+      final int quantity = int.parse(_quantityController.text);
+      final double purchasePrice = double.parse(_purchasePriceController.text);
+      final double salesPrice = double.parse(_salesPriceController.text);
+
+      final colorApiService = ColorApiService();
 
       for (Color color in _selectedColors) {
+        final String colorName = await colorApiService.getColorName(
+          color: color,
+        );
+
+        final String variantProductCode = FrameVariant.generateProductCode(
+          _frameType!,
+          companyName,
+          modelName,
+          modelCode,
+          colorName,
+          size,
+        );
+
         widget.onSubmit(
           date: _selectedDate,
           images: _selectedImages,
           frameType: _frameType!,
+          companyName: companyName,
           name: _nameController.text.trim(),
           code: _codeController.text.trim(),
           color: color,
-          size: int.parse(_sizeController.text),
-          quantity: int.parse(_quantityController.text),
-          purchasePrice: double.parse(_purchasePriceController.text),
-          salesPrice: double.parse(_salesPriceController.text),
+          colorName: colorName,
+          size: size,
+          quantity: quantity,
+          purchasePrice: purchasePrice,
+          salesPrice: salesPrice,
+          productCode: variantProductCode,
         );
       }
     }
@@ -232,6 +264,7 @@ class _BuildFrameFormState extends State<BuildFrameForm> {
             validator: (value) =>
                 value == null ? 'Please select a frame type' : null,
           ),
+          _buildTextField(_companyNameController, 'Company Name'),
           _buildTextField(_nameController, 'Model Name'),
           _buildTextField(_codeController, 'Model Code'),
           MultiColorPicker(
@@ -244,8 +277,8 @@ class _BuildFrameFormState extends State<BuildFrameForm> {
               });
             },
           ),
-          _buildTextField(_sizeController, 'Model Size'),
-          _buildTextField(_quantityController, 'Quantity'),
+          _buildTextField(_sizeController, 'Model Size', isNumeric: true),
+          _buildTextField(_quantityController, 'Quantity', isNumeric: true),
           Row(
             children: [
               SizedBox(
@@ -253,11 +286,16 @@ class _BuildFrameFormState extends State<BuildFrameForm> {
                 child: _buildTextField(
                   _purchasePriceController,
                   'Purchase Price',
+                  isDecimal: true,
                 ),
               ),
               const SizedBox(width: 15),
               Expanded(
-                child: _buildTextField(_salesPriceController, 'Sales Price'),
+                child: _buildTextField(
+                  _salesPriceController,
+                  'Sales Price',
+                  isDecimal: true,
+                ),
               ),
             ],
           ),
