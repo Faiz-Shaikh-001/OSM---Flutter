@@ -83,7 +83,15 @@ const LensModelSchema = CollectionSchema(
       ],
     )
   },
-  links: {},
+  links: {
+    r'inventoryEntry': LinkSchema(
+      id: 5702101838231584978,
+      name: r'inventoryEntry',
+      target: r'InventoryModel',
+      single: false,
+      linkName: r'lens',
+    )
+  },
   embeddedSchemas: {r'LensVariant': LensVariantSchema},
   getId: _lensModelGetId,
   getLinks: _lensModelGetLinks,
@@ -205,11 +213,13 @@ Id _lensModelGetId(LensModel object) {
 }
 
 List<IsarLinkBase<dynamic>> _lensModelGetLinks(LensModel object) {
-  return [];
+  return [object.inventoryEntry];
 }
 
 void _lensModelAttach(IsarCollection<dynamic> col, Id id, LensModel object) {
   object.id = id;
+  object.inventoryEntry.attach(
+      col, col.isar.collection<InventoryModel>(), r'inventoryEntry', id);
 }
 
 extension LensModelQueryWhereSort
@@ -1238,7 +1248,68 @@ extension LensModelQueryObject
 }
 
 extension LensModelQueryLinks
-    on QueryBuilder<LensModel, LensModel, QFilterCondition> {}
+    on QueryBuilder<LensModel, LensModel, QFilterCondition> {
+  QueryBuilder<LensModel, LensModel, QAfterFilterCondition> inventoryEntry(
+      FilterQuery<InventoryModel> q) {
+    return QueryBuilder.apply(this, (query) {
+      return query.link(q, r'inventoryEntry');
+    });
+  }
+
+  QueryBuilder<LensModel, LensModel, QAfterFilterCondition>
+      inventoryEntryLengthEqualTo(int length) {
+    return QueryBuilder.apply(this, (query) {
+      return query.linkLength(r'inventoryEntry', length, true, length, true);
+    });
+  }
+
+  QueryBuilder<LensModel, LensModel, QAfterFilterCondition>
+      inventoryEntryIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.linkLength(r'inventoryEntry', 0, true, 0, true);
+    });
+  }
+
+  QueryBuilder<LensModel, LensModel, QAfterFilterCondition>
+      inventoryEntryIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.linkLength(r'inventoryEntry', 0, false, 999999, true);
+    });
+  }
+
+  QueryBuilder<LensModel, LensModel, QAfterFilterCondition>
+      inventoryEntryLengthLessThan(
+    int length, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.linkLength(r'inventoryEntry', 0, true, length, include);
+    });
+  }
+
+  QueryBuilder<LensModel, LensModel, QAfterFilterCondition>
+      inventoryEntryLengthGreaterThan(
+    int length, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.linkLength(r'inventoryEntry', length, include, 999999, true);
+    });
+  }
+
+  QueryBuilder<LensModel, LensModel, QAfterFilterCondition>
+      inventoryEntryLengthBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.linkLength(
+          r'inventoryEntry', lower, includeLower, upper, includeUpper);
+    });
+  }
+}
 
 extension LensModelQuerySortBy on QueryBuilder<LensModel, LensModel, QSortBy> {
   QueryBuilder<LensModel, LensModel, QAfterSortBy> sortByCompanyName() {

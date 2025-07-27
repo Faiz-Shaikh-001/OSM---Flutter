@@ -1,4 +1,6 @@
 import 'dart:io';
+import 'package:osm/data/models/inventory_model.dart';
+
 import 'lens_enums.dart';
 import 'package:isar/isar.dart';
 
@@ -21,6 +23,10 @@ class LensModel {
   @Enumerated(EnumType.name)
   final LensType lensType;
   final List<LensVariant> variants;
+
+  // --- Relationships ---
+  @Backlink(to: 'lens')
+  final inventoryEntry = IsarLinks<InventoryModel>();
 
   LensModel._internal({
     required this.date,

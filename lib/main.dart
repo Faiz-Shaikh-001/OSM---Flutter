@@ -1,25 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:isar/isar.dart';
-import 'package:osm/data/models/frame_model.dart';
-import 'package:osm/data/models/lens_model.dart';
-import 'package:path_provider/path_provider.dart';
+import 'package:osm/services/isar_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'screens/dashboard_screen.dart';
 
-late Isar isar;
 late SharedPreferences sharedPreferences;
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  final dir = await getApplicationDocumentsDirectory();
-
-  isar = await Isar.open(
-    [LensModelSchema, FrameModelSchema],
-    directory: dir.path,
-    inspector: true,
-  );
+  await IsarService().db;
 
   sharedPreferences = await SharedPreferences.getInstance();
 

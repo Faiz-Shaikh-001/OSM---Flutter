@@ -2,6 +2,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:isar/isar.dart';
+import 'package:osm/data/models/inventory_model.dart';
 import 'frame_enums.dart';
 
 part 'frame_model.g.dart';
@@ -28,6 +29,11 @@ class FrameModel {
   final String name;
 
   final List<FrameVariant> variants;
+
+  // --- Relationships ---
+
+  @Backlink(to: 'frame')
+  final inventoryEntry = IsarLinks<InventoryModel>();
 
   FrameModel._internal({
     required this.date,
