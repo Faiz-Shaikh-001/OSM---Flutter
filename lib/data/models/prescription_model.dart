@@ -23,12 +23,12 @@ class PrescriptionModel {
   final String? notes;
 
   // ---- RelationShips ----
-  final customer = IsarLink<CustomerModel>();
+  final IsarLink<CustomerModel> customer; // Initialized in constructor
 
-  final doctor = IsarLink<DoctorModel>();
+  final IsarLink<DoctorModel> doctor; // Initialized in constructor
 
   @Backlink(to: 'prescription')
-  final orders = IsarLinks<OrderModel>();
+  final IsarLinks<OrderModel> orders; // Initialized in constructor
 
   PrescriptionModel({
     required this.prescriptionDate,
@@ -40,7 +40,12 @@ class PrescriptionModel {
     required this.axisLeft,
     this.addPower,
     this.notes,
-  });
+    IsarLink<CustomerModel>? customer, // Add to constructor
+    IsarLink<DoctorModel>? doctor, // Add to constructor
+    IsarLinks<OrderModel>? orders, // Add to constructor
+  }) : customer = customer ?? IsarLink<CustomerModel>(),
+       doctor = doctor ?? IsarLink<DoctorModel>(),
+       orders = orders ?? IsarLinks<OrderModel>();
 
   PrescriptionModel copyWith({
     Id? id,
@@ -53,6 +58,9 @@ class PrescriptionModel {
     double? axisLeft,
     double? addPower,
     String? notes,
+    IsarLink<CustomerModel>? customer,
+    IsarLink<DoctorModel>? doctor,
+    IsarLinks<OrderModel>? orders,
   }) {
     return PrescriptionModel(
       prescriptionDate: prescriptionDate ?? this.prescriptionDate,
@@ -64,6 +72,9 @@ class PrescriptionModel {
       axisLeft: axisLeft ?? this.axisLeft,
       addPower: addPower ?? this.addPower,
       notes: notes ?? this.notes,
+      customer: customer ?? this.customer,
+      doctor: doctor ?? this.doctor,
+      orders: orders ?? this.orders,
     )..id = id ?? this.id;
   }
 }

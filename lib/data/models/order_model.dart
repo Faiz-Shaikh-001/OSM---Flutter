@@ -1,7 +1,7 @@
 import 'package:isar/isar.dart';
 import 'package:osm/data/models/customer_model.dart';
 import 'package:osm/data/models/order_item_model.dart';
-import 'package:osm/data/models/payment_model.dart';
+import 'package:osm/data/models/payement_model.dart';
 import 'package:osm/data/models/prescription_model.dart';
 import 'package:osm/data/models/store_location_model.dart';
 
@@ -56,6 +56,11 @@ class OrderModel {
       orderDate: orderDate ?? this.orderDate,
       totalAmount: totalAmount ?? this.totalAmount,
       status: status ?? this.status,
+      customer: customer ?? this.customer,
+      prescription: prescription ?? this.prescription,
+      items: items ?? this.items,
+      payments: payments ?? this.payments,
+      storeLocation: storeLocation ?? this.storeLocation,
     )..id = id ?? this.id;
   }
 }

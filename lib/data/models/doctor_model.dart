@@ -8,28 +8,33 @@ part 'doctor_model.g.dart';
 class DoctorModel {
   Id id = Isar.autoIncrement;
   @Name('creationDate')
-  DateTime? date;
-  String designation;
+  final DateTime? date; // Changed to final
+  final String designation;
   @Index(type: IndexType.hash)
-  String doctorName;
+  final String doctorName; // Changed to final
   @Index(type: IndexType.value)
-  String hospital;
+  final String hospital; // Changed to final
   @Index(type: IndexType.value)
-  String city;
+  final String city; // Changed to final
 
   // --- Relationships ---
   @Backlink(to: 'doctor')
-  final prescriptions = IsarLinks<PrescriptionModel>();
+  final IsarLinks<PrescriptionModel> prescriptions; // Initialized in constructor
 
-  final storeLocation = IsarLink<StoreLocationModel>();
+  final IsarLink<StoreLocationModel>
+  storeLocation; // Initialized in constructor
 
+  // Private constructor for internal use by the factory/copyWith
   DoctorModel._internal({
-    required this.date,
+    this.date,
     required this.designation,
     required this.doctorName,
     required this.hospital,
     required this.city,
-  });
+    IsarLinks<PrescriptionModel>? prescriptions,
+    IsarLink<StoreLocationModel>? storeLocation,
+  }) : prescriptions = prescriptions ?? IsarLinks<PrescriptionModel>(),
+       storeLocation = storeLocation ?? IsarLink<StoreLocationModel>();
 
   factory DoctorModel({
     DateTime? date,
@@ -44,6 +49,8 @@ class DoctorModel {
       doctorName: doctorName,
       hospital: hospital,
       city: city,
+      prescriptions: IsarLinks<PrescriptionModel>(), // Pass new instances
+      storeLocation: IsarLink<StoreLocationModel>(), // Pass new instances
     );
   }
 
@@ -54,13 +61,18 @@ class DoctorModel {
     String? doctorName,
     String? hospital,
     String? city,
+    IsarLinks<PrescriptionModel>? prescriptions,
+    IsarLink<StoreLocationModel>? storeLocation,
   }) {
-    return DoctorModel(
+    return DoctorModel._internal(
+      // Call internal constructor for copyWith
       date: date ?? this.date,
       designation: designation ?? this.designation,
       doctorName: doctorName ?? this.doctorName,
       hospital: hospital ?? this.hospital,
-      city: city ?? this.hospital,
+      city: city ?? this.city,
+      prescriptions: prescriptions ?? this.prescriptions,
+      storeLocation: storeLocation ?? this.storeLocation,
     )..id = id ?? this.id;
   }
 }

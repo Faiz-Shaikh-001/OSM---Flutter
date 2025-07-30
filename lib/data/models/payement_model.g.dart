@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'payment_model.dart';
+part of 'payement_model.dart';
 
 // **************************************************************************
 // IsarCollectionGenerator

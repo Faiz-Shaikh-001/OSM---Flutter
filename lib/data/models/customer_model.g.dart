@@ -114,7 +114,22 @@ const CustomerModelSchema = CollectionSchema(
       ],
     )
   },
-  links: {},
+  links: {
+    r'prescriptions': LinkSchema(
+      id: -4893861860868165928,
+      name: r'prescriptions',
+      target: r'PrescriptionModel',
+      single: false,
+      linkName: r'customer',
+    ),
+    r'orders': LinkSchema(
+      id: -6050909837839474401,
+      name: r'orders',
+      target: r'OrderModel',
+      single: false,
+      linkName: r'customer',
+    )
+  },
   embeddedSchemas: {},
   getId: _customerModelGetId,
   getLinks: _customerModelGetLinks,
@@ -226,12 +241,15 @@ Id _customerModelGetId(CustomerModel object) {
 }
 
 List<IsarLinkBase<dynamic>> _customerModelGetLinks(CustomerModel object) {
-  return [];
+  return [object.prescriptions, object.orders];
 }
 
 void _customerModelAttach(
     IsarCollection<dynamic> col, Id id, CustomerModel object) {
   object.id = id;
+  object.prescriptions.attach(
+      col, col.isar.collection<PrescriptionModel>(), r'prescriptions', id);
+  object.orders.attach(col, col.isar.collection<OrderModel>(), r'orders', id);
 }
 
 extension CustomerModelByIndex on IsarCollection<CustomerModel> {
@@ -1821,7 +1839,129 @@ extension CustomerModelQueryObject
     on QueryBuilder<CustomerModel, CustomerModel, QFilterCondition> {}
 
 extension CustomerModelQueryLinks
-    on QueryBuilder<CustomerModel, CustomerModel, QFilterCondition> {}
+    on QueryBuilder<CustomerModel, CustomerModel, QFilterCondition> {
+  QueryBuilder<CustomerModel, CustomerModel, QAfterFilterCondition>
+      prescriptions(FilterQuery<PrescriptionModel> q) {
+    return QueryBuilder.apply(this, (query) {
+      return query.link(q, r'prescriptions');
+    });
+  }
+
+  QueryBuilder<CustomerModel, CustomerModel, QAfterFilterCondition>
+      prescriptionsLengthEqualTo(int length) {
+    return QueryBuilder.apply(this, (query) {
+      return query.linkLength(r'prescriptions', length, true, length, true);
+    });
+  }
+
+  QueryBuilder<CustomerModel, CustomerModel, QAfterFilterCondition>
+      prescriptionsIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.linkLength(r'prescriptions', 0, true, 0, true);
+    });
+  }
+
+  QueryBuilder<CustomerModel, CustomerModel, QAfterFilterCondition>
+      prescriptionsIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.linkLength(r'prescriptions', 0, false, 999999, true);
+    });
+  }
+
+  QueryBuilder<CustomerModel, CustomerModel, QAfterFilterCondition>
+      prescriptionsLengthLessThan(
+    int length, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.linkLength(r'prescriptions', 0, true, length, include);
+    });
+  }
+
+  QueryBuilder<CustomerModel, CustomerModel, QAfterFilterCondition>
+      prescriptionsLengthGreaterThan(
+    int length, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.linkLength(r'prescriptions', length, include, 999999, true);
+    });
+  }
+
+  QueryBuilder<CustomerModel, CustomerModel, QAfterFilterCondition>
+      prescriptionsLengthBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.linkLength(
+          r'prescriptions', lower, includeLower, upper, includeUpper);
+    });
+  }
+
+  QueryBuilder<CustomerModel, CustomerModel, QAfterFilterCondition> orders(
+      FilterQuery<OrderModel> q) {
+    return QueryBuilder.apply(this, (query) {
+      return query.link(q, r'orders');
+    });
+  }
+
+  QueryBuilder<CustomerModel, CustomerModel, QAfterFilterCondition>
+      ordersLengthEqualTo(int length) {
+    return QueryBuilder.apply(this, (query) {
+      return query.linkLength(r'orders', length, true, length, true);
+    });
+  }
+
+  QueryBuilder<CustomerModel, CustomerModel, QAfterFilterCondition>
+      ordersIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.linkLength(r'orders', 0, true, 0, true);
+    });
+  }
+
+  QueryBuilder<CustomerModel, CustomerModel, QAfterFilterCondition>
+      ordersIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.linkLength(r'orders', 0, false, 999999, true);
+    });
+  }
+
+  QueryBuilder<CustomerModel, CustomerModel, QAfterFilterCondition>
+      ordersLengthLessThan(
+    int length, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.linkLength(r'orders', 0, true, length, include);
+    });
+  }
+
+  QueryBuilder<CustomerModel, CustomerModel, QAfterFilterCondition>
+      ordersLengthGreaterThan(
+    int length, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.linkLength(r'orders', length, include, 999999, true);
+    });
+  }
+
+  QueryBuilder<CustomerModel, CustomerModel, QAfterFilterCondition>
+      ordersLengthBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.linkLength(
+          r'orders', lower, includeLower, upper, includeUpper);
+    });
+  }
+}
 
 extension CustomerModelQuerySortBy
     on QueryBuilder<CustomerModel, CustomerModel, QSortBy> {
