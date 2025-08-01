@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:osm/screens/customer_screen.dart';
 import 'package:osm/screens/inventory_screen.dart';
 import 'package:osm/screens/settings_screen.dart';
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
@@ -20,7 +21,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     const Center(child: Text('Orders')),
     const InventoryScreen(),
     const SizedBox(),
-    const Center(child: Text('Customers')),
+    const CustomerListScreen(),
     const SettingsPage(),
   ];
 
@@ -214,7 +215,7 @@ class _BuildDashboardContent extends StatelessWidget {
             children: [
               InkWell(
                 onTap: () {
-                  print('Tapped on New Order #1234');
+                  debugPrint('Tapped on New Order #1234');
                   // You can add navigation or custom logic here
                 },
                 child: ListTile(
@@ -225,7 +226,7 @@ class _BuildDashboardContent extends StatelessWidget {
               ),
               InkWell(
                 onTap: () {
-                  print('Tapped on Payment received');
+                  debugPrint('Tapped on Payment received');
                 },
                 child: ListTile(
                   title: Text('Payment received'),
@@ -235,7 +236,7 @@ class _BuildDashboardContent extends StatelessWidget {
               ),
               InkWell(
                 onTap: () {
-                  print('Tapped on Low stock alert');
+                  debugPrint('Tapped on Low stock alert');
                 },
                 child: ListTile(
                   title: Text('Low stock alert'),

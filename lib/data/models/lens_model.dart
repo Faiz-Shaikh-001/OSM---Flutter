@@ -1,4 +1,4 @@
-import 'dart:io';
+import 'dart:io'; // Keep if you use File objects, otherwise remove
 import 'package:osm/data/models/inventory_model.dart';
 
 import 'lens_enums.dart';
@@ -23,18 +23,21 @@ class LensModel {
   @Enumerated(EnumType.name)
   final LensType lensType;
   final List<LensVariant> variants;
+  final List<String> imageUrls;
 
   // --- Relationships ---
   @Backlink(to: 'lens')
-  final inventoryEntry = IsarLinks<InventoryModel>();
+  final IsarLinks<InventoryModel> inventoryEntry;
 
   LensModel._internal({
     required this.date,
     required this.companyName,
     required this.productName,
     required this.lensType,
+    this.imageUrls = const [],
     this.variants = const [],
-  });
+    IsarLinks<InventoryModel>? inventoryEntry, // Add to constructor
+  }) : inventoryEntry = inventoryEntry ?? IsarLinks<InventoryModel>();
 
   factory LensModel({
     DateTime? date, // Optional, nullable parameter for convenience
@@ -42,6 +45,7 @@ class LensModel {
     required String productName,
     required LensType lensType,
     List<LensVariant> variants = const [],
+    List<String> imageUrls = const [],
   }) {
     return LensModel._internal(
       date: date ?? DateTime.now(), // Logic for default non-constant value
@@ -49,6 +53,8 @@ class LensModel {
       productName: productName,
       lensType: lensType,
       variants: variants,
+      inventoryEntry: IsarLinks<InventoryModel>(), // Pass new instance
+      imageUrls: imageUrls,
     );
   }
 
@@ -59,13 +65,18 @@ class LensModel {
     String? companyName,
     String? productName,
     List<LensVariant>? variants,
+    IsarLinks<InventoryModel>? inventoryEntry,
+    List<String>? imageUrls,
   }) {
-    return LensModel(
+    return LensModel._internal(
+      // Call internal constructor
       date: date ?? this.date,
       companyName: companyName ?? this.companyName,
       productName: productName ?? this.productName,
       lensType: lensType ?? this.lensType,
       variants: variants ?? this.variants,
+      inventoryEntry: inventoryEntry ?? this.inventoryEntry,
+      imageUrls: imageUrls ?? this.imageUrls,
     )..id = id ?? this.id;
   }
 

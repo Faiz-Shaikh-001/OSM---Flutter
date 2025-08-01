@@ -1,12 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:osm/data/models/lens_enums.dart';
+import 'package:osm/data/models/lens_model.dart';
 import 'package:osm/screens/addStockScreens/bifocal_form_section.dart';
 import 'package:osm/screens/addStockScreens/contact_lens_form_section.dart';
 import 'package:osm/screens/addStockScreens/frame_form_widget.dart';
 import 'package:osm/screens/addStockScreens/progressive_form_section.dart';
 import 'package:osm/screens/addStockScreens/single_vision_form_section.dart';
+import 'package:osm/viewmodels/frame_viewmodel.dart';
+import 'package:osm/viewmodels/lens_viewmodel.dart';
+import 'package:provider/provider.dart';
 import '../../data/models/frame_model.dart';
 
-enum ProductType {
+enum ProductTypeToAdd {
   frame,
   singleVisionLens,
   bifocalLens,
@@ -14,19 +19,34 @@ enum ProductType {
   contactLens,
 }
 
-extension ProductTypeExtension on ProductType {
+extension ProductTypeExtension on ProductTypeToAdd {
   String get label {
     switch (this) {
-      case ProductType.frame:
+      case ProductTypeToAdd.frame:
         return 'Frame';
-      case ProductType.singleVisionLens:
+      case ProductTypeToAdd.singleVisionLens:
         return 'Single Vision Lens';
-      case ProductType.bifocalLens:
+      case ProductTypeToAdd.bifocalLens:
         return 'Bifocal Lens';
-      case ProductType.progressiveLens:
+      case ProductTypeToAdd.progressiveLens:
         return 'Progressive Lens';
-      case ProductType.contactLens:
+      case ProductTypeToAdd.contactLens:
         return 'Contact Lens';
+    }
+  }
+
+  LensType? toLensType() {
+    switch (this) {
+      case ProductTypeToAdd.singleVisionLens:
+        return LensType.singleVision;
+      case ProductTypeToAdd.bifocalLens:
+        return LensType.bifocal;
+      case ProductTypeToAdd.progressiveLens:
+        return LensType.progressive;
+      case ProductTypeToAdd.contactLens:
+        return LensType.contactLens;
+      default:
+        return null;
     }
   }
 }
@@ -39,9 +59,9 @@ class AddStockScreen extends StatefulWidget {
 }
 
 class _AddStockScreenState extends State<AddStockScreen> {
-  ProductType? selectedType;
+  ProductTypeToAdd? selectedType;
 
-  final List<ProductType> productTypes = ProductType.values;
+  final List<ProductTypeToAdd> productTypes = ProductTypeToAdd.values;
 
   @override
   Widget build(BuildContext context) {
@@ -82,7 +102,7 @@ class _AddStockScreenState extends State<AddStockScreen> {
                       setState(() {
                         selectedType = productTypes.firstWhere(
                           (type) => type.label == value,
-                          orElse: () => ProductType.frame,
+                          orElse: () => ProductTypeToAdd.frame,
                         );
                       });
                     },
@@ -98,32 +118,106 @@ class _AddStockScreenState extends State<AddStockScreen> {
     );
   }
 
-  Widget _buildForm(ProductType type) {
+  Widget _buildForm(ProductTypeToAdd type) {
     switch (type) {
-      case ProductType.frame:
+      case ProductTypeToAdd.frame:
         return AddFrameFormSection();
-      case ProductType.singleVisionLens:
-        return SingleVisionFormSection();
-      case ProductType.bifocalLens:
-        return BifocalFormSection();
-      case ProductType.progressiveLens:
-        return ProgressiveFormSection();
-      case ProductType.contactLens:
-        return ContactLensFormSection();
+      case ProductTypeToAdd.singleVisionLens:
+        return AddLensFormSection(lensType: LensType.singleVision);
+      case ProductTypeToAdd.bifocalLens:
+        return AddLensFormSection(lensType: LensType.bifocal);
+      case ProductTypeToAdd.progressiveLens:
+        return AddLensFormSection(lensType: LensType.progressive);
+      case ProductTypeToAdd.contactLens:
+        return AddLensFormSection(lensType: LensType.contactLens);
     }
   }
 }
 
+// ---- Frame Form Section ----
 class AddFrameFormSection extends StatelessWidget {
   const AddFrameFormSection({super.key});
 
-  void _handleSubmit(FrameModel frame, List<FrameVariant> variants) {
-    // Handle saving to backend or DB
-    // You can also use the variants list as needed
+  void _handleSubmit(
+    BuildContext context,
+    FrameModel frame,
+    List<FrameVariant> variants,
+  ) async {
+    final frameViewModel = context.read<FrameViewmodel>();
+
+    try {
+      final newFrame = frame.copyWith(variants: variants);
+      await frameViewModel.addFrame(newFrame);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Frame added successfully!')),
+      );
+      Navigator.pop(context);
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to add frame: ${e.toString()}')),
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return FrameFormWidget(onSubmit: _handleSubmit);
+    return FrameFormWidget(
+      onSubmit: (frame, variants) => _handleSubmit(context, frame, variants),
+    );
+  }
+}
+
+// ---- Generic Lens Form Section ----
+class AddLensFormSection extends StatelessWidget {
+  final LensType lensType;
+  const AddLensFormSection({super.key, required this.lensType});
+
+  Future<void> _handleSubmit(
+    BuildContext context,
+    LensModel lens,
+    List<LensVariant> variants,
+  ) async {
+    final lensViewModel = context.read<LensViewmodel>();
+
+    try {
+      final newLens = lens.copyWith(variants: variants);
+      await lensViewModel.addLens(newLens);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('${lensType.displayName} added successfully!')),
+      );
+      Navigator.pop(context);
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Failed to add ${lensType.displayName}: ${e.toString()}',
+          ),
+        ),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    switch (lensType) {
+      case LensType.singleVision:
+        return SingleVisionFormSection(
+          onSubmit: (lens, variants) => _handleSubmit(context, lens, variants),
+        );
+      case LensType.bifocal:
+        return BifocalFormSection(
+          onSubmit: (lens, variants) => _handleSubmit(context, lens, variants),
+        );
+      case LensType.progressive:
+        return ProgressiveFormSection(
+          onSubmit: (lens, variants) => _handleSubmit(context, lens, variants),
+        );
+      case LensType.contactLens:
+        return ContactLensFormSection(
+          onSubmit: (lens, variants) => _handleSubmit(context, lens, variants),
+        );
+    }
   }
 }
