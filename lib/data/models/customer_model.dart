@@ -102,7 +102,7 @@ class CustomerModel {
       age: age ?? this.age,
       profileImageUrl: profileImageUrl ?? this.profileImageUrl,
       prescriptions: prescriptions ?? this.prescriptions,
-      orders: orders ?? this.orders,
+      orders: orders ?? orders,
     )..id = id ?? this.id;
   }
 }

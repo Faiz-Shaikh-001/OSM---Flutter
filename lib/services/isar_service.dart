@@ -9,7 +9,7 @@ import 'package:osm/data/models/inventory_model.dart';
 import 'package:osm/data/models/lens_model.dart';
 import 'package:osm/data/models/order_item_model.dart';
 import 'package:osm/data/models/order_model.dart';
-import 'package:osm/data/models/payement_model.dart';
+import 'package:osm/data/models/payment_model.dart';
 import 'package:osm/data/models/prescription_model.dart';
 import 'package:osm/data/models/store_location_model.dart';
 

@@ -10,7 +10,7 @@ import 'package:osm/data/repositories/customer_repository.dart';
 import 'package:osm/data/repositories/doctor_repository.dart';
 import 'package:osm/data/repositories/order_repository.dart';
 import 'package:osm/data/repositories/prescription_repository.dart';
-import 'package:osm/data/repositories/payement_repository.dart';
+import 'package:osm/data/repositories/payment_repository.dart';
 import 'package:osm/data/repositories/store_location_repository.dart';
 import 'package:osm/data/repositories/inventory_repository.dart';
 import 'package:osm/data/repositories/frame_repository.dart';

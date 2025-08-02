@@ -243,31 +243,6 @@ class _ItemPageState extends State<ItemPage> {
                         arguments: {
                           'product': widget.product,
                           'productType': widget.productType,
-                          'name': _getTitle(widget.product, widget.productType),
-                          'quantity': _getQuantity(
-                            widget.product,
-                            widget.productType,
-                          ),
-                          'color': _getCurrentColorName(
-                            widget.product,
-                            widget.productType,
-                          ),
-                          'size': _getCurrentSize(
-                            widget.product,
-                            widget.productType,
-                          ),
-                          'purchase_price': _getPurchasePrice(
-                            widget.product,
-                            widget.productType,
-                          ),
-                          'selling_price': _getSalesPrice(
-                            widget.product,
-                            widget.productType,
-                          ),
-                          'image': _getImageUrl(
-                            widget.product,
-                            widget.productType,
-                          ),
                         },
                       ),
                     ),

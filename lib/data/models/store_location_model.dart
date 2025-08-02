@@ -26,8 +26,8 @@ class StoreLocationModel {
     required this.address,
     required this.phoneNumber,
     required this.operatingHours,
-    IsarLinks<DoctorModel>? doctors, // Add to constructor
-    IsarLinks<OrderModel>? orders, // Add to constructor
+    IsarLinks<DoctorModel>? doctors,
+    IsarLinks<OrderModel>? orders,
   }) : doctors = doctors ?? IsarLinks<DoctorModel>(),
        orders = orders ?? IsarLinks<OrderModel>();
 

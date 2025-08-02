@@ -1,9 +1,7 @@
 import 'package:isar/isar.dart';
 import 'order_model.dart';
 
-// IMPORTANT: Ensure this 'part' directive exactly matches your filename.
-// If your file is named 'payement_model.dart', it should be 'payement_model.g.dart'.
-part 'payement_model.g.dart';
+part 'payment_model.g.dart';
 
 @Collection()
 class PaymentModel {

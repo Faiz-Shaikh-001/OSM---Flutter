@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:isar/isar.dart';
-import 'package:osm/data/models/payement_model.dart';
+import 'package:osm/data/models/payment_model.dart';
 import 'package:osm/data/models/order_model.dart';
 import 'package:osm/services/isar_service.dart';
 

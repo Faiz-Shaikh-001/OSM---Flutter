@@ -1,7 +1,8 @@
 import 'package:isar/isar.dart';
+
 import 'package:osm/data/models/customer_model.dart';
 import 'package:osm/data/models/order_item_model.dart';
-import 'package:osm/data/models/payement_model.dart';
+import 'package:osm/data/models/payment_model.dart';
 import 'package:osm/data/models/prescription_model.dart';
 import 'package:osm/data/models/store_location_model.dart';
 
@@ -37,8 +38,8 @@ class OrderModel {
     IsarLink<StoreLocationModel>? storeLocation,
   }) : customer = customer ?? IsarLink<CustomerModel>(),
        prescription = prescription ?? IsarLink<PrescriptionModel>(),
-       items = items ?? IsarLinks<OrderItemModel>(),
        payments = payments ?? IsarLinks<PaymentModel>(),
+       items = items ?? IsarLinks<OrderItemModel>(),
        storeLocation = storeLocation ?? IsarLink<StoreLocationModel>();
 
   OrderModel copyWith({
@@ -47,8 +48,8 @@ class OrderModel {
     double? totalAmount,
     String? status,
     IsarLink<CustomerModel>? customer,
-    IsarLink<PrescriptionModel>? prescription,
     IsarLinks<OrderItemModel>? items,
+    IsarLink<PrescriptionModel>? prescription,
     IsarLinks<PaymentModel>? payments,
     IsarLink<StoreLocationModel>? storeLocation,
   }) {
@@ -57,9 +58,9 @@ class OrderModel {
       totalAmount: totalAmount ?? this.totalAmount,
       status: status ?? this.status,
       customer: customer ?? this.customer,
-      prescription: prescription ?? this.prescription,
       items: items ?? this.items,
       payments: payments ?? this.payments,
+      prescription: prescription ?? this.prescription,
       storeLocation: storeLocation ?? this.storeLocation,
     )..id = id ?? this.id;
   }

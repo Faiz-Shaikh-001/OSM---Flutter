@@ -40,9 +40,9 @@ class PrescriptionModel {
     required this.axisLeft,
     this.addPower,
     this.notes,
-    IsarLink<CustomerModel>? customer, // Add to constructor
-    IsarLink<DoctorModel>? doctor, // Add to constructor
-    IsarLinks<OrderModel>? orders, // Add to constructor
+    IsarLink<CustomerModel>? customer,
+    IsarLink<DoctorModel>? doctor,
+    IsarLinks<OrderModel>? orders,
   }) : customer = customer ?? IsarLink<CustomerModel>(),
        doctor = doctor ?? IsarLink<DoctorModel>(),
        orders = orders ?? IsarLinks<OrderModel>();
