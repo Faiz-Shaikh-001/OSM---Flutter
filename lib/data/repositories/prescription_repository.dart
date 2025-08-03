@@ -14,7 +14,13 @@ class PrescriptionRepository {
   Future<List<PrescriptionModel>> getAll() async {
     try {
       final isar = await _isarService.db;
-      return await isar.prescriptionModels.where().findAll();
+      final prescriptions = await isar.prescriptionModels.where().findAll();
+      // Eagerly load customer and doctor for each prescription
+      for (var p in prescriptions) {
+        await p.customer.load(); // Load the customer link
+        await p.doctor.load(); // Load the doctor link
+      }
+      return prescriptions;
     } catch (e) {
       debugPrint('Error getting all prescriptions: $e');
       rethrow;
@@ -107,10 +113,16 @@ class PrescriptionRepository {
   ) async {
     try {
       final isar = await _isarService.db;
-      return await isar.prescriptionModels
+      final prescriptions = await isar.prescriptionModels
           .filter()
           .customer((q) => q.idEqualTo(customerId))
           .findAll();
+      // Eagerly load customer and doctor for each filtered prescription
+      for (var p in prescriptions) {
+        await p.customer.load();
+        await p.doctor.load();
+      }
+      return prescriptions;
     } catch (e) {
       debugPrint('Error getting prescriptions for customer $customerId: $e');
       rethrow;
@@ -121,10 +133,16 @@ class PrescriptionRepository {
   Future<List<PrescriptionModel>> getPrescriptionsByDoctor(Id doctorId) async {
     try {
       final isar = await _isarService.db;
-      return await isar.prescriptionModels
+      final prescriptions = await isar.prescriptionModels
           .filter()
           .doctor((q) => q.idEqualTo(doctorId))
           .findAll();
+      // Eagerly load customer and doctor for each filtered prescription
+      for (var p in prescriptions) {
+        await p.customer.load();
+        await p.doctor.load();
+      }
+      return prescriptions;
     } catch (e) {
       debugPrint('Error getting prescriptions by doctor $doctorId: $e');
       rethrow;

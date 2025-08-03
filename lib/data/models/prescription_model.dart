@@ -14,12 +14,14 @@ class PrescriptionModel {
   final double sphereRight;
   final double cylinderRight;
   final double axisRight;
+  final double? addRight;
 
   final double sphereLeft;
   final double cylinderLeft;
   final double axisLeft;
+  final double? addLeft;
 
-  final double? addPower;
+  final double? pd;
   final String? notes;
 
   // ---- RelationShips ----
@@ -35,10 +37,12 @@ class PrescriptionModel {
     required this.sphereRight,
     required this.cylinderRight,
     required this.axisRight,
+    this.addRight,
     required this.sphereLeft,
     required this.cylinderLeft,
     required this.axisLeft,
-    this.addPower,
+    this.addLeft,
+    this.pd,
     this.notes,
     IsarLink<CustomerModel>? customer,
     IsarLink<DoctorModel>? doctor,
@@ -53,10 +57,12 @@ class PrescriptionModel {
     double? sphereRight,
     double? cylinderRight,
     double? axisRight,
+    double? addRight,
     double? sphereLeft,
     double? cylinderLeft,
     double? axisLeft,
-    double? addPower,
+    double? addLeft,
+    double? pd,
     String? notes,
     IsarLink<CustomerModel>? customer,
     IsarLink<DoctorModel>? doctor,
@@ -67,10 +73,12 @@ class PrescriptionModel {
       sphereRight: sphereRight ?? this.sphereRight,
       cylinderRight: cylinderRight ?? this.cylinderRight,
       axisRight: axisRight ?? this.axisRight,
+      addRight: addRight ?? this.addRight,
       sphereLeft: sphereLeft ?? this.sphereLeft,
       cylinderLeft: cylinderLeft ?? this.cylinderLeft,
       axisLeft: axisLeft ?? this.axisLeft,
-      addPower: addPower ?? this.addPower,
+      addLeft: addLeft ?? this.addLeft,
+      pd: pd ?? this.pd,
       notes: notes ?? this.notes,
       customer: customer ?? this.customer,
       doctor: doctor ?? this.doctor,

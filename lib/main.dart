@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:osm/viewmodels/prescription_viewmodel.dart';
+import 'package:osm/viewmodels/store_location_viewmodel.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -20,9 +22,13 @@ import 'package:osm/data/repositories/lens_repository.dart';
 import 'package:osm/viewmodels/customer_viewmodel.dart'; // NEW IMPORT
 import 'package:osm/viewmodels/frame_viewmodel.dart'; // NEW IMPORT
 import 'package:osm/viewmodels/lens_viewmodel.dart'; // NEW IMPORT
+import 'viewmodels/order_viewmodel.dart';
 
 // Import your initial screen
 import 'screens/dashboard_screen.dart';
+
+// Import dummydatagenerator
+import 'utils/dummy_data_generator.dart';
 
 late SharedPreferences sharedPreferences;
 
@@ -33,6 +39,9 @@ void main() async {
   await isarService.db;
 
   sharedPreferences = await SharedPreferences.getInstance();
+
+  // Dummy data population call
+  await DummyDataGenerator.generate(isarService);
 
   runApp(
     MultiProvider(
@@ -80,6 +89,17 @@ void main() async {
         ),
         ChangeNotifierProvider<LensViewmodel>(
           create: (context) => LensViewmodel(context.read<LensRepository>()),
+        ),
+        ChangeNotifierProvider<OrderViewModel>(
+          create: (context) => OrderViewModel(context.read<OrderRepository>()),
+        ),
+        ChangeNotifierProvider<PrescriptionViewModel>(
+          create: (context) =>
+              PrescriptionViewModel(context.read<PrescriptionRepository>()),
+        ),
+        ChangeNotifierProvider<StoreLocationViewModel>(
+          create: (context) =>
+              StoreLocationViewModel(context.read<StoreLocationRepository>()),
         ),
         // Add other ViewModels here as you create them (e.g., DoctorViewModel)
       ],
