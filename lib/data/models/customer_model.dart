@@ -7,13 +7,17 @@ part 'customer_model.g.dart';
 @collection
 class CustomerModel {
   Id id = Isar.autoIncrement;
+
   @Name('creationDate')
   final DateTime? date;
+
   @Index(type: IndexType.hash)
   final String firstName;
+
   @Index(type: IndexType.hash)
   final String lastName;
   final String city;
+
   @Index(unique: true)
   final String primaryPhoneNumber;
   final String? secondaryPhoneNumber;
@@ -102,7 +106,7 @@ class CustomerModel {
       age: age ?? this.age,
       profileImageUrl: profileImageUrl ?? this.profileImageUrl,
       prescriptions: prescriptions ?? this.prescriptions,
-      orders: orders ?? orders,
+      orders: orders ?? this.orders,
     )..id = id ?? this.id;
   }
 }

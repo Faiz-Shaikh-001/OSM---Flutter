@@ -1,19 +1,16 @@
+import 'dart:async';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:intl/intl.dart';
-
+import 'package:image_picker/image_picker.dart';
 import 'package:osm/data/models/customer_model.dart';
-import 'package:osm/data/models/prescription_model.dart';
-import 'package:osm/data/models/store_location_model.dart';
-import 'package:osm/data/models/order_model.dart'; // For creating the order
-
+import 'package:osm/utils/product_type.dart';
 import 'package:osm/viewmodels/customer_viewmodel.dart';
-import 'package:osm/viewmodels/prescription_viewmodel.dart';
-import 'package:osm/viewmodels/store_location_viewmodel.dart';
-import 'package:osm/viewmodels/order_viewmodel.dart'; // For submitting the order
-
-import 'package:osm/widgets/build_text_field_widget.dart'; // Reusable text field
-import 'package:osm/widgets/custom_button.dart'; // Reusable button
+import 'package:osm/viewmodels/order_viewmodel.dart';
+import 'package:osm/widgets/build_text_field_widget.dart';
+import 'package:osm/widgets/custom_button.dart';
+import 'package:osm/widgets/image_selector_widget.dart';
+import 'package:provider/provider.dart';
 
 class AddOrderScreen extends StatefulWidget {
   const AddOrderScreen({super.key});
@@ -23,366 +20,372 @@ class AddOrderScreen extends StatefulWidget {
 }
 
 class _AddOrderScreenState extends State<AddOrderScreen> {
-  final _formKey = GlobalKey<FormState>();
+  int _currentStep = 1;
+  ProductType? _selectedProductType;
+  final TextEditingController _customerSearchController =
+      TextEditingController();
+  bool _isAddingNewCustomer = false;
+  Timer? _debounce;
 
-  // Order Details
-  DateTime _orderDate = DateTime.now();
-  final TextEditingController _totalAmountController = TextEditingController(
-    text: '0.0',
-  );
-  String? _selectedStatus; // For order status
-
-  // Selected Models for Relationships
-  CustomerModel? _selectedCustomer;
-  PrescriptionModel? _selectedPrescription;
-  StoreLocationModel? _selectedStoreLocation;
-
-  // List of available statuses (you might want an enum for this later)
-  final List<String> _orderStatuses = [
-    'Pending',
-    'Processing',
-    'Completed',
-    'Cancelled',
-  ];
-
-  @override
-  void initState() {
-    super.initState();
-    // Load data for dropdowns
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<CustomerViewModel>().loadCustomers();
-      context.read<PrescriptionViewModel>().loadPrescriptions();
-      context.read<StoreLocationViewModel>().loadStoreLocations();
-    });
-  }
+  final formKey = GlobalKey<FormState>();
+  final firstNameController = TextEditingController();
+  final lastNameController = TextEditingController();
+  final phoneController = TextEditingController();
+  final ageController = TextEditingController();
+  final cityController = TextEditingController();
+  final genderController = TextEditingController();
+  final List<File> selectedImages = [];
 
   @override
   void dispose() {
-    _totalAmountController.dispose();
+    _customerSearchController.dispose();
+    _debounce?.cancel();
+
+    firstNameController.dispose();
+    lastNameController.dispose();
+    phoneController.dispose();
+    ageController.dispose();
+    cityController.dispose();
+    genderController.dispose();
     super.dispose();
   }
 
-  Future<void> _selectOrderDate() async {
-    final picked = await showDatePicker(
-      context: context,
-      initialDate: _orderDate,
-      firstDate: DateTime(2023),
-      lastDate: DateTime(2100),
-    );
-    if (picked != null && picked != _orderDate) {
-      setState(() {
-        _orderDate = picked;
-      });
-    }
-  }
-
-  void _submitOrder() async {
-    if (!_formKey.currentState!.validate()) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please fill all required fields.')),
-      );
-      return;
-    }
-
-    if (_selectedCustomer == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select a customer.')),
-      );
-      return;
-    }
-
-    if (_selectedPrescription == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select a prescription.')),
-      );
-      return;
-    }
-
-    if (_selectedStatus == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select an order status.')),
-      );
-      return;
-    }
-
-    // Parse total amount
-    final double? totalAmount = double.tryParse(_totalAmountController.text);
-    if (totalAmount == null || totalAmount < 0) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter a valid total amount.')),
-      );
-      return;
-    }
-
-    // Create the OrderModel instance
-    final newOrder = OrderModel(
-      orderDate: _orderDate,
-      totalAmount: totalAmount,
-      status: _selectedStatus!,
-      // Relationships will be set in the repository's add method
-    );
-
-    try {
-      // Call the ViewModel to add the order
-      await context.read<OrderViewModel>().addOrder(
-        newOrder,
-        customer: _selectedCustomer!,
-        prescription: _selectedPrescription!,
-        storeLocation: _selectedStoreLocation, // Optional
-      );
-
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Order added successfully!')),
-        );
-        Navigator.pop(context); // Go back after successful addition
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to add order: ${e.toString()}')),
-        );
-      }
-    }
+  void _onSearchChanged(String query) {
+    if (_debounce?.isActive ?? false) _debounce?.cancel();
+    if (_isAddingNewCustomer) _debounce?.cancel();
+    _debounce = Timer(const Duration(milliseconds: 300), () {
+      context.read<CustomerViewModel>().searchCustomers(query);
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Add New Order'),
+        title: Center(child: const Text("New Order")),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pop(context),
+          icon: Icon(Icons.chevron_left),
+          onPressed: () {
+            if (_currentStep > 1) {
+              setState(() {
+                _currentStep -= 1;
+              });
+            } else {
+              Navigator.pop(context);
+            }
+          },
         ),
       ),
-      body: Form(
-        key: _formKey,
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+      body: SafeArea(
+        child: Column(
+          children: [
+            OrderStepper(currentStep: _currentStep),
+            Expanded(
+              child: Padding(
+                padding: EdgeInsets.all(16.0),
+                child: SingleChildScrollView(child: _buildBodyForStep()),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBodyForStep() {
+    switch (_currentStep) {
+      case 1:
+        return _buildCustomerDetailStep();
+      case 2:
+        return _buildProductsStep();
+      case 3:
+        return _buildPaymentStep();
+      default:
+        return const SizedBox();
+    }
+  }
+
+  // In _AddOrderScreenState class
+  Widget _buildAddNewCustomerForm() {
+    return Form(
+      key: formKey,
+      child: Column(
+        children: [
+          const Text(
+            'Add a New Customer',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 20),
+          ImageSelectorWidget(
+            selectedImages: selectedImages,
+            onImagesChanged: (imgs) => setState(
+              () => selectedImages
+                ..clear()
+                ..addAll(imgs),
+            ),
+          ),
+          BuildTextFieldWidget(
+            controller: firstNameController,
+            label: 'First Name',
+          ),
+          BuildTextFieldWidget(
+            controller: lastNameController,
+            label: 'Last Name',
+          ),
+          BuildTextFieldWidget(
+            controller: phoneController,
+            label: 'Phone Number',
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              // --- Order Details Section ---
-              Text(
-                'Order Details',
-                style: Theme.of(context).textTheme.headlineSmall,
-              ),
-              const SizedBox(height: 16),
-              ListTile(
-                leading: const Icon(Icons.calendar_today),
-                title: const Text('Order Date'),
-                trailing: Text(
-                  DateFormat.yMMMd().format(_orderDate),
-                  style: Theme.of(context).textTheme.titleMedium,
+              SizedBox(
+                width: MediaQuery.of(context).size.width * .40,
+                child: BuildTextFieldWidget(
+                  controller: ageController,
+                  label: 'Age',
+                  isNumeric: true,
                 ),
-                onTap: _selectOrderDate,
               ),
-              const SizedBox(height: 16),
-              BuildTextFieldWidget(
-                controller: _totalAmountController,
-                label: 'Total Amount',
-                isDecimal: true,
-              ),
-              const SizedBox(height: 16),
-              DropdownButtonFormField<String>(
-                decoration: const InputDecoration(
-                  labelText: 'Order Status',
-                  border: OutlineInputBorder(),
+              SizedBox(
+                width: MediaQuery.of(context).size.width * .50,
+                child: BuildTextFieldWidget(
+                  controller: genderController,
+                  label: 'Gender',
                 ),
-                value: _selectedStatus,
-                items: _orderStatuses.map((status) {
-                  return DropdownMenuItem(value: status, child: Text(status));
-                }).toList(),
-                onChanged: (value) {
-                  setState(() {
-                    _selectedStatus = value;
-                  });
-                },
-                validator: (value) => value == null ? 'Select status' : null,
-              ),
-              const SizedBox(height: 32),
-
-              // --- Customer Selection Section ---
-              Text(
-                'Customer',
-                style: Theme.of(context).textTheme.headlineSmall,
-              ),
-              const SizedBox(height: 16),
-              Consumer<CustomerViewModel>(
-                builder: (context, customerViewModel, child) {
-                  if (customerViewModel.isLoading) {
-                    return const Center(child: CircularProgressIndicator());
-                  }
-                  if (customerViewModel.errorMessage != null) {
-                    return Text(
-                      'Error loading customers: ${customerViewModel.errorMessage}',
-                    );
-                  }
-                  if (customerViewModel.customers.isEmpty) {
-                    return const Text(
-                      'No customers available. Add customers first.',
-                    );
-                  }
-                  return DropdownButtonFormField<CustomerModel>(
-                    decoration: const InputDecoration(
-                      labelText: 'Select Customer',
-                      border: OutlineInputBorder(),
-                    ),
-                    value: _selectedCustomer,
-                    onChanged: (customer) {
-                      setState(() {
-                        _selectedCustomer = customer;
-                        // Optionally, filter prescriptions based on selected customer here
-                        _selectedPrescription =
-                            null; // Reset prescription when customer changes
-                      });
-                    },
-                    items: customerViewModel.customers.map((customer) {
-                      return DropdownMenuItem(
-                        value: customer,
-                        child: Text(
-                          '${customer.firstName} ${customer.lastName} (${customer.primaryPhoneNumber})',
-                        ),
-                      );
-                    }).toList(),
-                    validator: (value) =>
-                        value == null ? 'Select a customer' : null,
-                  );
-                },
-              ),
-              const SizedBox(height: 32),
-
-              // --- Prescription Selection Section ---
-              Text(
-                'Prescription',
-                style: Theme.of(context).textTheme.headlineSmall,
-              ),
-              const SizedBox(height: 16),
-              Consumer<PrescriptionViewModel>(
-                builder: (context, prescriptionViewModel, child) {
-                  // Filter prescriptions by selected customer if a customer is selected
-                  final List<PrescriptionModel> filteredPrescriptions =
-                      _selectedCustomer != null
-                      ? prescriptionViewModel.prescriptions
-                            .where(
-                              (p) =>
-                                  p.customer.value?.id == _selectedCustomer!.id,
-                            )
-                            .toList()
-                      : prescriptionViewModel.prescriptions;
-
-                  if (prescriptionViewModel.isLoading) {
-                    return const Center(child: CircularProgressIndicator());
-                  }
-                  if (prescriptionViewModel.errorMessage != null) {
-                    return Text(
-                      'Error loading prescriptions: ${prescriptionViewModel.errorMessage}',
-                    );
-                  }
-                  if (filteredPrescriptions.isEmpty) {
-                    return const Text(
-                      'No prescriptions available for this customer or in general.',
-                    );
-                  }
-                  return DropdownButtonFormField<PrescriptionModel>(
-                    decoration: const InputDecoration(
-                      labelText: 'Select Prescription',
-                      border: OutlineInputBorder(),
-                    ),
-                    value: _selectedPrescription,
-                    onChanged: (prescription) {
-                      setState(() {
-                        _selectedPrescription = prescription;
-                      });
-                    },
-                    items: filteredPrescriptions.map((prescription) {
-                      return DropdownMenuItem(
-                        value: prescription,
-                        child: Text(
-                          'Prescription #${prescription.id} - ${DateFormat.yMMMd().format(prescription.prescriptionDate)}',
-                        ),
-                      );
-                    }).toList(),
-                    validator: (value) =>
-                        value == null ? 'Select a prescription' : null,
-                  );
-                },
-              ),
-              const SizedBox(height: 32),
-
-              // --- Store Location Selection Section (Optional) ---
-              Text(
-                'Store Location (Optional)',
-                style: Theme.of(context).textTheme.headlineSmall,
-              ),
-              const SizedBox(height: 16),
-              Consumer<StoreLocationViewModel>(
-                builder: (context, storeLocationViewModel, child) {
-                  if (storeLocationViewModel.isLoading) {
-                    return const Center(child: CircularProgressIndicator());
-                  }
-                  if (storeLocationViewModel.errorMessage != null) {
-                    return Text(
-                      'Error loading store locations: ${storeLocationViewModel.errorMessage}',
-                    );
-                  }
-                  if (storeLocationViewModel.storeLocations.isEmpty) {
-                    return const Text('No store locations available.');
-                  }
-                  return DropdownButtonFormField<StoreLocationModel>(
-                    decoration: const InputDecoration(
-                      labelText: 'Select Store Location',
-                      border: OutlineInputBorder(),
-                    ),
-                    value: _selectedStoreLocation,
-                    onChanged: (location) {
-                      setState(() {
-                        _selectedStoreLocation = location;
-                      });
-                    },
-                    items: storeLocationViewModel.storeLocations.map((
-                      location,
-                    ) {
-                      return DropdownMenuItem(
-                        value: location,
-                        child: Text(location.name),
-                      );
-                    }).toList(),
-                    // This is optional, so no validator needed
-                  );
-                },
-              ),
-              const SizedBox(height: 32),
-
-              // TODO: Order Items Section (Will be added in Part 2)
-              Text(
-                'Order Items (Coming Soon)',
-                style: Theme.of(context).textTheme.headlineSmall,
-              ),
-              const SizedBox(height: 16),
-
-              // Placeholder for future order items list/form
-              const SizedBox(height: 32),
-
-              // TODO: Payments Section (Will be added in Part 3)
-              Text(
-                'Payments (Coming Soon)',
-                style: Theme.of(context).textTheme.headlineSmall,
-              ),
-              const SizedBox(height: 16),
-
-              // Placeholder for future payments list/form
-              const SizedBox(height: 32),
-
-              CustomButton(
-                onPressed: _submitOrder,
-                label: 'Create Order',
-                icon: Icons.check,
               ),
             ],
           ),
-        ),
+          BuildTextFieldWidget(controller: cityController, label: 'City'),
+          const SizedBox(height: 20),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: () {
+                    // Go back to the search view without adding a customer
+                    setState(() {
+                      _isAddingNewCustomer = false;
+                    });
+                  },
+                  style: OutlinedButton.styleFrom(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                    minimumSize: const Size(double.infinity, 50),
+                  ),
+
+                  child: const Text(
+                    'Cancel',
+                    style: TextStyle(color: Colors.black),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: CustomButton(
+                  onPressed: () {
+                    if (formKey.currentState!.validate()) {
+                      final customer = CustomerModel(
+                        firstName: firstNameController.text,
+                        lastName: lastNameController.text,
+                        city: cityController.text,
+                        primaryPhoneNumber: phoneController.text,
+                        gender: genderController.text,
+                        age: int.parse(ageController.text),
+                        profileImageUrl:
+                            'https://placehold.co/100x100/FFDDC1/000000?text=DD',
+                      );
+
+                      context.read<CustomerViewModel>().addCustomer(customer);
+                      debugPrint(
+                        'Adding new customer: ${firstNameController.text} ${lastNameController.text}',
+                      );
+
+                      setState(() {
+                        _isAddingNewCustomer = false;
+                      });
+                    }
+                  },
+                  label: 'Save Customer',
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCustomerDetailStep() {
+    return Consumer2<OrderViewModel, CustomerViewModel>(
+      builder: (context, orderViewModel, customerViewModel, child) {
+        if (_isAddingNewCustomer) {
+          return _buildAddNewCustomerForm();
+        }
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Search for a customer',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 10),
+            TextField(
+              controller: _customerSearchController,
+              decoration: InputDecoration(
+                hintText: 'Search customer by name or phone no.',
+                prefixIcon: const Icon(Icons.search),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+              onChanged: _onSearchChanged,
+            ),
+            const SizedBox(height: 20),
+            if (orderViewModel.selectedCustomer != null)
+              Card(
+                child: ListTile(
+                  title: Text(
+                    "${orderViewModel.selectedCustomer!.firstName} ${orderViewModel.selectedCustomer!.lastName}",
+                  ),
+                  subtitle: Text(
+                    orderViewModel.selectedCustomer!.primaryPhoneNumber,
+                  ),
+                  trailing: IconButton(
+                    onPressed: () {
+                      orderViewModel.resetForm();
+                      _customerSearchController.clear();
+                    },
+                    icon: Icon(Icons.cancel, color: Colors.red),
+                  ),
+                ),
+              )
+            else if (customerViewModel.isLoading)
+              const Center(child: CircularProgressIndicator())
+            else if (customerViewModel.searchResults.isNotEmpty)
+              SizedBox(
+                height: 300,
+                child: ListView.builder(
+                  itemCount: customerViewModel.searchResults.length,
+                  itemBuilder: (context, index) {
+                    final customer = customerViewModel.searchResults[index];
+                    return ListTile(
+                      title: Text("${customer.firstName} ${customer.lastName}"),
+                      subtitle: Text(customer.primaryPhoneNumber),
+                      onTap: () {
+                        orderViewModel.selectCustomer(customer);
+                      },
+                    );
+                  },
+                ),
+              )
+            else if (_customerSearchController.text.isNotEmpty)
+              _noCustomerFound(),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildProductsStep() {
+    return Center(child: Text("Product Details"));
+  }
+
+  Widget _buildPaymentStep() {
+    return Center(child: Text('Payment details'));
+  }
+
+  Widget _noCustomerFound() {
+    return SizedBox(
+      height: 500,
+      child: Column(
+        children: [
+          Expanded(child: Center(child: Text('No Customer found'))),
+          CustomButton(
+            onPressed: () {
+              setState(() {
+                _isAddingNewCustomer = true;
+              });
+            },
+            label: 'Add New Customer',
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class OrderStepper extends StatelessWidget {
+  final int currentStep;
+  const OrderStepper({super.key, required this.currentStep});
+
+  @override
+  Widget build(BuildContext context) {
+    return _buildOrderSteps();
+  }
+
+  Widget _buildOrderSteps() {
+    return Row(
+      children: [
+        _buildStep(stepNumber: 1, label: 'Customer'),
+        _buildStepConnector(1),
+        _buildStep(stepNumber: 2, label: 'Products'),
+        _buildStepConnector(2),
+        _buildStep(stepNumber: 3, label: 'Payment'),
+        _buildStepConnector(3),
+      ],
+    );
+  }
+
+  Widget _buildStep({required int stepNumber, required String label}) {
+    bool isCompleted = stepNumber < currentStep;
+    bool isCurrent = stepNumber == currentStep;
+
+    Color stepColor = isCurrent
+        ? Colors.blue
+        : (isCompleted ? Colors.blue.shade200 : Colors.grey);
+    Color textColor = isCurrent ? Colors.blue : Colors.grey;
+    FontWeight fontWeight = isCurrent ? FontWeight.bold : FontWeight.normal;
+
+    return SafeArea(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Container(
+            width: 30,
+            height: 30,
+            decoration: BoxDecoration(color: stepColor, shape: BoxShape.circle),
+            child: Center(
+              child: Text(
+                '$stepNumber',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            label,
+            style: TextStyle(color: textColor, fontWeight: fontWeight),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStepConnector(int stepNumber) {
+    bool isActive = currentStep >= stepNumber;
+
+    return Expanded(
+      child: Container(
+        margin: EdgeInsets.only(bottom: 20),
+        height: 2.0,
+        color: isActive ? Colors.blue : Colors.grey.shade200,
       ),
     );
   }

@@ -73,14 +73,39 @@ class DummyDataGenerator {
         age: 25,
         profileImageUrl: 'https://placehold.co/100x100/D1FFC1/000000?text=CB',
       );
+      final customer4 = CustomerModel(
+        firstName: 'Charlie',
+        lastName: 'Schnagger',
+        city: 'Frame City',
+        primaryPhoneNumber: '9012930112',
+        gender: 'male',
+        age: 30,
+        profileImageUrl: 'https://placehold.co/100x100/D1FFC1/000000?text=CS',
+      );
+      final customer5 = CustomerModel(
+        firstName: 'Faiz',
+        lastName: 'Shaikh',
+        city: 'Mumbai',
+        primaryPhoneNumber: '9773446197',
+        gender: 'Male',
+        age: 22,
+        profileImageUrl: 'https://placehold.co/100x100/DD1FF1/000000?text=FS',
+      );
 
       final addedCustomer1Id = await customerRepo.add(customer1);
       final addedCustomer2Id = await customerRepo.add(customer2);
       final addedCustomer3Id = await customerRepo.add(customer3);
+      final addedCustomer4Id = await customerRepo.add(customer4);
+      final addedCustomer5Id = await customerRepo.add(customer5);
 
       final addedCustomer1 = await customerRepo.getById(addedCustomer1Id);
       final addedCustomer2 = await customerRepo.getById(addedCustomer2Id);
       final addedCustomer3 = await customerRepo.getById(addedCustomer3Id);
+      final addedCustomer4 = await customerRepo.getById(addedCustomer4Id);
+      final addedCustomer5 = await customerRepo.getById(addedCustomer5Id);
+      debugPrint(
+        "$addedCustomer3 \n\n\n\n $addedCustomer4 \n\n\n\n $addedCustomer5\n\n\n\n",
+      );
 
       // --- Doctors ---
       final doctor1 = DoctorModel(
