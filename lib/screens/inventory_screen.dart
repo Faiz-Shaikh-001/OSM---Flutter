@@ -80,7 +80,7 @@ class _InventoryTabState extends State<InventoryTab>
     with AutomaticKeepAliveClientMixin {
   @override
   bool get wantKeepAlive => true;
-  // <- Add this.type here
+
   @override
   void initState() {
     super.initState();
@@ -137,12 +137,14 @@ class _InventoryTabState extends State<InventoryTab>
                         return Center(
                           child: Text('Error: ${lensViewModel.errorMessage}'),
                         );
+                      // UPDATED: Changed lensViewModel.lens to lensViewModel.lenses
                       } else if (lensViewModel.lens.isEmpty) {
                         return const Center(child: Text('No lenses found'));
                       } else {
                         return Padding(
                           padding: const EdgeInsets.all(10.0),
                           child: ProductGrid(
+                            // UPDATED: Changed lensViewModel.lens to lensViewModel.lenses
                             products: lensViewModel.lens,
                             productType: ProductType.lens,
                             onRefresh: _loadProducts,
