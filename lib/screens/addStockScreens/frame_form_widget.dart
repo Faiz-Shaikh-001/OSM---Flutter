@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:osm/data/models/frame_enums.dart';
 import 'package:osm/services/color_api_service.dart';
+import 'package:osm/services/save_image_to_app_directory.dart';
 import 'package:osm/widgets/build_text_field_widget.dart';
 import 'package:osm/widgets/image_selector_widget.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
@@ -154,6 +155,24 @@ class _FrameFormWidgetState extends State<FrameFormWidget> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text("Please upload at least one image for the product."),
+          ),
+        );
+      }
+      return;
+    }
+
+    final List<String> permanentImagePaths = [];
+    try {
+      for (final tempImage in _selectedImages) {
+        final savedPath = await saveImageToAppDirectory(tempImage);
+        permanentImagePaths.add(savedPath);
+      }
+    } catch (e) {
+      debugPrint("Error saving images to disk: $e");
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Error saving images. Please try again."),
           ),
         );
       }

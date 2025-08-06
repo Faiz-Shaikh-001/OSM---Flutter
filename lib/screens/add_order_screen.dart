@@ -2,8 +2,8 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:osm/data/models/customer_model.dart';
+import 'package:osm/services/save_image_to_app_directory.dart';
 import 'package:osm/utils/product_type.dart';
 import 'package:osm/viewmodels/customer_viewmodel.dart';
 import 'package:osm/viewmodels/order_viewmodel.dart';
@@ -28,31 +28,30 @@ class _AddOrderScreenState extends State<AddOrderScreen> {
   Timer? _debounce;
 
   final formKey = GlobalKey<FormState>();
-  final firstNameController = TextEditingController();
-  final lastNameController = TextEditingController();
-  final phoneController = TextEditingController();
-  final ageController = TextEditingController();
-  final cityController = TextEditingController();
-  final genderController = TextEditingController();
-  final List<File> selectedImages = [];
+  final _firstNameController = TextEditingController();
+  final _lastNameController = TextEditingController();
+  final _phoneController = TextEditingController();
+  final _ageController = TextEditingController();
+  final _cityController = TextEditingController();
+  final _genderController = TextEditingController();
+  final List<File> _customerSelectedImages = [];
 
   @override
   void dispose() {
     _customerSearchController.dispose();
     _debounce?.cancel();
 
-    firstNameController.dispose();
-    lastNameController.dispose();
-    phoneController.dispose();
-    ageController.dispose();
-    cityController.dispose();
-    genderController.dispose();
+    _firstNameController.dispose();
+    _lastNameController.dispose();
+    _phoneController.dispose();
+    _ageController.dispose();
+    _cityController.dispose();
+    _genderController.dispose();
     super.dispose();
   }
 
   void _onSearchChanged(String query) {
     if (_debounce?.isActive ?? false) _debounce?.cancel();
-    if (_isAddingNewCustomer) _debounce?.cancel();
     _debounce = Timer(const Duration(milliseconds: 300), () {
       context.read<CustomerViewModel>().searchCustomers(query);
     });
@@ -117,23 +116,23 @@ class _AddOrderScreenState extends State<AddOrderScreen> {
           ),
           const SizedBox(height: 20),
           ImageSelectorWidget(
-            selectedImages: selectedImages,
+            selectedImages: _customerSelectedImages,
             onImagesChanged: (imgs) => setState(
-              () => selectedImages
+              () => _customerSelectedImages
                 ..clear()
                 ..addAll(imgs),
             ),
           ),
           BuildTextFieldWidget(
-            controller: firstNameController,
+            controller: _firstNameController,
             label: 'First Name',
           ),
           BuildTextFieldWidget(
-            controller: lastNameController,
+            controller: _lastNameController,
             label: 'Last Name',
           ),
           BuildTextFieldWidget(
-            controller: phoneController,
+            controller: _phoneController,
             label: 'Phone Number',
           ),
           Row(
@@ -142,7 +141,7 @@ class _AddOrderScreenState extends State<AddOrderScreen> {
               SizedBox(
                 width: MediaQuery.of(context).size.width * .40,
                 child: BuildTextFieldWidget(
-                  controller: ageController,
+                  controller: _ageController,
                   label: 'Age',
                   isNumeric: true,
                 ),
@@ -150,13 +149,13 @@ class _AddOrderScreenState extends State<AddOrderScreen> {
               SizedBox(
                 width: MediaQuery.of(context).size.width * .50,
                 child: BuildTextFieldWidget(
-                  controller: genderController,
+                  controller: _genderController,
                   label: 'Gender',
                 ),
               ),
             ],
           ),
-          BuildTextFieldWidget(controller: cityController, label: 'City'),
+          BuildTextFieldWidget(controller: _cityController, label: 'City'),
           const SizedBox(height: 20),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -185,26 +184,38 @@ class _AddOrderScreenState extends State<AddOrderScreen> {
               const SizedBox(width: 16),
               Expanded(
                 child: CustomButton(
-                  onPressed: () {
+                  onPressed: () async {
                     if (formKey.currentState!.validate()) {
-                      final customer = CustomerModel(
-                        firstName: firstNameController.text,
-                        lastName: lastNameController.text,
-                        city: cityController.text,
-                        primaryPhoneNumber: phoneController.text,
-                        gender: genderController.text,
-                        age: int.parse(ageController.text),
-                        profileImageUrl:
-                            'https://placehold.co/100x100/FFDDC1/000000?text=DD',
+                      String profileImageUrl =
+                          'https://placehold.co/100x100?text=Profile';
+
+                      if (_customerSelectedImages.isNotEmpty) {
+                        profileImageUrl = await saveImageToAppDirectory(
+                          _customerSelectedImages.first,
+                        );
+                      }
+
+                      final newCustomer = CustomerModel(
+                        firstName: _firstNameController.text,
+                        lastName: _lastNameController.text,
+                        city: _cityController.text,
+                        primaryPhoneNumber: _phoneController.text,
+                        gender: _genderController.text,
+                        age: int.parse(_ageController.text),
+                        profileImageUrl: profileImageUrl,
                       );
 
-                      context.read<CustomerViewModel>().addCustomer(customer);
+                      await context.read<CustomerViewModel>().addCustomer(
+                        newCustomer,
+                      );
                       debugPrint(
-                        'Adding new customer: ${firstNameController.text} ${lastNameController.text}',
+                        'Adding new customer: ${_firstNameController.text} ${_lastNameController.text}',
                       );
 
                       setState(() {
                         _isAddingNewCustomer = false;
+                        _customerSearchController.clear();
+                        _customerSelectedImages.clear();
                       });
                     }
                   },

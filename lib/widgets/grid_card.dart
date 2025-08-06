@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:osm/data/models/frame_model.dart';
@@ -9,12 +11,14 @@ class GridCard extends StatelessWidget {
   final dynamic product;
   final ProductType productType;
   final int heroIndex;
+  final bool isLowStock;
 
   const GridCard({
     super.key,
     required this.heroIndex,
     required this.product,
     required this.productType,
+    this.isLowStock = false,
   });
 
   final double _borderRadius = 15.0;
@@ -55,7 +59,11 @@ class GridCard extends StatelessWidget {
               heroIndex: heroIndex,
             ),
             const SizedBox(height: 4),
-            _BuildDetailsSection(product: product, productType: productType),
+            _BuildDetailsSection(
+              product: product,
+              productType: productType,
+              isLowStock: isLowStock,
+            ),
           ],
         ),
       ),
@@ -73,8 +81,37 @@ class _BuildImageSection extends StatelessWidget {
     required this.heroIndex,
   });
 
+  Widget _buildImage(String imagePath) {
+    if (imagePath.startsWith('http')) {
+      return CachedNetworkImage(
+        imageUrl: imagePath,
+        fit: BoxFit.cover,
+        placeholder: (context, url) => Container(
+          color: Colors.white,
+          child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
+        ),
+        errorWidget: (context, url, error) => Container(
+          color: Colors.grey[200],
+          child: const Center(
+            child: Icon(Icons.broken_image, color: Colors.grey, size: 50),
+          ),
+        ),
+      );
+    } else {
+      return Image.file(
+        File(imagePath),
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) => Container(
+          color: Colors.grey[200],
+          child: const Center(
+            child: Icon(Icons.broken_image, color: Colors.grey, size: 50),
+          ),
+        ),
+      );
+    }
+  }
+
   String _getImageUrl(dynamic product, ProductType type) {
-    String? url;
     if (type == ProductType.frame) {
       final frame = product as FrameModel;
       return frame.variants.isNotEmpty &&
@@ -83,9 +120,11 @@ class _BuildImageSection extends StatelessWidget {
           : 'https://placehold.co/400x400/png?text=Frame';
     } else if (type == ProductType.lens) {
       final lens = product as LensModel;
-      url = lens.imageUrls.isNotEmpty ? lens.imageUrls.first : null;
+      return lens.imageUrls.isNotEmpty
+          ? lens.imageUrls.first
+          : 'https://placehold.co/400x400/png?text=Product';
     }
-    return url ?? 'https://placehold.co/400x400/png?text=Product';
+    return 'https://placehold.co/400x400/png?text=Product';
   }
 
   @override
@@ -94,23 +133,28 @@ class _BuildImageSection extends StatelessWidget {
       // Image change
       child: Hero(
         tag: 'itemImage_${product.id ?? 'noid'}_$heroIndex',
-        child: CachedNetworkImage(
-          imageUrl: _getImageUrl(product, productType),
-          fit: BoxFit.cover,
+        child: SizedBox(
           width: double.infinity,
-          placeholder: (context, url) => Container(
-            color: Colors.white,
-            child: const Center(
-              child: CircularProgressIndicator(strokeWidth: 2),
-            ),
-          ),
-          errorWidget: (context, url, error) => Container(
-            color: Colors.grey[200],
-            child: const Center(
-              child: Icon(Icons.broken_image, color: Colors.grey, size: 50),
-            ),
-          ),
+          child: _buildImage(_getImageUrl(product, productType)),
         ),
+
+        // CachedNetworkImage(
+        //   imageUrl: _getImageUrl(product, productType),
+        //   fit: BoxFit.cover,
+        //   width: double.infinity,
+        //   placeholder: (context, url) => Container(
+        //     color: Colors.white,
+        //     child: const Center(
+        //       child: CircularProgressIndicator(strokeWidth: 2),
+        //     ),
+        //   ),
+        //   errorWidget: (context, url, error) => Container(
+        //     color: Colors.grey[200],
+        //     child: const Center(
+        //       child: Icon(Icons.broken_image, color: Colors.grey, size: 50),
+        //     ),
+        //   ),
+        // ),
       ),
     );
   }
@@ -119,10 +163,12 @@ class _BuildImageSection extends StatelessWidget {
 class _BuildDetailsSection extends StatelessWidget {
   final dynamic product;
   final ProductType productType;
+  final bool isLowStock;
 
   const _BuildDetailsSection({
     required this.product,
     required this.productType,
+    required this.isLowStock,
   });
 
   String _getTitle(dynamic product, ProductType type) {
@@ -157,7 +203,7 @@ class _BuildDetailsSection extends StatelessWidget {
           children: [
             _BuildTitleAndBadge(
               title: _getTitle(product, productType),
-              isLowStock: _isLowStock(product, productType),
+              isLowStock: isLowStock,
             ),
             const SizedBox(height: 4),
             Text(

@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:osm/data/models/frame_model.dart';
@@ -32,6 +34,8 @@ class ItemPage extends StatefulWidget {
 
 class _ItemPageState extends State<ItemPage> {
   FrameVariant? _selectedFrameVariant;
+  int _currentPage = 0;
+  final PageController _pageController = PageController();
 
   @override
   void initState() {
@@ -45,23 +49,32 @@ class _ItemPageState extends State<ItemPage> {
     }
   }
 
-  // Helper methods now use _selectedFrameVariant for frame details
-  String _getImageUrl(dynamic product, ProductType type) {
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  List<String> _getImageUrls(dynamic product, ProductType type) {
     if (type == ProductType.frame) {
       final frame = product as FrameModel;
-      final variant = _selectedFrameVariant ?? frame.variants.first;
-      return variant.imageUrls.isNotEmpty
-          ? variant.imageUrls.first
-          : 'https://placehold.co/600x400/cccccc/000000?text=No+Image';
+      // For frames, we assume all variants have the same images for the model
+      return frame.variants.isNotEmpty &&
+              frame.variants.first.imageUrls.isNotEmpty
+          ? frame.variants.first.imageUrls
+          : ['https://placehold.co/600x400/cccccc/000000?text=No+Image'];
     } else if (type == ProductType.lens) {
       final lens = product as LensModel;
-      return lens.variants.isNotEmpty &&
-              lens.variants.first.imageUrls != null &&
-              lens.variants.first.imageUrls!.isNotEmpty
-          ? lens.variants.first.imageUrls!.first
-          : 'https://placehold.co/600x400/cccccc/000000?text=No+Image';
+      // For lenses, we get images from the top-level model, or the first variant as a fallback
+      return lens.imageUrls.isNotEmpty
+          ? lens.imageUrls
+          : (lens.variants.isNotEmpty &&
+                    lens.variants.first.imageUrls != null &&
+                    lens.variants.first.imageUrls!.isNotEmpty
+                ? lens.variants.first.imageUrls!
+                : ['https://placehold.co/600x400/cccccc/000000?text=No+Image']);
     }
-    return 'https://placehold.co/600x400/cccccc/000000?text=No+Image';
+    return ['https://placehold.co/600x400/cccccc/000000?text=No+Image'];
   }
 
   String _getTitle(dynamic product, ProductType type) {
@@ -192,6 +205,144 @@ class _ItemPageState extends State<ItemPage> {
     }
   }
 
+  Widget _buildImageWidget(String imagePath) {
+    if (imagePath.startsWith('http')) {
+      return CachedNetworkImage(
+        imageUrl: imagePath,
+        fit: BoxFit.cover,
+        placeholder: (context, url) =>
+            const Center(child: CircularProgressIndicator()),
+        errorWidget: (context, url, error) => const Center(
+          child: Icon(Icons.broken_image, size: 50, color: Colors.grey),
+        ),
+      );
+    } else {
+      return Image.file(
+        File(imagePath),
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) => const Center(
+          child: Icon(Icons.broken_image, size: 50, color: Colors.grey),
+        ),
+      );
+    }
+  }
+
+  Widget _buildDotIndicator(int totalDots, int currentDot) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        // First dot (for the first image)
+        Container(
+          width: currentDot == 0 ? 8.0 : 6.0,
+          height: currentDot == 0 ? 8.0 : 6.0,
+          margin: const EdgeInsets.symmetric(horizontal: 4.0),
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: currentDot == 0 ? Colors.blue : Colors.grey.shade700,
+          ),
+        ),
+        // Middle dot (for all images in between)
+        Container(
+          width: 8.0,
+          height: 8.0,
+          margin: const EdgeInsets.symmetric(horizontal: 4.0),
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: currentDot > 0 && currentDot < totalDots - 1
+                ? Colors.blue
+                : Colors.grey,
+          ),
+        ),
+        // Last dot (for the last image)
+        Container(
+          width: currentDot == totalDots - 1 ? 8.0 : 6.0,
+          height: currentDot == totalDots - 1 ? 8.0 : 6.0,
+          margin: const EdgeInsets.symmetric(horizontal: 4.0),
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: currentDot == totalDots - 1
+                ? Colors.blue
+                : Colors.grey.shade700,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildHeroImage(dynamic product, ProductType productType) {
+    final List<String> imageUrls = _getImageUrls(product, productType);
+    return Hero(
+      tag: 'itemImage_${product.id}_${widget.heroIndex}',
+      child: SizedBox(
+        height: 300,
+        width: double.infinity,
+        child: Stack(
+          children: [
+            // Image Carousel
+            PageView.builder(
+              controller: _pageController,
+              itemCount: imageUrls.length,
+              onPageChanged: (index) {
+                setState(() {
+                  _currentPage = index;
+                });
+              },
+              itemBuilder: (context, index) {
+                final imageUrl = imageUrls[index];
+                return _buildImageWidget(imageUrl);
+              },
+            ),
+            // Navigation Buttons
+            if (imageUrls.length > 1) ...[
+              Positioned.fill(
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: IconButton(
+                    icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
+                    onPressed: () {
+                      if (_currentPage > 0) {
+                        _pageController.previousPage(
+                          duration: const Duration(milliseconds: 300),
+                          curve: Curves.easeInOut,
+                        );
+                      }
+                    },
+                  ),
+                ),
+              ),
+              Positioned.fill(
+                child: Align(
+                  alignment: Alignment.centerRight,
+                  child: IconButton(
+                    icon: const Icon(
+                      Icons.arrow_forward_ios,
+                      color: Colors.white,
+                    ),
+                    onPressed: () {
+                      if (_currentPage < imageUrls.length - 1) {
+                        _pageController.nextPage(
+                          duration: const Duration(milliseconds: 300),
+                          curve: Curves.easeInOut,
+                        );
+                      }
+                    },
+                  ),
+                ),
+              ),
+            ],
+            // Dot Indicators
+            Positioned(
+              bottom: 10,
+              left: 0,
+              right: 0,
+              child: _buildDotIndicator(imageUrls.length, _currentPage),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final FrameVariant? currentFrameVariant =
@@ -311,28 +462,6 @@ class _ItemPageState extends State<ItemPage> {
               const DeleteWarningBanner(),
               const SizedBox(height: 20),
             ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildHeroImage(dynamic product, ProductType productType) {
-    return Hero(
-      tag: 'itemImage_${product.id}_${widget.heroIndex}',
-      child: CachedNetworkImage(
-        imageUrl: _getImageUrl(product, productType),
-        fit: BoxFit.cover,
-        width: double.infinity,
-        height: 300,
-        placeholder: (context, url) =>
-            const Center(child: CircularProgressIndicator()),
-        errorWidget: (context, url, error) => const SizedBox(
-          width: double.infinity,
-          height: 300,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [Icon(Icons.broken_image), Text('Error loading image')],
           ),
         ),
       ),
