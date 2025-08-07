@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:osm/data/models/frame_model.dart';
@@ -31,15 +32,24 @@ class ItemPage extends StatefulWidget {
 }
 
 class _ItemPageState extends State<ItemPage> {
+  // --- STATE VARIABLES ---
   late dynamic _currentProduct;
   FrameVariant? _selectedFrameVariant;
   LensVariant? _selectedLensVariant;
+  int _currentPage = 0;
+  final PageController _pageController = PageController();
 
   @override
   void initState() {
     super.initState();
     _currentProduct = widget.product;
     _initializeVariants();
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
   }
 
   void _initializeVariants() {
@@ -64,45 +74,24 @@ class _ItemPageState extends State<ItemPage> {
     }
   }
 
-  void _refreshProductData() {
-    if (!mounted) return;
+  // --- HELPER METHODS (Now read from state) ---
 
+  List<String> _getImageUrls() {
     if (widget.productType == ProductType.frame) {
-      final viewModel = context.read<FrameViewmodel>();
-      final updatedProduct = viewModel.frames.firstWhere(
-        (frame) => frame.id == widget.product.id,
-        orElse: () => _currentProduct,
-      );
-
-      setState(() {
-        _currentProduct = updatedProduct;
-        _initializeVariants();
-      });
+      return _selectedFrameVariant?.imageUrls.isNotEmpty == true
+          ? _selectedFrameVariant!.imageUrls
+          : ['https://placehold.co/600x400/cccccc/000000?text=No+Image'];
     } else if (widget.productType == ProductType.lens) {
-      final viewModel = context.read<LensViewmodel>();
-      final updatedProduct = viewModel.lens.firstWhere(
-        (lens) => lens.id == widget.product.id,
-        orElse: () => _currentProduct,
-      );
-
-      setState(() {
-        _currentProduct = updatedProduct;
-        _initializeVariants();
-      });
+      final lens = _currentProduct as LensModel;
+      return lens.imageUrls.isNotEmpty
+          ? lens.imageUrls
+          : (lens.variants.isNotEmpty &&
+                  lens.variants.first.imageUrls != null &&
+                  lens.variants.first.imageUrls!.isNotEmpty
+              ? lens.variants.first.imageUrls!
+              : ['https://placehold.co/600x400/cccccc/000000?text=No+Image']);
     }
-  }
-
-  String _getImageUrl() {
-    if (widget.productType == ProductType.frame) {
-      return _selectedFrameVariant?.imageUrls.isNotEmpty ?? false
-          ? _selectedFrameVariant!.imageUrls.first
-          : 'https://placehold.co/600x400/cccccc/000000?text=No+Image';
-    } else if (widget.productType == ProductType.lens) {
-      return _selectedLensVariant?.imageUrls?.isNotEmpty == true
-          ? _selectedLensVariant!.imageUrls!.first
-          : 'https://placehold.co/600x400/cccccc/000000?text=No+Image';
-    }
-    return 'https://placehold.co/600x400/cccccc/000000?text=No+Image';
+    return ['https://placehold.co/600x400/cccccc/000000?text=No+Image'];
   }
 
   String _getTitle() {
@@ -187,14 +176,96 @@ class _ItemPageState extends State<ItemPage> {
     }
   }
 
+  // --- WIDGET BUILDERS ---
+
+  Widget _buildImageWidget(String imagePath) {
+    if (imagePath.startsWith('http')) {
+      return CachedNetworkImage(
+        imageUrl: imagePath,
+        fit: BoxFit.cover,
+        placeholder: (context, url) =>
+            const Center(child: CircularProgressIndicator()),
+        errorWidget: (context, url, error) => const Center(
+          child: Icon(Icons.broken_image, size: 50, color: Colors.grey),
+        ),
+      );
+    } else {
+      return Image.file(
+        File(imagePath),
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) => const Center(
+          child: Icon(Icons.broken_image, size: 50, color: Colors.grey),
+        ),
+      );
+    }
+  }
+
+  Widget _buildDotIndicator() {
+    final int totalDots = _getImageUrls().length;
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: List.generate(totalDots, (index) {
+        return Container(
+          width: 8.0,
+          height: 8.0,
+          margin: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 2.0),
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: _currentPage == index
+                ? Theme.of(context).primaryColor
+                : Colors.grey,
+          ),
+        );
+      }),
+    );
+  }
+
+  Widget _buildHeroImage() {
+    final List<String> imageUrls = _getImageUrls();
+    return Hero(
+      tag: 'itemImage_${widget.product.id}_${widget.heroIndex}',
+      child: SizedBox(
+        height: 300,
+        width: double.infinity,
+        child: Stack(
+          children: [
+            PageView.builder(
+              controller: _pageController,
+              itemCount: imageUrls.length,
+              onPageChanged: (index) {
+                setState(() {
+                  _currentPage = index;
+                });
+              },
+              itemBuilder: (context, index) {
+                return _buildImageWidget(imageUrls[index]);
+              },
+            ),
+            if (imageUrls.length > 1)
+              Positioned(
+                bottom: 0,
+                left: 0,
+                right: 0,
+                child: _buildDotIndicator(),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Center(child: Text(_getTitle())),
+        title: Center(
+          child: Text(_getTitle()),
+        ),
         leading: IconButton(
           icon: const Icon(Icons.chevron_left),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () {
+            Navigator.pop(context);
+          },
         ),
         actions: [
           IconButton(onPressed: () {}, icon: const Icon(Icons.notifications)),
@@ -208,14 +279,14 @@ class _ItemPageState extends State<ItemPage> {
               _buildHeroImage(),
               Padding(
                 padding: const EdgeInsets.all(15.0),
-                child: _buildProductDetails(context),
+                child: _buildProductDetails(),
               ),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 15.0),
-                child: _buildSpecificDetails(context),
+                child: _buildSpecificDetails(),
               ),
               const SizedBox(height: 25),
-              _buildActionButtons(context),
+              _buildActionButtons(),
               const SizedBox(height: 25),
               const DeleteWarningBanner(),
               const SizedBox(height: 20),
@@ -226,29 +297,7 @@ class _ItemPageState extends State<ItemPage> {
     );
   }
 
-  Widget _buildHeroImage() {
-    return Hero(
-      tag: 'itemImage_${widget.product.id}_${widget.heroIndex}',
-      child: CachedNetworkImage(
-        imageUrl: _getImageUrl(),
-        fit: BoxFit.cover,
-        width: double.infinity,
-        height: 300,
-        placeholder: (context, url) =>
-            const Center(child: CircularProgressIndicator()),
-        errorWidget: (context, url, error) => const SizedBox(
-          width: double.infinity,
-          height: 300,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [Icon(Icons.broken_image), Text(' Error loading image')],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildProductDetails(BuildContext context) {
+  Widget _buildProductDetails() {
     final titleStyle = TextStyle(fontSize: 30, fontWeight: FontWeight.bold);
     final labelStyle = TextStyle(fontSize: 20, color: Colors.grey);
     final priceStyle = TextStyle(
@@ -295,7 +344,6 @@ class _ItemPageState extends State<ItemPage> {
         const SizedBox(height: 25),
         if (widget.productType == ProductType.frame &&
             _selectedFrameVariant != null) ...[
-          // --- THIS IS THE ONLY SECTION THAT HAS CHANGED ---
           Row(
             children: [
               Expanded(
@@ -310,14 +358,14 @@ class _ItemPageState extends State<ItemPage> {
                 width: 30,
                 height: 30,
                 decoration: BoxDecoration(
-                  color: _selectedFrameVariant!.color ?? Colors.transparent,
+                  color: _selectedFrameVariant!.color ?? Colors.grey,
                   shape: BoxShape.circle,
                   border: Border.all(color: Colors.grey.shade400),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 8), // Spacing between dropdowns
+          const SizedBox(height: 8),
           SizeDropdownWidget(
             selectedSize: _selectedFrameVariant!.size,
             availableSizes: availableSizes,
@@ -329,7 +377,7 @@ class _ItemPageState extends State<ItemPage> {
     );
   }
 
-  Widget _buildSpecificDetails(BuildContext context) {
+  Widget _buildSpecificDetails() {
     final captionStyle = TextStyle(fontSize: 15, color: Colors.blueGrey);
     final valueStyle = TextStyle(fontSize: 15, fontWeight: FontWeight.w500);
 
@@ -364,12 +412,12 @@ class _ItemPageState extends State<ItemPage> {
     );
   }
 
-  Widget _buildActionButtons(BuildContext context) {
+  Widget _buildActionButtons() {
     return Column(
       children: [
         CustomButton(
           onPressed: () async {
-            final didUpdate = await Navigator.push<bool>(
+            final updatedProduct = await Navigator.push(
               context,
               MaterialPageRoute(
                 builder: (context) => UpdateStockScreen(
@@ -382,8 +430,11 @@ class _ItemPageState extends State<ItemPage> {
               ),
             );
 
-            if (didUpdate == true) {
-              _refreshProductData();
+            if (updatedProduct != null) {
+              setState(() {
+                _currentProduct = updatedProduct;
+                _initializeVariants();
+              });
             }
           },
           label: 'Edit Stock',

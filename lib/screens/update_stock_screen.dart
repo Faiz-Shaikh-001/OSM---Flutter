@@ -177,6 +177,8 @@ class _UpdateStockScreenState extends State<UpdateStockScreen> {
       _isUpdating = true;
     });
 
+    dynamic finalUpdatedProduct;
+
     try {
       if (widget.productType == ProductType.frame) {
         final frameViewModel = context.read<FrameViewmodel>();
@@ -208,9 +210,9 @@ class _UpdateStockScreenState extends State<UpdateStockScreen> {
         );
 
         await frameViewModel.updateFrame(updatedFrame);
+        finalUpdatedProduct = updatedFrame;
 
       } else if (widget.productType == ProductType.lens) {
-        // --- THIS IS THE IMPLEMENTED LENS UPDATE LOGIC ---
         final lensViewModel = context.read<LensViewmodel>();
         final originalLens = widget.product as LensModel;
         final originalVariant = widget.selectedVariant as LensVariant;
@@ -237,6 +239,7 @@ class _UpdateStockScreenState extends State<UpdateStockScreen> {
         );
 
         await lensViewModel.update(updatedLens);
+        finalUpdatedProduct = updatedLens;
       }
 
       if (!mounted) return;
@@ -245,7 +248,7 @@ class _UpdateStockScreenState extends State<UpdateStockScreen> {
         const SnackBar(content: Text('Stock updated successfully!')),
       );
 
-      Navigator.of(context).pop(true);
+      Navigator.of(context).pop(finalUpdatedProduct);
 
     } catch (e) {
       if (!mounted) return;
