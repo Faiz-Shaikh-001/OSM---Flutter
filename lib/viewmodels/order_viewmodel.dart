@@ -1,6 +1,7 @@
 // Imports
 import 'package:flutter/foundation.dart';
 import 'package:isar/isar.dart';
+import 'package:osm/data/models/product_model.dart';
 import 'package:osm/viewmodels/customer_viewmodel.dart';
 
 // Model imports
@@ -143,7 +144,43 @@ class OrderViewModel extends ChangeNotifier {
 
   void resetForm() {
     _selectedCustomer = null;
+    _selectedProducts.clear();
     _customerViewModel.clearSearchResults();
     notifyListeners();
+  }
+
+  // NEW: To manage the products in the current order
+  final Map<Product, int> _selectedProducts = {};
+  Map<Product, int> get selectedProducts => _selectedProducts;
+
+  // Method to add or increase the quantity of a product
+  void addProduct(Product product) {
+    _selectedProducts[product] = (_selectedProducts[product] ?? 0) + 1;
+    notifyListeners();
+  }
+
+  // Method to decrease the quantity of a product
+  void removeProduct(Product product) {
+    if (_selectedProducts.containsKey(product) &&
+        _selectedProducts[product]! > 1) {
+      _selectedProducts[product] = _selectedProducts[product]! - 1;
+    } else {
+      _selectedProducts.remove(product);
+    }
+    notifyListeners();
+  }
+
+  // Calculated property for the total price
+  double get totalPrice {
+    if (_selectedProducts.isEmpty) return 0.0;
+    return _selectedProducts.entries
+        .map((entry) => entry.key.price * entry.value)
+        .reduce((value, element) => value + element);
+  }
+
+  // Calculated property for the total number of items
+  int get totalItems {
+    if (_selectedProducts.isEmpty) return 0;
+    return _selectedProducts.values.reduce((value, element) => value + element);
   }
 }
