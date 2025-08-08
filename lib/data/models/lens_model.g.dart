@@ -27,24 +27,29 @@ const LensModelSchema = CollectionSchema(
       name: r'date',
       type: IsarType.dateTime,
     ),
-    r'lensType': PropertySchema(
+    r'imageUrls': PropertySchema(
       id: 2,
+      name: r'imageUrls',
+      type: IsarType.stringList,
+    ),
+    r'lensType': PropertySchema(
+      id: 3,
       name: r'lensType',
       type: IsarType.string,
       enumMap: _LensModellensTypeEnumValueMap,
     ),
     r'modelProductCode': PropertySchema(
-      id: 3,
+      id: 4,
       name: r'modelProductCode',
       type: IsarType.string,
     ),
     r'productName': PropertySchema(
-      id: 4,
+      id: 5,
       name: r'productName',
       type: IsarType.string,
     ),
     r'variants': PropertySchema(
-      id: 5,
+      id: 6,
       name: r'variants',
       type: IsarType.objectList,
       target: r'LensVariant',
@@ -83,7 +88,15 @@ const LensModelSchema = CollectionSchema(
       ],
     )
   },
-  links: {},
+  links: {
+    r'inventoryEntry': LinkSchema(
+      id: 5702101838231584978,
+      name: r'inventoryEntry',
+      target: r'InventoryModel',
+      single: false,
+      linkName: r'lens',
+    )
+  },
   embeddedSchemas: {r'LensVariant': LensVariantSchema},
   getId: _lensModelGetId,
   getLinks: _lensModelGetLinks,
@@ -98,6 +111,13 @@ int _lensModelEstimateSize(
 ) {
   var bytesCount = offsets.last;
   bytesCount += 3 + object.companyName.length * 3;
+  bytesCount += 3 + object.imageUrls.length * 3;
+  {
+    for (var i = 0; i < object.imageUrls.length; i++) {
+      final value = object.imageUrls[i];
+      bytesCount += value.length * 3;
+    }
+  }
   bytesCount += 3 + object.lensType.name.length * 3;
   bytesCount += 3 + object.modelProductCode.length * 3;
   bytesCount += 3 + object.productName.length * 3;
@@ -120,11 +140,12 @@ void _lensModelSerialize(
 ) {
   writer.writeString(offsets[0], object.companyName);
   writer.writeDateTime(offsets[1], object.date);
-  writer.writeString(offsets[2], object.lensType.name);
-  writer.writeString(offsets[3], object.modelProductCode);
-  writer.writeString(offsets[4], object.productName);
+  writer.writeStringList(offsets[2], object.imageUrls);
+  writer.writeString(offsets[3], object.lensType.name);
+  writer.writeString(offsets[4], object.modelProductCode);
+  writer.writeString(offsets[5], object.productName);
   writer.writeObjectList<LensVariant>(
-    offsets[5],
+    offsets[6],
     allOffsets,
     LensVariantSchema.serialize,
     object.variants,
@@ -140,12 +161,13 @@ LensModel _lensModelDeserialize(
   final object = LensModel(
     companyName: reader.readString(offsets[0]),
     date: reader.readDateTimeOrNull(offsets[1]),
+    imageUrls: reader.readStringList(offsets[2]) ?? const [],
     lensType:
-        _LensModellensTypeValueEnumMap[reader.readStringOrNull(offsets[2])] ??
+        _LensModellensTypeValueEnumMap[reader.readStringOrNull(offsets[3])] ??
             LensType.singleVision,
-    productName: reader.readString(offsets[4]),
+    productName: reader.readString(offsets[5]),
     variants: reader.readObjectList<LensVariant>(
-          offsets[5],
+          offsets[6],
           LensVariantSchema.deserialize,
           allOffsets,
           LensVariant(),
@@ -168,13 +190,15 @@ P _lensModelDeserializeProp<P>(
     case 1:
       return (reader.readDateTimeOrNull(offset)) as P;
     case 2:
+      return (reader.readStringList(offset) ?? const []) as P;
+    case 3:
       return (_LensModellensTypeValueEnumMap[reader.readStringOrNull(offset)] ??
           LensType.singleVision) as P;
-    case 3:
-      return (reader.readString(offset)) as P;
     case 4:
       return (reader.readString(offset)) as P;
     case 5:
+      return (reader.readString(offset)) as P;
+    case 6:
       return (reader.readObjectList<LensVariant>(
             offset,
             LensVariantSchema.deserialize,
@@ -205,11 +229,13 @@ Id _lensModelGetId(LensModel object) {
 }
 
 List<IsarLinkBase<dynamic>> _lensModelGetLinks(LensModel object) {
-  return [];
+  return [object.inventoryEntry];
 }
 
 void _lensModelAttach(IsarCollection<dynamic> col, Id id, LensModel object) {
   object.id = id;
+  object.inventoryEntry.attach(
+      col, col.isar.collection<InventoryModel>(), r'inventoryEntry', id);
 }
 
 extension LensModelQueryWhereSort
@@ -737,6 +763,230 @@ extension LensModelQueryFilter
     });
   }
 
+  QueryBuilder<LensModel, LensModel, QAfterFilterCondition>
+      imageUrlsElementEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'imageUrls',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<LensModel, LensModel, QAfterFilterCondition>
+      imageUrlsElementGreaterThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'imageUrls',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<LensModel, LensModel, QAfterFilterCondition>
+      imageUrlsElementLessThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'imageUrls',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<LensModel, LensModel, QAfterFilterCondition>
+      imageUrlsElementBetween(
+    String lower,
+    String upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'imageUrls',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<LensModel, LensModel, QAfterFilterCondition>
+      imageUrlsElementStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'imageUrls',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<LensModel, LensModel, QAfterFilterCondition>
+      imageUrlsElementEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'imageUrls',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<LensModel, LensModel, QAfterFilterCondition>
+      imageUrlsElementContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'imageUrls',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<LensModel, LensModel, QAfterFilterCondition>
+      imageUrlsElementMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'imageUrls',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<LensModel, LensModel, QAfterFilterCondition>
+      imageUrlsElementIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'imageUrls',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<LensModel, LensModel, QAfterFilterCondition>
+      imageUrlsElementIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'imageUrls',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<LensModel, LensModel, QAfterFilterCondition>
+      imageUrlsLengthEqualTo(int length) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'imageUrls',
+        length,
+        true,
+        length,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<LensModel, LensModel, QAfterFilterCondition> imageUrlsIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'imageUrls',
+        0,
+        true,
+        0,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<LensModel, LensModel, QAfterFilterCondition>
+      imageUrlsIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'imageUrls',
+        0,
+        false,
+        999999,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<LensModel, LensModel, QAfterFilterCondition>
+      imageUrlsLengthLessThan(
+    int length, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'imageUrls',
+        0,
+        true,
+        length,
+        include,
+      );
+    });
+  }
+
+  QueryBuilder<LensModel, LensModel, QAfterFilterCondition>
+      imageUrlsLengthGreaterThan(
+    int length, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'imageUrls',
+        length,
+        include,
+        999999,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<LensModel, LensModel, QAfterFilterCondition>
+      imageUrlsLengthBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'imageUrls',
+        lower,
+        includeLower,
+        upper,
+        includeUpper,
+      );
+    });
+  }
+
   QueryBuilder<LensModel, LensModel, QAfterFilterCondition> lensTypeEqualTo(
     LensType value, {
     bool caseSensitive = true,
@@ -1238,7 +1488,68 @@ extension LensModelQueryObject
 }
 
 extension LensModelQueryLinks
-    on QueryBuilder<LensModel, LensModel, QFilterCondition> {}
+    on QueryBuilder<LensModel, LensModel, QFilterCondition> {
+  QueryBuilder<LensModel, LensModel, QAfterFilterCondition> inventoryEntry(
+      FilterQuery<InventoryModel> q) {
+    return QueryBuilder.apply(this, (query) {
+      return query.link(q, r'inventoryEntry');
+    });
+  }
+
+  QueryBuilder<LensModel, LensModel, QAfterFilterCondition>
+      inventoryEntryLengthEqualTo(int length) {
+    return QueryBuilder.apply(this, (query) {
+      return query.linkLength(r'inventoryEntry', length, true, length, true);
+    });
+  }
+
+  QueryBuilder<LensModel, LensModel, QAfterFilterCondition>
+      inventoryEntryIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.linkLength(r'inventoryEntry', 0, true, 0, true);
+    });
+  }
+
+  QueryBuilder<LensModel, LensModel, QAfterFilterCondition>
+      inventoryEntryIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.linkLength(r'inventoryEntry', 0, false, 999999, true);
+    });
+  }
+
+  QueryBuilder<LensModel, LensModel, QAfterFilterCondition>
+      inventoryEntryLengthLessThan(
+    int length, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.linkLength(r'inventoryEntry', 0, true, length, include);
+    });
+  }
+
+  QueryBuilder<LensModel, LensModel, QAfterFilterCondition>
+      inventoryEntryLengthGreaterThan(
+    int length, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.linkLength(r'inventoryEntry', length, include, 999999, true);
+    });
+  }
+
+  QueryBuilder<LensModel, LensModel, QAfterFilterCondition>
+      inventoryEntryLengthBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.linkLength(
+          r'inventoryEntry', lower, includeLower, upper, includeUpper);
+    });
+  }
+}
 
 extension LensModelQuerySortBy on QueryBuilder<LensModel, LensModel, QSortBy> {
   QueryBuilder<LensModel, LensModel, QAfterSortBy> sortByCompanyName() {
@@ -1394,6 +1705,12 @@ extension LensModelQueryWhereDistinct
     });
   }
 
+  QueryBuilder<LensModel, LensModel, QDistinct> distinctByImageUrls() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'imageUrls');
+    });
+  }
+
   QueryBuilder<LensModel, LensModel, QDistinct> distinctByLensType(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
@@ -1434,6 +1751,12 @@ extension LensModelQueryProperty
   QueryBuilder<LensModel, DateTime?, QQueryOperations> dateProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'date');
+    });
+  }
+
+  QueryBuilder<LensModel, List<String>, QQueryOperations> imageUrlsProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'imageUrls');
     });
   }
 

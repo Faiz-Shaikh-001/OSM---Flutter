@@ -42,7 +42,7 @@ class _ImageSelectorWidgetState extends State<ImageSelectorWidget> {
     return Column(
       children: [
         const Text(
-          'Upload Product Images',
+          'Upload Images',
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 10),

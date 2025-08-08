@@ -1,6 +1,9 @@
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
+import 'package:osm/data/models/lens_model.dart';
+import 'package:osm/data/models/lens_enums.dart';
+import 'package:osm/utils/product_type.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
@@ -10,14 +13,71 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/foundation.dart';
 
 import '../data/models/frame_model.dart';
+import '../data/models/frame_enums.dart';
 import 'custom_button.dart';
 
 class QrGeneratorWidget extends StatelessWidget {
-  final FrameModel frame;
-  final FrameVariant variant;
+  final dynamic product;
+  final ProductType productType;
   final GlobalKey qrKey = GlobalKey();
 
-  QrGeneratorWidget({super.key, required this.frame, required this.variant});
+  QrGeneratorWidget({
+    super.key,
+    required this.product,
+    required this.productType,
+  });
+
+  // Helper method to get the product name
+  String _getProductName(dynamic prod, ProductType type) {
+    if (type == ProductType.frame) {
+      final frame = prod as FrameModel;
+      return "${frame.companyName} - ${frame.name}";
+    } else if (type == ProductType.lens) {
+      final lens = prod as LensModel;
+      return "${lens.companyName} - ${lens.productName}";
+    }
+    return "Unknown Product";
+  }
+
+  // Helper method to get the product SKU/Code
+  String _getProductCode(dynamic prod, ProductType type) {
+    if (type == ProductType.frame) {
+      final frame = prod as FrameModel;
+      return frame.variants.isNotEmpty
+          ? frame.variants.first.productCode ?? 'N/A'
+          : 'N/A';
+    } else if (type == ProductType.lens) {
+      final lens = prod as LensModel;
+      return lens.variants.isNotEmpty
+          ? lens.variants.first.productCode ?? 'N/A'
+          : 'N/A';
+    }
+    return 'N/A';
+  }
+
+  Map<String, String> _getProductSpecificDetails(
+    dynamic prod,
+    ProductType type,
+  ) {
+    if (type == ProductType.frame) {
+      final frame = prod as FrameModel;
+      final variant = frame.variants.isNotEmpty ? frame.variants.first : null;
+      return {
+        "Size": variant?.size?.toString() ?? 'N/A',
+        "Color": variant?.colorName ?? 'N/A',
+      };
+    } else if (type == ProductType.lens) {
+      final lens = prod as LensModel;
+      final variant = lens.variants.isNotEmpty ? lens.variants.first : null;
+      return {
+        "Type": lens.lensType.displayName,
+        "Material": variant?.materialType?.displayName ?? 'N/A',
+        "Sph": variant?.spherical?.toString() ?? 'N/A',
+        "Cyl": variant?.cylindrical?.toString() ?? 'N/A',
+      };
+    }
+    return {};
+  }
 
   Future<void> _printQrWithDetails() async {
     final pdf = pw.Document();
@@ -49,12 +109,16 @@ class QrGeneratorWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final String qrData =
+        "${product.id}_${_getProductCode(product, productType)}";
+
     final barcode = Barcode.qrCode();
-    final productCode = variant.productCode;
+    final svg = barcode.toSvg(qrData, width: 150, height: 150, drawText: false);
 
-    final code = frame.id.toString() + productCode.toString();
-
-    final svg = barcode.toSvg(code, width: 150, height: 150, drawText: false);
+    final productSpecificDetails = _getProductSpecificDetails(
+      product,
+      productType,
+    );
 
     return Scaffold(
       appBar: AppBar(title: const Text("Product QR")),
@@ -92,23 +156,21 @@ class QrGeneratorWidget extends StatelessWidget {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  "${frame.companyName} - ${frame.name}",
+                                  _getProductName(product, productType),
                                   style: const TextStyle(
                                     fontSize: 18,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
                                 const SizedBox(height: 8),
-                                Text(
-                                  "Size: ${variant.size}",
-                                  style: const TextStyle(fontSize: 16),
+                                ...productSpecificDetails.entries.map(
+                                  (entry) => Text(
+                                    "${entry.key}: ${entry.value}",
+                                    style: const TextStyle(fontSize: 16),
+                                  ),
                                 ),
                                 Text(
-                                  "Color: ${variant.colorName}",
-                                  style: const TextStyle(fontSize: 16),
-                                ),
-                                Text(
-                                  "SKU: $productCode",
+                                  "SKU: ${_getProductCode(product, productType)}",
                                   style: const TextStyle(fontSize: 16),
                                 ),
                               ],

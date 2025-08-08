@@ -1,6 +1,9 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:osm/screens/add_order_screen.dart';
+import 'package:osm/screens/customer_screen.dart';
 import 'package:osm/screens/inventory_screen.dart';
+import 'package:osm/screens/order_list_screen.dart';
 import 'package:osm/screens/settings_screen.dart';
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'dart:math';
@@ -17,10 +20,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
   bool _isDialOpen = false;
 
   final List<Widget> _pages = [
-    const Center(child: Text('Orders')),
+    const OrderListScreen(),
     const InventoryScreen(),
     const SizedBox(),
-    const Center(child: Text('Customers')),
+    const CustomerListScreen(),
     const SettingsPage(),
   ];
 
@@ -163,9 +166,21 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   void _handleAction(String label) {
     setState(() => _isDialOpen = false);
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text('$label tapped')));
+    if (label == 'Create Order') {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const AddOrderScreen()),
+      );
+    } else if (label == 'Scan Barcode') {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('$label tapped')));
+    } else if (label == 'Manage Stock') {
+      // Navigate to InventoryScreen
+      setState(() {
+        _selectedIndex = 1; // Index for InventoryScreen
+      });
+    }
   }
 }
 
@@ -214,7 +229,7 @@ class _BuildDashboardContent extends StatelessWidget {
             children: [
               InkWell(
                 onTap: () {
-                  print('Tapped on New Order #1234');
+                  debugPrint('Tapped on New Order #1234');
                   // You can add navigation or custom logic here
                 },
                 child: ListTile(
@@ -225,7 +240,7 @@ class _BuildDashboardContent extends StatelessWidget {
               ),
               InkWell(
                 onTap: () {
-                  print('Tapped on Payment received');
+                  debugPrint('Tapped on Payment received');
                 },
                 child: ListTile(
                   title: Text('Payment received'),
@@ -235,7 +250,7 @@ class _BuildDashboardContent extends StatelessWidget {
               ),
               InkWell(
                 onTap: () {
-                  print('Tapped on Low stock alert');
+                  debugPrint('Tapped on Low stock alert');
                 },
                 child: ListTile(
                   title: Text('Low stock alert'),

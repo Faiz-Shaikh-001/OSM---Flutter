@@ -1,7 +1,7 @@
 // imports
-import 'dart:io';
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart'; // Keep if you use Color, otherwise remove
 import 'package:isar/isar.dart';
+import 'package:osm/data/models/inventory_model.dart';
 import 'frame_enums.dart';
 
 part 'frame_model.g.dart';
@@ -29,13 +29,19 @@ class FrameModel {
 
   final List<FrameVariant> variants;
 
+  // --- Relationships ---
+  @Backlink(to: 'frame')
+  final IsarLinks<InventoryModel> inventoryEntry; // Initialized in constructor
+
   FrameModel._internal({
     required this.date,
     required this.companyName,
     required this.frameType,
     required this.name,
     this.variants = const [],
-  });
+    IsarLinks<InventoryModel>? inventoryEntry, // Add to constructor
+  }) : inventoryEntry =
+           inventoryEntry ?? IsarLinks<InventoryModel>(); // Initialize here
 
   factory FrameModel({
     DateTime? date, // Optional, nullable parameter
@@ -50,6 +56,7 @@ class FrameModel {
       frameType: frameType,
       name: name,
       variants: variants,
+      inventoryEntry: IsarLinks<InventoryModel>(), // Pass new instance
     );
   }
 
@@ -61,13 +68,16 @@ class FrameModel {
     String? companyName,
     String? name,
     List<FrameVariant>? variants,
+    IsarLinks<InventoryModel>? inventoryEntry,
   }) {
-    return FrameModel(
+    return FrameModel._internal(
+      // Call internal constructor
       date: date ?? this.date,
       frameType: frameType ?? this.frameType,
       companyName: companyName ?? this.companyName,
       name: name ?? this.name,
       variants: variants ?? this.variants,
+      inventoryEntry: inventoryEntry ?? this.inventoryEntry,
     )..id = id ?? this.id;
   }
 
@@ -128,8 +138,8 @@ class FrameVariant {
   // Frame copywith function to create a duplicate copy instead of directly changing the original
   FrameVariant copyWith({
     List<String>? imageUrls,
-    List<File>? localImages,
-    FrameModel? frame,
+    List<String>?
+    localImagesPaths, // Changed from File to String for Isar compatibility
     String? code,
     Color? color,
     String? colorName,
@@ -141,7 +151,8 @@ class FrameVariant {
   }) {
     return FrameVariant(
       imageUrls: imageUrls ?? this.imageUrls,
-      localImagesPaths: localImagesPaths ?? localImagesPaths,
+      localImagesPaths:
+          localImagesPaths ?? this.localImagesPaths, // Corrected access
       code: code ?? this.code,
       color: color ?? this.color,
       colorName: colorName ?? this.colorName,
