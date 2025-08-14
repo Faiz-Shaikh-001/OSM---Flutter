@@ -54,7 +54,7 @@ class _SettingsPageState extends State<SettingsPage> {
             _lowStockAlertsEnabled, 
             (value) => setState(() => _lowStockAlertsEnabled = value)
           ),
-          _buildSettingsItem(Icons.price_change_outlined, 'Default Tax Rate (e.g., GST %)'),
+          _buildSettingsItem(Icons.price_change_outlined, 'Default Tax Rate ( GST %)'),
           _buildSwitchItem(
             Icons.qr_code_scanner_outlined, 
             'Auto-trigger Barcode Scanner', 

@@ -10,11 +10,13 @@ class CustomerViewModel extends ChangeNotifier {
   List<CustomerModel> _customers = [];
   bool _isLoading = false;
   String? _errorMessage;
+  List<CustomerModel> _searchResults = [];
 
   // Getters to expose state to the UI
   List<CustomerModel> get customers => _customers;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
+  List<CustomerModel> get searchResults => _searchResults;
 
   CustomerViewModel(this._customerRepository);
 
@@ -74,5 +76,33 @@ class CustomerViewModel extends ChangeNotifier {
       _isLoading = false;
       notifyListeners();
     }
+  }
+
+  // Search Customer using first name or last name or phone number
+  Future<void> searchCustomers(String query) async {
+    if (query.isEmpty) {
+      _searchResults = [];
+      notifyListeners();
+      return;
+    }
+
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      _searchResults = await _customerRepository.searchCustomers(query);
+      debugPrint('View Model found ${_searchResults.length} customers.');
+    } catch (e) {
+      debugPrint('Error searching for customers: $e');
+      _searchResults = [];
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  void clearSearchResults() {
+    _searchResults = [];
+    notifyListeners();
   }
 }

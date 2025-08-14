@@ -74,6 +74,34 @@ class _ItemPageState extends State<ItemPage> {
     }
   }
 
+  void _refreshProductData() {
+    if (!mounted) return;
+
+    if (widget.productType == ProductType.frame) {
+      final viewModel = context.read<FrameViewmodel>();
+      final updatedProduct = viewModel.frames.firstWhere(
+        (frame) => frame.id == widget.product.id,
+        orElse: () => _currentProduct,
+      );
+
+      setState(() {
+        _currentProduct = updatedProduct;
+        _initializeVariants();
+      });
+    } else if (widget.productType == ProductType.lens) {
+      final viewModel = context.read<LensViewmodel>();
+      final updatedProduct = viewModel.lens.firstWhere(
+        (lens) => lens.id == widget.product.id,
+        orElse: () => _currentProduct,
+      );
+
+      setState(() {
+        _currentProduct = updatedProduct;
+        _initializeVariants();
+      });
+    }
+  }
+
   // --- HELPER METHODS (Now read from state) ---
 
   List<String> _getImageUrls() {

@@ -95,12 +95,26 @@ class CustomerRepository {
   Future<List<CustomerModel>> searchCustomers(String query) async {
     try {
       final isar = await _isarService.db;
-      return await isar.customerModels
+      final nameParts = query.trim().split(' ');
+
+      final result = await isar.customerModels
           .filter()
+          .optional(nameParts.length > 1, (q) {
+            return q.group(
+              (q2) => q2
+                  .firstNameContains(nameParts.first, caseSensitive: false)
+                  .and()
+                  .lastNameContains(nameParts.last, caseSensitive: false),
+            );
+          })
           .firstNameContains(query, caseSensitive: false)
           .or()
           .lastNameContains(query, caseSensitive: false)
+          .or()
+          .primaryPhoneNumberStartsWith(query)
           .findAll();
+      debugPrint('Repository found ${result.length} customers.');
+      return result;
     } catch (e) {
       debugPrint('Error searching customers: $e');
       rethrow;

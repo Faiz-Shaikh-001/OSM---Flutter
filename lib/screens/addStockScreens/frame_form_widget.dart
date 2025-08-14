@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:osm/data/models/frame_enums.dart';
 import 'package:osm/services/color_api_service.dart';
+import 'package:osm/services/save_image_to_app_directory.dart';
 import 'package:osm/widgets/build_text_field_widget.dart';
 import 'package:osm/widgets/image_selector_widget.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
@@ -15,9 +16,8 @@ class FrameVariantFormControllers {
   final TextEditingController quantityController;
   final TextEditingController purchasePriceController;
   final TextEditingController salesPriceController;
-  // ADDED: Controller for the hex color code
   final TextEditingController hexColorController;
-  Color color; // Color for this variant
+  Color color;
 
   FrameVariantFormControllers({
     required this.sizeController,
@@ -25,7 +25,7 @@ class FrameVariantFormControllers {
     required this.purchasePriceController,
     required this.salesPriceController,
     required this.hexColorController,
-    this.color = Colors.black, // Default color
+    this.color = Colors.black,
   });
 
   void dispose() {
@@ -76,7 +76,6 @@ class _FrameFormWidgetState extends State<FrameFormWidget> {
     super.dispose();
   }
 
-  // --- ADDED: Missing method to handle date picking ---
   Future<void> _pickDate() async {
     final picked = await showDatePicker(
       context: context,
@@ -91,8 +90,6 @@ class _FrameFormWidgetState extends State<FrameFormWidget> {
     }
   }
 
-  // --- HELPER METHODS FOR COLOR CONVERSION ---
-  // FIXED: Updated to remove deprecated '.value' property
   String _colorToHex(Color color) {
     return '${color.red.toRadixString(16).padLeft(2, '0')}'
            '${color.green.toRadixString(16).padLeft(2, '0')}'
@@ -106,7 +103,7 @@ class _FrameFormWidgetState extends State<FrameFormWidget> {
     try {
       return Color(int.parse(buffer.toString(), radix: 16));
     } catch (e) {
-      return Colors.black; // Fallback to black on error
+      return Colors.black;
     }
   }
 
@@ -121,7 +118,6 @@ class _FrameFormWidgetState extends State<FrameFormWidget> {
       color: defaultColor,
     );
 
-    // Add listener for real-time hex-to-color updates
     newControllers.hexColorController.addListener(() {
       final text = newControllers.hexColorController.text;
       if (text.length == 6) {
@@ -149,6 +145,7 @@ class _FrameFormWidgetState extends State<FrameFormWidget> {
     }
   }
 
+  // --- This method is from your ui-update branch ---
   void _pickColor(FrameVariantFormControllers controllers) {
     showDialog(
       context: context,
@@ -163,7 +160,7 @@ class _FrameFormWidgetState extends State<FrameFormWidget> {
                 controllers.hexColorController.text = _colorToHex(color);
               });
             },
-            labelTypes: const [ColorLabelType.hex], // Enable Hex input
+            labelTypes: const [ColorLabelType.hex],
             pickerAreaHeightPercent: 0.8,
             enableAlpha: false,
           ),
@@ -184,41 +181,84 @@ class _FrameFormWidgetState extends State<FrameFormWidget> {
       return;
     }
     
-    // ... other validations ...
+    // --- This block is from your main branch ---
+    final List<String> permanentImagePaths = [];
+    try {
+      for (final tempImage in _selectedImages) {
+        final savedPath = await saveImageToAppDirectory(tempImage);
+        permanentImagePaths.add(savedPath);
+      }
+    } catch (e) {
+      debugPrint("Error saving images to disk: $e");
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Error saving images. Please try again."),
+          ),
+        );
+      }
+      return;
+    }
+
+    // --- This block is also from your main branch ---
+    for (int i = 0; i < _variantControllers.length; i++) {
+      final controllers = _variantControllers[i];
+      if (controllers.color == Colors.black && i > 0) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("Please select a color for Variant ${i + 1}."),
+          ),
+        );
+        return;
+      }
+      if (int.tryParse(controllers.sizeController.text) == null ||
+          int.tryParse(controllers.quantityController.text) == null ||
+          double.tryParse(controllers.purchasePriceController.text) == null ||
+          double.tryParse(controllers.salesPriceController.text) == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              "Please fill all valid numeric details for Variant ${i + 1} (size, quantity, prices).",
+            ),
+          ),
+        );
+        return;
+      }
+    }
 
     final String companyName = _companyController.text.trim();
     final String modelName = _nameController.text.trim();
     final String modelCode = _codeController.text.trim();
 
-    final List<FrameVariant> variantsToSave = [];
-    final List<String> imageUrlsToSave = _selectedImages
-        .map((file) => file.path)
-        .toList();
+    final colorApiService = ColorApiService();
 
+    final List<FrameVariant> variantsToSave = [];
+    
     for (final controllers in _variantControllers) {
-      // UPDATED: Use the hex code as the color name
-      final String colorName = controllers.hexColorController.text.trim().toUpperCase();
+      final colorName = await colorApiService.getColorName(
+        color: controllers.color,
+      );
 
       final String computedProductCode = FrameVariant.generateProductCode(
         _frameType!,
         companyName,
         modelName,
         modelCode,
-        colorName, // Use the hex code here
+        colorName,
         int.parse(controllers.sizeController.text),
       );
 
       final FrameVariant variant = FrameVariant(
         code: modelCode,
         color: controllers.color,
-        colorName: colorName, // Save the hex code as the name
+        colorName: colorName,
         productCode: computedProductCode,
         size: int.parse(controllers.sizeController.text),
         quantity: int.parse(controllers.quantityController.text),
         purchasePrice: double.parse(controllers.purchasePriceController.text),
         salesPrice: double.parse(controllers.salesPriceController.text),
-        imageUrls: imageUrlsToSave,
-        localImagesPaths: imageUrlsToSave,
+        imageUrls: permanentImagePaths, // Use the saved paths
+        localImagesPaths: permanentImagePaths,
       );
 
       variantsToSave.add(variant);
@@ -267,7 +307,6 @@ class _FrameFormWidgetState extends State<FrameFormWidget> {
             ),
             const SizedBox(height: 16),
             
-            // --- UPDATED: Color Picker UI with Hex Field ---
             Row(
               children: [
                 Expanded(
@@ -331,7 +370,6 @@ class _FrameFormWidgetState extends State<FrameFormWidget> {
         key: _formKey,
         child: Column(
           children: [
-            // ... (Image Selector, Date Picker, etc. are unchanged)
             ImageSelectorWidget(
               selectedImages: _selectedImages,
               onImagesChanged: (imgs) => setState(() => _selectedImages

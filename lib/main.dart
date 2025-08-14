@@ -37,7 +37,6 @@ void main() async {
 
   final isarService = IsarService();
   await isarService.db;
-
   sharedPreferences = await SharedPreferences.getInstance();
 
   // Dummy data population call
@@ -91,7 +90,10 @@ void main() async {
           create: (context) => LensViewmodel(context.read<LensRepository>()),
         ),
         ChangeNotifierProvider<OrderViewModel>(
-          create: (context) => OrderViewModel(context.read<OrderRepository>()),
+          create: (context) => OrderViewModel(
+            context.read<OrderRepository>(),
+            context.read<CustomerViewModel>(),
+          ),
         ),
         ChangeNotifierProvider<PrescriptionViewModel>(
           create: (context) =>

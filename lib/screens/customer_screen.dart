@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:osm/data/models/customer_model.dart';
@@ -36,6 +38,19 @@ class _CustomerListScreenState extends State<CustomerListScreen> {
 
     // Call the addCustomer method on the ViewModel
     await context.read<CustomerViewModel>().addCustomer(newCustomer);
+  }
+
+  ImageProvider<Object>? _buildCustomerImage(String imagePath) {
+    if (imagePath.startsWith('http')) {
+      // Show a network image if it's a URL
+      return NetworkImage(imagePath);
+    } else if (imagePath.isNotEmpty) {
+      // Show a file image for local paths
+      return FileImage(File(imagePath));
+    } else {
+      // Show a placeholder
+      return null;
+    }
   }
 
   @override
@@ -87,9 +102,11 @@ class _CustomerListScreenState extends State<CustomerListScreen> {
                   ),
                   child: ListTile(
                     leading: CircleAvatar(
-                      backgroundImage: NetworkImage(customer.profileImageUrl),
+                      backgroundImage: _buildCustomerImage(
+                        customer.profileImageUrl,
+                      ),
                       onBackgroundImageError: (exception, stackTrace) {
-                        print('Error loading image: $exception');
+                        debugPrint('Error loading image: $exception');
                       },
                     ),
                     title: Text('${customer.firstName} ${customer.lastName}'),
