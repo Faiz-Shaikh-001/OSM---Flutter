@@ -1,6 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:osm/screens/add_order_screen.dart';
+import 'package:osm/screens/addOrderScreens/add_order_screen.dart';
 import 'package:osm/screens/customer_screen.dart';
 import 'package:osm/screens/inventory_screen.dart';
 import 'package:osm/screens/order_list_screen.dart';

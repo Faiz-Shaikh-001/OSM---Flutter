@@ -91,9 +91,7 @@ class CustomerViewModel extends ChangeNotifier {
 
     try {
       _searchResults = await _customerRepository.searchCustomers(query);
-      debugPrint('View Model found ${_searchResults.length} customers.');
     } catch (e) {
-      debugPrint('Error searching for customers: $e');
       _searchResults = [];
     } finally {
       _isLoading = false;

@@ -107,16 +107,15 @@ class CustomerRepository {
                   .lastNameContains(nameParts.last, caseSensitive: false),
             );
           })
+          .or()
           .firstNameContains(query, caseSensitive: false)
           .or()
           .lastNameContains(query, caseSensitive: false)
           .or()
           .primaryPhoneNumberStartsWith(query)
           .findAll();
-      debugPrint('Repository found ${result.length} customers.');
       return result;
     } catch (e) {
-      debugPrint('Error searching customers: $e');
       rethrow;
     }
   }
