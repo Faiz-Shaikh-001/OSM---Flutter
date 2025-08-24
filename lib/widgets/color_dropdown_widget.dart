@@ -71,6 +71,7 @@ class _ColorDropDownWidgetState extends State<ColorDropDownWidget> {
           value: isDisabled ? null : _currentSelectedColorName,
           icon: Icon(Icons.arrow_drop_down),
           borderRadius: BorderRadius.circular(8.0),
+          underline: const SizedBox(),
           onChanged: isDisabled
               ? null
               : (String? newValue) {

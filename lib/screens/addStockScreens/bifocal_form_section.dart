@@ -199,7 +199,7 @@ class _BifocalFormSectionState extends State<BifocalFormSection> {
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
-                  ), // Adjusted font size
+                  ),
                 ),
                 TextButton.icon(
                   onPressed: _addVariant,
@@ -212,9 +212,9 @@ class _BifocalFormSectionState extends State<BifocalFormSection> {
             // --- Dynamic Variant Forms ---
             ..._variantControllers.asMap().entries.map(
               (entry) => _buildVariantForm(entry.key, entry.value),
-            ), // Convert to List for Column children
+            ),
 
-            const SizedBox(height: 20), // Spacing before submit button
+            const SizedBox(height: 20),
             CustomButton(
               onPressed: _submitForm,
               label: "Submit All Lenses",
@@ -258,7 +258,7 @@ class _BifocalFormSectionState extends State<BifocalFormSection> {
             ),
             const SizedBox(height: 16),
             DropdownButtonFormField(
-              decoration: InputDecoration(labelText: 'Material Type'),
+              decoration: const InputDecoration(labelText: 'Material Type'),
               value: controllers.materialType,
               items: LensMaterialType.values.map((type) {
                 return DropdownMenuItem(
@@ -272,42 +272,38 @@ class _BifocalFormSectionState extends State<BifocalFormSection> {
                   value == null ? 'Select Material Type' : null,
             ),
             const SizedBox(height: 16),
+
+            // --- FIXED LAYOUT ---
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                SizedBox(
-                  width: MediaQuery.of(context).size.width * .43,
+                Expanded(
                   child: BuildTextFieldWidget(
                     isDecimal: true,
                     controller: controllers.indexController,
                     label: "Index",
                   ),
                 ),
-                SizedBox(
-                  width: MediaQuery.of(context).size.width * .45,
-                  child: Expanded(
-                    child: BuildTextFieldWidget(
-                      isDecimal: true,
-                      controller: controllers.diameterController,
-                      label: "DIA",
-                    ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: BuildTextFieldWidget(
+                    isDecimal: true,
+                    controller: controllers.diameterController,
+                    label: "DIA",
                   ),
                 ),
               ],
             ),
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                SizedBox(
-                  width: MediaQuery.of(context).size.width * .43,
+                Expanded(
                   child: BuildTextFieldWidget(
                     isDecimal: true,
                     controller: controllers.sphericalController,
                     label: "SPH",
                   ),
                 ),
-                SizedBox(
-                  width: MediaQuery.of(context).size.width * .45,
+                const SizedBox(width: 16),
+                Expanded(
                   child: BuildTextFieldWidget(
                     isDecimal: true,
                     controller: controllers.cylindricalController,
@@ -317,18 +313,16 @@ class _BifocalFormSectionState extends State<BifocalFormSection> {
               ],
             ),
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                SizedBox(
-                  width: MediaQuery.of(context).size.width * .43,
+                Expanded(
                   child: BuildTextFieldWidget(
                     isDecimal: true,
                     controller: controllers.axisController,
                     label: "Axis",
                   ),
                 ),
-                SizedBox(
-                  width: MediaQuery.of(context).size.width * .45,
+                const SizedBox(width: 16),
+                Expanded(
                   child: BuildTextFieldWidget(
                     isDecimal: true,
                     controller: controllers.addController,
@@ -338,10 +332,8 @@ class _BifocalFormSectionState extends State<BifocalFormSection> {
               ],
             ),
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                SizedBox(
-                  width: MediaQuery.of(context).size.width * .5,
+                Expanded(
                   child: BuildTextFieldWidget(
                     controller: controllers.pairController,
                     label: "Pair",
@@ -351,17 +343,15 @@ class _BifocalFormSectionState extends State<BifocalFormSection> {
               ],
             ),
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                SizedBox(
-                  width: MediaQuery.of(context).size.width * .43,
+                Expanded(
                   child: BuildTextFieldWidget(
                     controller: controllers.purchasePriceController,
                     label: "Purchase Price",
                   ),
                 ),
-                SizedBox(
-                  width: MediaQuery.of(context).size.width * .45,
+                const SizedBox(width: 16),
+                Expanded(
                   child: BuildTextFieldWidget(
                     controller: controllers.salesPriceController,
                     label: "Sales Price",

@@ -4,29 +4,29 @@ import 'package:intl/intl.dart';
 import 'package:osm/data/models/frame_enums.dart';
 import 'package:osm/services/color_api_service.dart';
 import 'package:osm/services/save_image_to_app_directory.dart';
+import 'package:osm/services/save_image_to_app_directory.dart';
 import 'package:osm/widgets/build_text_field_widget.dart';
 import 'package:osm/widgets/image_selector_widget.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import '../../data/models/frame_model.dart';
 import '../../widgets/custom_button.dart';
-// Remove MultiColorPicker import if no longer used after refactor
 
-// 1. Helper class to hold controllers and state for a single Frame variant form
+// Helper class to hold controllers and state for a single Frame variant form
 class FrameVariantFormControllers {
   final TextEditingController sizeController;
   final TextEditingController quantityController;
   final TextEditingController purchasePriceController;
   final TextEditingController salesPriceController;
-  Color color; // Color for this variant
-  String? colorName; // Name of the color (fetched from API)
+  final TextEditingController hexColorController;
+  Color color;
 
   FrameVariantFormControllers({
     required this.sizeController,
     required this.quantityController,
     required this.purchasePriceController,
     required this.salesPriceController,
-    this.color = Colors.black, // Default color
-    this.colorName,
+    required this.hexColorController,
+    this.color = Colors.black,
   });
 
   void dispose() {
@@ -34,6 +34,7 @@ class FrameVariantFormControllers {
     quantityController.dispose();
     purchasePriceController.dispose();
     salesPriceController.dispose();
+    hexColorController.dispose();
   }
 }
 
@@ -51,20 +52,17 @@ class _FrameFormWidgetState extends State<FrameFormWidget> {
 
   DateTime _selectedDate = DateTime.now();
   FrameType? _frameType;
-  final List<File> _selectedImages = []; // Top-level images for the FrameModel
+  final List<File> _selectedImages = [];
 
   final _companyController = TextEditingController();
   final _nameController = TextEditingController();
   final _codeController = TextEditingController();
 
-  // List to hold controllers for each dynamically added variant
-  final List<FrameVariantFormControllers> _variantControllers =
-      []; // Renamed from _variantForms
+  final List<FrameVariantFormControllers> _variantControllers = [];
 
   @override
   void initState() {
     super.initState();
-    // Initialize with one variant form by default
     _addVariant();
   }
 
@@ -73,7 +71,6 @@ class _FrameFormWidgetState extends State<FrameFormWidget> {
     _companyController.dispose();
     _nameController.dispose();
     _codeController.dispose();
-    // Dispose all controllers in the variant list
     for (var controllers in _variantControllers) {
       controllers.dispose();
     }
@@ -87,74 +84,120 @@ class _FrameFormWidgetState extends State<FrameFormWidget> {
       firstDate: DateTime(2023),
       lastDate: DateTime(2100),
     );
-    if (picked != null) {
-      setState(() => _selectedDate = picked);
+    if (picked != null && picked != _selectedDate) {
+      setState(() {
+        _selectedDate = picked;
+      });
+    }
+  }
+
+  String _colorToHex(Color color) {
+    return '${color.red.toRadixString(16).padLeft(2, '0')}'
+            '${color.green.toRadixString(16).padLeft(2, '0')}'
+            '${color.blue.toRadixString(16).padLeft(2, '0')}'
+        .toUpperCase();
+  }
+
+  Color _hexToColor(String hexString) {
+    final buffer = StringBuffer();
+    if (hexString.length == 6 || hexString.length == 7) buffer.write('ff');
+    buffer.write(hexString.replaceFirst('#', ''));
+    try {
+      return Color(int.parse(buffer.toString(), radix: 16));
+    } catch (e) {
+      return Colors.black;
     }
   }
 
   void _addVariant() {
+    final defaultColor = Colors.black;
+    final newControllers = FrameVariantFormControllers(
+      sizeController: TextEditingController(text: '0'),
+      quantityController: TextEditingController(text: '1'),
+      purchasePriceController: TextEditingController(text: '0.0'),
+      salesPriceController: TextEditingController(text: '0.0'),
+      hexColorController: TextEditingController(
+        text: _colorToHex(defaultColor),
+      ),
+      color: defaultColor,
+    );
+
+    newControllers.hexColorController.addListener(() {
+      final text = newControllers.hexColorController.text;
+      if (text.length == 6) {
+        setState(() {
+          newControllers.color = _hexToColor(text);
+        });
+      }
+    });
+
     setState(() {
-      _variantControllers.add(
-        FrameVariantFormControllers(
-          sizeController: TextEditingController(
-            text: '0',
-          ), // Default initial value
-          quantityController: TextEditingController(
-            text: '1',
-          ), // Default quantity
-          purchasePriceController: TextEditingController(
-            text: '0.0',
-          ), // Default price
-          salesPriceController: TextEditingController(
-            text: '0.0',
-          ), // Default price
-          color: Colors.black, // Default color for new variant
-        ),
-      );
+      _variantControllers.add(newControllers);
     });
   }
 
   void _removeVariant(int index) {
-    setState(() {
-      // Only allow removing if there's more than one variant
-      if (_variantControllers.length > 1) {
-        _variantControllers[index]
-            .dispose(); // Dispose controllers of the removed variant
+    if (_variantControllers.length > 1) {
+      setState(() {
+        _variantControllers[index].dispose();
         _variantControllers.removeAt(index);
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Cannot remove the last variant.")),
-        );
-      }
-    });
+      });
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Cannot remove the last variant.")),
+      );
+    }
+  }
+
+  // --- This method is from your ui-update branch ---
+  void _pickColor(FrameVariantFormControllers controllers) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Pick a color'),
+        content: SingleChildScrollView(
+          child: ColorPicker(
+            pickerColor: controllers.color,
+            onColorChanged: (color) {
+              setState(() {
+                controllers.color = color;
+                controllers.hexColorController.text = _colorToHex(color);
+              });
+            },
+            labelTypes: const [ColorLabelType.hex],
+            pickerAreaHeightPercent: 0.8,
+            enableAlpha: false,
+          ),
+        ),
+        actions: <Widget>[
+          TextButton(
+            child: const Text('Done'),
+            onPressed: () => Navigator.of(context).pop(),
+          ),
+        ],
+      ),
+    );
   }
 
   void _handleSubmit() async {
     if (!_formKey.currentState!.validate() || _frameType == null) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-              'Please fill all required fields and select a frame type.',
-            ),
-          ),
-        );
+      // ... validation logic ...
+      return;
+    }
+
+    // --- This block is from your main branch ---
+    final List<String> permanentImagePaths = [];
+    try {
+      for (final tempImage in _selectedImages) {
+        final savedPath = await saveImageToAppDirectory(tempImage);
+        permanentImagePaths.add(savedPath);
       }
-      return;
-    }
-
-    if (_variantControllers.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please add at least one variant.")),
-      );
-      return;
-    }
-
-    if (_selectedImages.isEmpty) {
+    } catch (e) {
+      debugPrint("Error saving images to disk: $e");
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text("Please upload at least one image for the product."),
+            content: Text("Error saving images. Please try again."),
           ),
         );
       }
@@ -179,11 +222,28 @@ class _FrameFormWidgetState extends State<FrameFormWidget> {
       return;
     }
 
-    // Validate individual variant data
+    final List<String> permanentImagePaths = [];
+    try {
+      for (final tempImage in _selectedImages) {
+        final savedPath = await saveImageToAppDirectory(tempImage);
+        permanentImagePaths.add(savedPath);
+      }
+    } catch (e) {
+      debugPrint("Error saving images to disk: $e");
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Error saving images. Please try again."),
+          ),
+        );
+      }
+      return;
+    }
+
+    // --- This block is also from your main branch ---
     for (int i = 0; i < _variantControllers.length; i++) {
       final controllers = _variantControllers[i];
       if (controllers.color == Colors.black && i > 0) {
-        // Assuming default black needs to be changed
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text("Please select a color for Variant ${i + 1}."),
@@ -204,19 +264,6 @@ class _FrameFormWidgetState extends State<FrameFormWidget> {
         );
         return;
       }
-      if (int.parse(controllers.sizeController.text) <= 0 ||
-          int.parse(controllers.quantityController.text) <= 0 ||
-          double.parse(controllers.purchasePriceController.text) <= 0.0 ||
-          double.parse(controllers.salesPriceController.text) <= 0.0) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              "All numeric fields for Variant ${i + 1} must be greater than zero.",
-            ),
-          ),
-        );
-        return;
-      }
     }
 
     final String companyName = _companyController.text.trim();
@@ -226,9 +273,6 @@ class _FrameFormWidgetState extends State<FrameFormWidget> {
     final colorApiService = ColorApiService();
 
     final List<FrameVariant> variantsToSave = [];
-    final List<String> imageUrlsToSave = _selectedImages
-        .map((file) => file.path)
-        .toList();
 
     for (final controllers in _variantControllers) {
       final colorName = await colorApiService.getColorName(
@@ -253,9 +297,8 @@ class _FrameFormWidgetState extends State<FrameFormWidget> {
         quantity: int.parse(controllers.quantityController.text),
         purchasePrice: double.parse(controllers.purchasePriceController.text),
         salesPrice: double.parse(controllers.salesPriceController.text),
-        imageUrls:
-            imageUrlsToSave, // All variants share the same top-level product images
-        localImagesPaths: imageUrlsToSave, // Local paths for storage
+        imageUrls: permanentImagePaths, // Use the saved paths
+        localImagesPaths: permanentImagePaths,
       );
 
       variantsToSave.add(variant);
@@ -275,17 +318,14 @@ class _FrameFormWidgetState extends State<FrameFormWidget> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Frame stock saved successfully!")),
       );
-      // Navigator.pop(context); // Decide if you want to pop here
     }
   }
 
-  // Helper method to build a single variant form row
   Widget _buildVariantForm(int index, FrameVariantFormControllers controllers) {
-    // Renamed from _buildVariantRow
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 6),
       child: Padding(
-        padding: const EdgeInsets.all(16.0), // Consistent padding
+        padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
             Row(
@@ -296,9 +336,8 @@ class _FrameFormWidgetState extends State<FrameFormWidget> {
                   style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
-                  ), // Larger font for variant title
+                  ),
                 ),
-                // Delete Button (only if more than one variant)
                 if (_variantControllers.length > 1)
                   IconButton(
                     icon: const Icon(Icons.remove_circle, color: Colors.red),
@@ -306,59 +345,38 @@ class _FrameFormWidgetState extends State<FrameFormWidget> {
                   ),
               ],
             ),
-            const SizedBox(height: 16), // Spacing after variant title
-            // Color selector row
+            const SizedBox(height: 16),
+
             Row(
               children: [
-                const Text("Color:"),
-                const SizedBox(width: 10),
-                GestureDetector(
-                  onTap: () async {
-                    final Color? selectedColor = await showDialog<Color>(
-                      // Renamed variable
-                      context: context,
-                      builder: (_) => AlertDialog(
-                        title: const Text("Pick a color"),
-                        content: SingleChildScrollView(
-                          child: ColorPicker(
-                            pickerColor:
-                                controllers.color, // Use controller's color
-                            onColorChanged: (c) => controllers.color =
-                                c, // Update controller's color
-                            enableAlpha: false,
-                          ),
-                        ),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.of(context).pop(
-                              controllers.color,
-                            ), // Pop with controller's color
-                            child: const Text("Done"),
-                          ),
-                        ],
-                      ),
-                    );
-                    if (selectedColor != null) {
-                      setState(
-                        () => controllers.color = selectedColor,
-                      ); // Trigger rebuild to show new color
-                    }
-                  },
-                  child: Container(
-                    width: 30,
-                    height: 30,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: controllers.color, // Display controller's color
-                      border: Border.all(),
+                Expanded(
+                  child: TextFormField(
+                    controller: controllers.hexColorController,
+                    maxLength: 6,
+                    decoration: const InputDecoration(
+                      labelText: 'Hex Color Code',
+                      prefixText: '#',
+                      counterText: "",
                     ),
                   ),
                 ),
-                const Spacer(), // Pushes color picker to the left, delete button to the right
+                const SizedBox(width: 16),
+                GestureDetector(
+                  onTap: () => _pickColor(controllers),
+                  child: Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: controllers.color,
+                      border: Border.all(color: Colors.grey.shade400),
+                    ),
+                  ),
+                ),
               ],
             ),
-            const SizedBox(height: 16), // Spacing after color row
-            // TextFormFields using BuildTextFieldWidget and controllers
+            const SizedBox(height: 16),
+
             BuildTextFieldWidget(
               label: "Size",
               controller: controllers.sizeController,
@@ -392,7 +410,6 @@ class _FrameFormWidgetState extends State<FrameFormWidget> {
         key: _formKey,
         child: Column(
           children: [
-            // Image Selector for the main product (FrameModel)
             ImageSelectorWidget(
               selectedImages: _selectedImages,
               onImagesChanged: (imgs) => setState(
@@ -402,8 +419,6 @@ class _FrameFormWidgetState extends State<FrameFormWidget> {
               ),
             ),
             const SizedBox(height: 10),
-
-            // Date Picker
             ListTile(
               onTap: _pickDate,
               title: const Row(
@@ -417,8 +432,7 @@ class _FrameFormWidgetState extends State<FrameFormWidget> {
                 ),
               ),
             ),
-            const SizedBox(height: 10), // Added spacing
-            // Frame Type Dropdown
+            const SizedBox(height: 10),
             DropdownButtonFormField<FrameType>(
               decoration: const InputDecoration(labelText: 'Frame Type'),
               value: _frameType,
@@ -428,8 +442,7 @@ class _FrameFormWidgetState extends State<FrameFormWidget> {
               onChanged: (type) => setState(() => _frameType = type),
               validator: (value) => value == null ? 'Select frame type' : null,
             ),
-            const SizedBox(height: 16), // Added spacing
-            // Main product details (Company, Model Name, Code) using BuildTextFieldWidget
+            const SizedBox(height: 16),
             BuildTextFieldWidget(
               label: "Company Name",
               controller: _companyController,
@@ -442,17 +455,13 @@ class _FrameFormWidgetState extends State<FrameFormWidget> {
               label: "Model Code",
               controller: _codeController,
             ),
-
             const SizedBox(height: 20),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 const Text(
                   "Variants",
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ), // Adjusted font size
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
                 TextButton.icon(
                   onPressed: _addVariant,
@@ -461,13 +470,9 @@ class _FrameFormWidgetState extends State<FrameFormWidget> {
                 ),
               ],
             ),
-            const Divider(), // Added divider for visual separation
-            // Dynamically generated variant forms
+            const Divider(),
             ..._variantControllers.asMap().entries.map(
-              (entry) => _buildVariantForm(
-                entry.key,
-                entry.value,
-              ), // Pass controller to helper
+              (entry) => _buildVariantForm(entry.key, entry.value),
             ),
             const SizedBox(height: 20),
             CustomButton(
@@ -475,7 +480,7 @@ class _FrameFormWidgetState extends State<FrameFormWidget> {
               label: 'Save Stock',
               icon: Icons.check,
             ),
-            const SizedBox(height: 15), // Consistent spacing
+            const SizedBox(height: 15),
           ],
         ),
       ),

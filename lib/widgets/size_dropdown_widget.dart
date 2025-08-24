@@ -67,6 +67,7 @@ class _SizeDropdownWidgetState extends State<SizeDropdownWidget> {
         DropdownButton<int>(
           value: isDisabled ? null : _currentSelectedSize,
           borderRadius: BorderRadius.circular(8.0),
+          underline: const SizedBox(),
           onChanged: isDisabled
               ? null
               : (int? newValue) {

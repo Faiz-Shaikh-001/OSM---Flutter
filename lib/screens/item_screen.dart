@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:osm/data/models/frame_model.dart';
@@ -33,6 +32,8 @@ class ItemPage extends StatefulWidget {
 }
 
 class _ItemPageState extends State<ItemPage> {
+  // --- STATE VARIABLES ---
+  late dynamic _currentProduct;
   FrameVariant? _selectedFrameVariant;
   int _currentPage = 0;
   final PageController _pageController = PageController();
@@ -40,9 +41,20 @@ class _ItemPageState extends State<ItemPage> {
   @override
   void initState() {
     super.initState();
+    _currentProduct = widget.product;
+    _initializeVariants();
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  void _initializeVariants() {
     if (widget.productType == ProductType.frame &&
-        widget.product is FrameModel) {
-      final frame = widget.product as FrameModel;
+        _currentProduct is FrameModel) {
+      final frame = _currentProduct as FrameModel;
       if (frame.variants.isNotEmpty) {
         _selectedFrameVariant = frame.variants.first;
       }
@@ -75,114 +87,70 @@ class _ItemPageState extends State<ItemPage> {
                 : ['https://placehold.co/600x400/cccccc/000000?text=No+Image']);
     }
     return ['https://placehold.co/600x400/cccccc/000000?text=No+Image'];
+    return ['https://placehold.co/600x400/cccccc/000000?text=No+Image'];
   }
 
-  String _getTitle(dynamic product, ProductType type) {
-    if (type == ProductType.frame) {
-      return (product as FrameModel).name;
-    } else if (type == ProductType.lens) {
-      return (product as LensModel).productName;
+  String _getTitle() {
+    if (widget.productType == ProductType.frame) {
+      return (_currentProduct as FrameModel).name;
+    } else if (widget.productType == ProductType.lens) {
+      return (_currentProduct as LensModel).productName;
     }
     return 'Unknown Product';
   }
 
-  String _getCompanyName(dynamic product, ProductType type) {
-    if (type == ProductType.frame) {
-      return (product as FrameModel).companyName;
-    } else if (type == ProductType.lens) {
-      return (product as LensModel).companyName;
+  String _getCompanyName() {
+    if (widget.productType == ProductType.frame) {
+      return (_currentProduct as FrameModel).companyName;
+    } else if (widget.productType == ProductType.lens) {
+      return (_currentProduct as LensModel).companyName;
     }
     return 'N/A';
   }
 
-  String _getSku(dynamic product, ProductType type) {
-    if (type == ProductType.frame) {
-      final frame = product as FrameModel;
-      return frame.variants.isNotEmpty
-          ? frame.variants.first.productCode ?? 'N/A'
-          : 'N/A';
-    } else if (type == ProductType.lens) {
-      final lens = product as LensModel;
-      return lens.variants.isNotEmpty
-          ? lens.variants.first.productCode ?? 'N/A'
-          : 'N/A';
+  String _getSku() {
+    if (widget.productType == ProductType.frame) {
+      return _selectedFrameVariant?.productCode ?? 'N/A';
+    } else if (widget.productType == ProductType.lens) {
+      return _selectedLensVariant?.productCode ?? 'N/A';
     }
     return 'N/A';
   }
 
-  double _getSalesPrice(dynamic product, ProductType type) {
-    if (type == ProductType.frame) {
-      final frame = product as FrameModel;
-      return frame.variants.isNotEmpty
-          ? frame.variants.first.salesPrice ?? 0.0
-          : 0.0;
-    } else if (type == ProductType.lens) {
-      final lens = product as LensModel;
-      return lens.variants.isNotEmpty
-          ? lens.variants.first.salesPrice ?? 0.0
-          : 0.0;
+  double _getSalesPrice() {
+    if (widget.productType == ProductType.frame) {
+      return _selectedFrameVariant?.salesPrice ?? 0.0;
+    } else if (widget.productType == ProductType.lens) {
+      return _selectedLensVariant?.salesPrice ?? 0.0;
     }
     return 0.0;
   }
 
-  double _getPurchasePrice(dynamic product, ProductType type) {
-    if (type == ProductType.frame) {
-      final frame = product as FrameModel;
-      return frame.variants.isNotEmpty
-          ? frame.variants.first.purchasePrice ?? 0.0
-          : 0.0;
-    } else if (type == ProductType.lens) {
-      final lens = product as LensModel;
-      return lens.variants.isNotEmpty
-          ? lens.variants.first.purchasePrice ?? 0.0
-          : 0.0;
-    }
-    return 0.0;
-  }
-
-  int _getQuantity(dynamic product, ProductType type) {
-    if (type == ProductType.frame) {
-      final frame = product as FrameModel;
-      return frame.variants.isNotEmpty ? frame.variants.first.quantity ?? 0 : 0;
-    } else if (type == ProductType.lens) {
-      final lens = product as LensModel;
-      return lens.variants.isNotEmpty ? lens.variants.first.quantity ?? 0 : 0;
+  int _getQuantity() {
+    if (widget.productType == ProductType.frame) {
+      return _selectedFrameVariant?.quantity ?? 0;
+    } else if (widget.productType == ProductType.lens) {
+      return _selectedLensVariant?.quantity ?? 0;
     }
     return 0;
   }
 
-  String _getCategory(dynamic product, ProductType type) {
-    if (type == ProductType.frame) {
-      return (product as FrameModel).frameType.displayName;
-    } else if (type == ProductType.lens) {
-      return (product as LensModel).lensType.displayName;
+  String _getCategory() {
+    if (widget.productType == ProductType.frame) {
+      return (_currentProduct as FrameModel).frameType.displayName;
+    } else if (widget.productType == ProductType.lens) {
+      return (_currentProduct as LensModel).lensType.displayName;
     }
     return 'N/A';
   }
 
-  String? _getCurrentColorName(dynamic product, ProductType type) {
-    if (type == ProductType.frame) {
-      return _selectedFrameVariant?.colorName;
-    }
-    return null;
-  }
-
-  int? _getCurrentSize(dynamic product, ProductType type) {
-    if (type == ProductType.frame) {
-      return _selectedFrameVariant?.size;
-    }
-    return null;
-  }
-
-  // Method to handle color change from dropdown
   void _onColorChanged(Color newColor) {
-    // Now receives Color object
     if (widget.productType == ProductType.frame &&
-        widget.product is FrameModel) {
-      final frame = widget.product as FrameModel;
+        _currentProduct is FrameModel) {
+      final frame = _currentProduct as FrameModel;
       final newVariant = frame.variants.firstWhere(
-        (v) => v.color == newColor, // Compare by Color object
-        orElse: () => frame.variants.first,
+        (v) => v.color == newColor && v.size == _selectedFrameVariant?.size,
+        orElse: () => _selectedFrameVariant!,
       );
       setState(() {
         _selectedFrameVariant = newVariant;
@@ -190,14 +158,13 @@ class _ItemPageState extends State<ItemPage> {
     }
   }
 
-  // Method to handle size change from dropdown
   void _onSizeChanged(int newSize) {
     if (widget.productType == ProductType.frame &&
-        widget.product is FrameModel) {
-      final frame = widget.product as FrameModel;
+        _currentProduct is FrameModel) {
+      final frame = _currentProduct as FrameModel;
       final newVariant = frame.variants.firstWhere(
-        (v) => v.size == newSize,
-        orElse: () => frame.variants.first,
+        (v) => v.size == newSize && v.color == _selectedFrameVariant?.color,
+        orElse: () => _selectedFrameVariant!,
       );
       setState(() {
         _selectedFrameVariant = newVariant;
@@ -345,18 +312,9 @@ class _ItemPageState extends State<ItemPage> {
 
   @override
   Widget build(BuildContext context) {
-    final FrameVariant? currentFrameVariant =
-        widget.productType == ProductType.frame && widget.product is FrameModel
-        ? (widget.product as FrameModel).variants.isNotEmpty
-              ? (widget.product as FrameModel).variants.first
-              : null
-        : null;
-
     return Scaffold(
       appBar: AppBar(
-        title: Center(
-          child: Text(_getTitle(widget.product, widget.productType)),
-        ),
+        title: Center(child: Text(_getTitle())),
         leading: IconButton(
           icon: const Icon(Icons.chevron_left),
           onPressed: () {
@@ -364,7 +322,7 @@ class _ItemPageState extends State<ItemPage> {
           },
         ),
         actions: [
-          IconButton(onPressed: () {}, icon: Icon(Icons.notifications)),
+          IconButton(onPressed: () {}, icon: const Icon(Icons.notifications)),
         ],
       ),
       body: SafeArea(
@@ -372,92 +330,17 @@ class _ItemPageState extends State<ItemPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildHeroImage(widget.product, widget.productType),
+              _buildHeroImage(),
               Padding(
-                padding: EdgeInsets.all(15.0),
-                child: _buildProductDetails(
-                  context,
-                  widget.product,
-                  widget.productType,
-                  currentFrameVariant,
-                ),
+                padding: const EdgeInsets.all(15.0),
+                child: _buildProductDetails(),
               ),
-
-              //Update Stock Button Navigation
-              CustomButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const UpdateStockScreen(),
-                      settings: RouteSettings(
-                        arguments: {
-                          'product': widget.product,
-                          'productType': widget.productType,
-                        },
-                      ),
-                    ),
-                  );
-                },
-                label: 'Edit Stock',
-                icon: Icons.edit_outlined,
-              ),
-
-              const SizedBox(height: 10),
-              CustomButton(
-                onPressed: () async {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => QrGeneratorWidget(
-                        product: widget.product,
-                        productType: widget.productType,
-                      ),
-                    ),
-                  );
-                },
-                label: 'Generate QR Code',
-                icon: Icons.qr_code,
-                background: Color(0xfff0f4f9),
-                foreGround: Colors.black,
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 15.0),
+                child: _buildSpecificDetails(),
               ),
               const SizedBox(height: 25),
-              CustomButton(
-                onPressed: () async {
-                  final confirmDelete = await _showDeleteConfirmationDialog(
-                    context,
-                  );
-                  if (confirmDelete) {
-                    try {
-                      if (widget.productType == ProductType.frame) {
-                        await context.read<FrameViewmodel>().deleteFrame(
-                          widget.product.id,
-                        );
-                      } else {
-                        await context.read<LensViewmodel>().deleteLens(
-                          widget.product.id,
-                        );
-                      }
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            '${_getTitle(widget.product, widget.productType)} deleted successfully!',
-                          ),
-                        ),
-                      );
-                      Navigator.pop(context); // Go back after deletion
-                    } catch (e) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Failed to delete product: $e')),
-                      );
-                    }
-                  }
-                },
-                label: 'Delete Product',
-                icon: Icons.delete_forever_outlined,
-                background: Color(0xfff0f4f9),
-                foreGround: Colors.red,
-              ),
+              _buildActionButtons(),
               const SizedBox(height: 25),
               const DeleteWarningBanner(),
               const SizedBox(height: 20),
@@ -482,64 +365,64 @@ class _ItemPageState extends State<ItemPage> {
       fontWeight: FontWeight.bold,
     );
     final stockStyle = TextStyle(fontSize: 20, color: Colors.blueGrey);
-    final captionStyle = TextStyle(fontSize: 15, color: Colors.blueGrey);
+
+    final frame = widget.productType == ProductType.frame
+        ? _currentProduct as FrameModel
+        : null;
+    final availableSizes =
+        frame?.variants.map((v) => v.size).whereType<int>().toSet().toList() ??
+        [];
+    final availableColors =
+        frame?.variants
+            .where((v) => v.colorName != null && v.color != null)
+            .map((v) => MapEntry(v.colorName!, v.color!))
+            .toSet()
+            .toList() ??
+        [];
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          "${_getCompanyName(product, productType)} - ${_getTitle(product, productType)}",
-          style: titleStyle,
-        ),
-        Text('SKU: ${_getSku(product, productType)}', style: labelStyle),
+        Text("${_getCompanyName()} - ${_getTitle()}", style: titleStyle),
+        Text('SKU: ${_getSku()}', style: labelStyle),
         const SizedBox(height: 15),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Text(
-              '₹${_getSalesPrice(product, productType).toStringAsFixed(2)}',
-              style: priceStyle,
-            ),
-            Text(
-              'In Stock: ${_getQuantity(product, productType)}',
-              style: stockStyle,
-            ),
+            Text('₹${_getSalesPrice().toStringAsFixed(2)}', style: priceStyle),
+            Text('In Stock: ${_getQuantity()}', style: stockStyle),
           ],
         ),
         const SizedBox(height: 25),
-        if (productType == ProductType.frame &&
-            currentFrameVariant != null) ...[
-          // Assuming ColorDropDownWidget and SizeDropdownWidget are generic enough
-          // or you adapt them to take FrameVariant data.
-          // For now, they are placeholders as they don't seem to take dynamic data.
-          // You'd need to pass selected color/size and available options.
-          ColorDropDownWidget(
-            availableColorsWithNames: (product as FrameModel).variants
-                .where((v) => v.colorName != null && v.color != null)
-                .map((v) => MapEntry(v.colorName!, v.color!))
-                .toList(),
-            selectedColorName: _getCurrentColorName(product, productType),
-            onColorChanged: _onColorChanged,
-          ),
-          SizeDropdownWidget(
-            selectedSize: currentFrameVariant.size,
-            availableSizes: (product).variants
-                .map((v) => v.size)
-                .whereType<int>()
-                .toList(),
-            onSizeChanged: _onSizeChanged,
-          ),
-          const SizedBox(height: 15),
+        if (widget.productType == ProductType.frame &&
+            _selectedFrameVariant != null) ...[
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('Category', style: captionStyle),
-              Text(
-                _getCategory(product, productType),
-                style: TextStyle(fontSize: 15),
+              Expanded(
+                child: ColorDropDownWidget(
+                  availableColorsWithNames: availableColors,
+                  selectedColorName: _selectedFrameVariant!.colorName,
+                  onColorChanged: _onColorChanged,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Container(
+                width: 30,
+                height: 30,
+                decoration: BoxDecoration(
+                  color: _selectedFrameVariant!.color ?? Colors.grey,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.grey.shade400),
+                ),
               ),
             ],
+          ),
+          const SizedBox(height: 8),
+          SizeDropdownWidget(
+            selectedSize: _selectedFrameVariant!.size,
+            availableSizes: availableSizes,
+            onSizeChanged: _onSizeChanged,
           ),
           const SizedBox(height: 15),
         ],
@@ -547,47 +430,126 @@ class _ItemPageState extends State<ItemPage> {
     );
   }
 
-  // Helper method to build specific details for Frame or Lens
-  Widget _buildSpecificDetails(
-    BuildContext context,
-    dynamic product,
-    ProductType type,
-  ) {
-    if (type == ProductType.frame) {
-      final frame = product as FrameModel;
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('Frame Type: ${frame.frameType.displayName}'),
-          if (frame.variants.isNotEmpty) ...[
-            Text('Color: ${frame.variants.first.colorName ?? 'N/A'}'),
-            Text('Size: ${frame.variants.first.size ?? 'N/A'}'),
+  Widget _buildSpecificDetails() {
+    final captionStyle = TextStyle(fontSize: 15, color: Colors.blueGrey);
+    final valueStyle = TextStyle(fontSize: 15, fontWeight: FontWeight.w500);
+
+    Widget detailRow(String label, String value) {
+      return Padding(
+        padding: const EdgeInsets.only(bottom: 8.0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(label, style: captionStyle),
+            Text(value, style: valueStyle),
           ],
-          // Add more frame-specific details here
-        ],
-      );
-    } else if (type == ProductType.lens) {
-      final lens = product as LensModel;
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('Lens Type: ${lens.lensType.displayName}'),
-          if (lens.variants.isNotEmpty) ...[
-            Text(
-              'Material: ${lens.variants.first.materialType?.displayName ?? 'N/A'}',
-            ),
-            Text('Spherical: ${lens.variants.first.spherical ?? 'N/A'}'),
-            Text('Cylindrical: ${lens.variants.first.cylindrical ?? 'N/A'}'),
-            Text('Axis: ${lens.variants.first.axis ?? 'N/A'}'),
-            Text('Add Power: ${lens.variants.first.add ?? 'N/A'}'),
-            Text('Base Curve: ${lens.variants.first.baseCurve ?? 'N/A'}'),
-            Text('Side: ${lens.variants.first.side?.displayName ?? 'N/A'}'),
-          ],
-          // Add more lens-specific details here
-        ],
+        ),
       );
     }
-    return const Text('No specific details available.');
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          detailRow('Category', _getCategory()),
+          if (widget.productType == ProductType.lens &&
+              _selectedLensVariant != null) ...[
+            detailRow(
+              'Material',
+              _selectedLensVariant!.materialType?.displayName ?? 'N/A',
+            ),
+            detailRow('Side', _selectedLensVariant!.side?.displayName ?? 'N/A'),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildActionButtons() {
+    return Column(
+      children: [
+        CustomButton(
+          onPressed: () async {
+            final updatedProduct = await Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => UpdateStockScreen(
+                  product: _currentProduct,
+                  productType: widget.productType,
+                  selectedVariant: widget.productType == ProductType.frame
+                      ? _selectedFrameVariant
+                      : _selectedLensVariant,
+                ),
+              ),
+            );
+
+            if (updatedProduct != null) {
+              setState(() {
+                _currentProduct = updatedProduct;
+                _initializeVariants();
+              });
+            }
+          },
+          label: 'Edit Stock',
+          icon: Icons.edit_outlined,
+        ),
+        const SizedBox(height: 10),
+        CustomButton(
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => QrGeneratorWidget(
+                  product: _currentProduct,
+                  productType: widget.productType,
+                ),
+              ),
+            );
+          },
+          label: 'Generate QR Code',
+          icon: Icons.qr_code,
+          background: const Color(0xfff0f4f9),
+          foreGround: Colors.black,
+        ),
+        const SizedBox(height: 25),
+        CustomButton(
+          onPressed: () async {
+            final frameViewModel = context.read<FrameViewmodel>();
+            final lensViewModel = context.read<LensViewmodel>();
+            final scaffoldMessenger = ScaffoldMessenger.of(context);
+            final navigator = Navigator.of(context);
+
+            final confirmDelete = await _showDeleteConfirmationDialog(context);
+
+            if (confirmDelete) {
+              try {
+                if (widget.productType == ProductType.frame) {
+                  await frameViewModel.deleteFrame(widget.product.id);
+                } else {
+                  await lensViewModel.deleteLens(widget.product.id);
+                }
+
+                scaffoldMessenger.showSnackBar(
+                  SnackBar(
+                    content: Text('${_getTitle()} deleted successfully!'),
+                  ),
+                );
+                navigator.pop();
+              } catch (e) {
+                scaffoldMessenger.showSnackBar(
+                  SnackBar(content: Text('Failed to delete product: $e')),
+                );
+              }
+            }
+          },
+          label: 'Delete Product',
+          icon: Icons.delete_forever_outlined,
+          background: const Color(0xfff0f4f9),
+          foreGround: Colors.red,
+        ),
+      ],
+    );
   }
 
   Future<bool> _showDeleteConfirmationDialog(BuildContext context) async {
@@ -603,25 +565,21 @@ class _ItemPageState extends State<ItemPage> {
                 TextButton(
                   child: const Text('Cancel'),
                   onPressed: () {
-                    Navigator.of(
-                      dialogContext,
-                    ).pop(false); // Dismiss dialog and return false
+                    Navigator.of(dialogContext).pop(false);
                   },
                 ),
                 TextButton(
                   style: TextButton.styleFrom(foregroundColor: Colors.red),
                   child: const Text('Delete'),
                   onPressed: () {
-                    Navigator.of(
-                      dialogContext,
-                    ).pop(true); // Dismiss dialog and return true
+                    Navigator.of(dialogContext).pop(true);
                   },
                 ),
               ],
             );
           },
         ) ??
-        false; // Return false if dialog is dismissed by tapping outside
+        false;
   }
 }
 

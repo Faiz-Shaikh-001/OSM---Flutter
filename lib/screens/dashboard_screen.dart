@@ -4,7 +4,7 @@ import 'package:osm/screens/addOrderScreens/add_order_screen.dart';
 import 'package:osm/screens/customer_screen.dart';
 import 'package:osm/screens/inventory_screen.dart';
 import 'package:osm/screens/order_list_screen.dart';
-import 'package:osm/screens/settings_screen.dart';
+import 'package:osm/screens/SettingsScreen/settings_screen.dart';
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'dart:math';
 
