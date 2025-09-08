@@ -1,34 +1,34 @@
 import 'package:flutter/material.dart';
-import 'package:osm/viewmodels/prescription_viewmodel.dart';
-import 'package:osm/viewmodels/store_location_viewmodel.dart';
+import 'package:osm/features/prescription/viewmodels/prescription_viewmodel.dart';
+import 'package:osm/features/inventory/viewmodels/store_location_viewmodel.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 // Import your IsarService
-import 'package:osm/services/isar_service.dart';
+import 'package:osm/core/services/isar_service.dart';
 
 // Import all your repository files
-import 'package:osm/data/repositories/customer_repository.dart';
-import 'package:osm/data/repositories/doctor_repository.dart';
-import 'package:osm/data/repositories/order_repository.dart';
-import 'package:osm/data/repositories/prescription_repository.dart';
-import 'package:osm/data/repositories/payment_repository.dart';
-import 'package:osm/data/repositories/store_location_repository.dart';
-import 'package:osm/data/repositories/inventory_repository.dart';
-import 'package:osm/data/repositories/frame_repository.dart';
-import 'package:osm/data/repositories/lens_repository.dart';
+import 'package:osm/features/customer/data/customer_repository.dart';
+import 'package:osm/features/doctors/data/repositories/doctor_repository.dart';
+import 'package:osm/features/orders/data/repositories/order_repository.dart';
+import 'package:osm/features/prescription/data/repositories/prescription_repository.dart';
+import 'package:osm/features/orders/data/repositories/payment_repository.dart';
+import 'package:osm/features/inventory/data/repositories/store_location_repository.dart';
+import 'package:osm/features/inventory/data/repositories/inventory_repository.dart';
+import 'package:osm/features/inventory/data/repositories/frame_repository.dart';
+import 'package:osm/features/inventory/data/repositories/lens_repository.dart';
 
 // Import your new ViewModel
-import 'package:osm/viewmodels/customer_viewmodel.dart'; // NEW IMPORT
-import 'package:osm/viewmodels/frame_viewmodel.dart'; // NEW IMPORT
-import 'package:osm/viewmodels/lens_viewmodel.dart'; // NEW IMPORT
-import 'viewmodels/order_viewmodel.dart';
+import 'package:osm/features/customer/viewmodel/customer_viewmodel.dart'; // NEW IMPORT
+import 'package:osm/features/inventory/viewmodels/frame_viewmodel.dart'; // NEW IMPORT
+import 'package:osm/features/inventory/viewmodels/lens_viewmodel.dart'; // NEW IMPORT
+import 'features/orders/viewmodel/order_viewmodel.dart';
 
 // Import your initial screen
-import 'screens/dashboard_screen.dart';
+import 'features/dashboard/presentation/screens/dashboard_screen.dart';
 
 // Import dummydatagenerator
-import 'utils/dummy_data_generator.dart';
+import 'core/utils/dummy_data_generator.dart';
 
 late SharedPreferences sharedPreferences;
 
