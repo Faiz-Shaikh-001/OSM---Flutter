@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:isar/isar.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 // Adjust paths as needed
 import 'accounts_screen.dart';
 import 'package:osm/core/services/isar_service.dart';
 import 'select_store_screen.dart';
+import 'package:osm/core/theme_provider.dart'; // Import the new provider
 import '../../../orders/data/models/store_model.dart';
 
 class SettingsPage extends StatefulWidget {
@@ -17,9 +20,8 @@ class SettingsPage extends StatefulWidget {
 class _SettingsPageState extends State<SettingsPage> {
   final IsarService isarService = IsarService();
   String _selectedStoreName = 'No Store Selected';
-  
-  // State variables from before
-  bool _isDarkModeEnabled = false;
+
+  // State variables for other toggles
   bool _pushNotificationsEnabled = true;
   bool _lowStockAlertsEnabled = true;
   bool _newOrderNotificationsEnabled = true;
@@ -44,7 +46,7 @@ class _SettingsPageState extends State<SettingsPage> {
         });
       }
     } else if (mounted) {
-       setState(() {
+      setState(() {
         _selectedStoreName = 'Select a Store';
       });
     }
@@ -56,16 +58,15 @@ class _SettingsPageState extends State<SettingsPage> {
         builder: (context) => const SelectStoreScreen(),
       ),
     );
-    // If the result is true, it means a new selection was made.
     if (result == true) {
       _loadSelectedStore();
     }
   }
-  
-  // The rest of your build methods remain the same...
 
   @override
   Widget build(BuildContext context) {
+    // Access the ThemeProvider
+    final themeProvider = Provider.of<ThemeProvider>(context);
     final theme = Theme.of(context);
     final headingColor = theme.textTheme.titleLarge?.color?.withOpacity(0.8);
 
@@ -86,15 +87,14 @@ class _SettingsPageState extends State<SettingsPage> {
             onTap: _navigateAndSelectStore,
           ),
           const Divider(height: 20),
-          
-          // ... The rest of your settings page UI remains unchanged
-           // --- App Preferences Section ---
+
+          // --- App Preferences Section ---
           _buildSectionTitle(Icons.settings_outlined, 'App Preferences', headingColor),
           _buildSwitchItem(
             Icons.brightness_6_outlined,
             'Enable Dark Mode',
-            _isDarkModeEnabled,
-            (value) => setState(() => _isDarkModeEnabled = value),
+            themeProvider.themeMode == ThemeMode.dark,
+            (value) => themeProvider.setTheme(value),
           ),
           _buildSettingsItem(
             Icons.currency_rupee_outlined,
@@ -132,7 +132,7 @@ class _SettingsPageState extends State<SettingsPage> {
             (value) => setState(() => _dailySummaryEnabled = value),
           ),
           const Divider(height: 30),
-
+          
           // --- Inventory Settings Section ---
           _buildSectionTitle(Icons.inventory_2_outlined, 'Inventory Settings', headingColor),
           _buildSettingsItem(Icons.production_quantity_limits_outlined, 'Default Stock Warning Threshold'),
