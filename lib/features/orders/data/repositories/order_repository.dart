@@ -113,12 +113,53 @@ class OrderRepository {
   Future<List<OrderModel>> getOrdersForCustomer(Id customerId) async {
     try {
       final isar = await _isarService.db;
-      return await isar.orderModels
+      final orders = await isar.orderModels
           .filter()
           .customer((q) => q.idEqualTo(customerId))
           .findAll();
+
+      for (final order in orders) {
+        await order.customer.load();
+        await order.prescription.load();
+        await order.items.load();
+        await order.payments.load();
+        await order.storeLocation.load();
+      }
+
+      return orders;
     } catch (e) {
       debugPrint('Error getting orders for customer $customerId: $e');
+      rethrow;
+    }
+  }
+
+  Future<double> getTotalSpentByCustomer(Id customerId) async {
+    try {
+      final orders = await getOrdersForCustomer(customerId);
+      double total = 0.0;
+
+      for (final order in orders) {
+        total += order.totalAmount;
+      }
+
+      return total;
+    } catch (e) {
+      debugPrint('Error calculating total spent for $customerId: $e');
+      rethrow;
+    }
+  }
+
+  Future<DateTime?> getLastVisitDate(Id customerId) async {
+    try {
+      final isar = await _isarService.db;
+      final latestOrder = await isar.orderModels
+          .filter()
+          .customer((q) => q.idEqualTo(customerId))
+          .sortByOrderDateDesc()
+          .findFirst();
+      return latestOrder?.orderDate;
+    } catch (e) {
+      debugPrint('Error getting last visit for $customerId: $e');
       rethrow;
     }
   }

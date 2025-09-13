@@ -1,7 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:osm/core/services/isar_service.dart';
+import 'package:osm/features/customer/data/customer_model.dart';
+import 'package:osm/features/customer/services/build_customer_image.dart';
+import 'package:osm/features/orders/data/models/order_model.dart';
+import 'package:osm/features/orders/data/repositories/order_repository.dart';
+import 'package:osm/features/prescription/data/repositories/prescription_repository.dart';
 
-class CustomerDetailPage extends StatelessWidget {
-  const CustomerDetailPage({super.key});
+class CustomerDetailsScreen extends StatelessWidget {
+  final CustomerModel customer;
+
+  const CustomerDetailsScreen({super.key, required this.customer});
 
   @override
   Widget build(BuildContext context) {
@@ -19,21 +27,26 @@ class CustomerDetailPage extends StatelessWidget {
             Center(
               child: Column(
                 children: [
-                  const CircleAvatar(
+                  CircleAvatar(
                     radius: 40,
-                    backgroundImage: AssetImage('assets/avatar.png'),
+                    backgroundImage: buildCustomerImage(
+                      customer.profileImageUrl,
+                    ),
+                    onBackgroundImageError: (exception, stackTrace) {
+                      debugPrint('Error loading image: $exception');
+                    },
                   ),
                   const SizedBox(height: 12),
-                  const Text(
-                    "Faiz Ahmed",
+                  Text(
+                    "${customer.firstName} ${customer.lastName}",
                     style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 8),
                   Wrap(
                     spacing: 8,
-                    children: const [
-                      Chip(label: Text("Age 26")),
-                      Chip(label: Text("Gold Member")),
+                    children: [
+                      Chip(label: Text("Age ${customer.age}")),
+                      Chip(label: Text(customer.gender)),
                     ],
                   ),
                 ],
@@ -52,7 +65,7 @@ class CustomerDetailPage extends StatelessWidget {
                 padding: const EdgeInsets.all(16.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: const [
+                  children: [
                     Text(
                       "Personal Info",
                       style: TextStyle(
@@ -63,15 +76,15 @@ class CustomerDetailPage extends StatelessWidget {
                     SizedBox(height: 10),
                     ListTile(
                       leading: Icon(Icons.phone),
-                      title: Text("+91 9876543210"),
+                      title: Text("+91 ${customer.primaryPhoneNumber}"),
                     ),
                     ListTile(
                       leading: Icon(Icons.email),
-                      title: Text("faiz@email.com"),
+                      title: Text(customer.email ?? "No Email"),
                     ),
                     ListTile(
                       leading: Icon(Icons.home),
-                      title: Text("Mumbai, India"),
+                      title: Text(customer.city),
                     ),
                   ],
                 ),
@@ -89,161 +102,254 @@ class CustomerDetailPage extends StatelessWidget {
               child: ExpansionTile(
                 leading: const Icon(Icons.visibility),
                 title: const Text("Latest Prescription"),
-                subtitle: const Text("Progressive | 2025-06-12"),
-                children: const [
-                  ListTile(
-                    title: Text("2025-06-12"),
-                    subtitle: Text("Single Vision | OD: -1.5 | OS: -1.75"),
-                  ),
-                  ListTile(
-                    title: Text("2024-03-05"),
-                    subtitle: Text("Progressive | OD: -1.0 | OS: -2.0"),
-                  ),
-                ],
+                subtitle: Text(
+                  customer.prescriptions.isNotEmpty
+                      ? "Latest: ${customer.prescriptions.last.prescriptionDate.toLocal().toString().split(" ").first}"
+                      : "No prescriptions yet",
+                ),
+                children: customer.prescriptions.isNotEmpty
+                    ? customer.prescriptions.map((p) {
+                        return ListTile(
+                          title: Text(
+                            p.prescriptionDate
+                                .toLocal()
+                                .toString()
+                                .split(" ")
+                                .first,
+                          ),
+                          subtitle: Text(
+                            "OD: ${p.sphereRight} | OS: ${p.sphereLeft}",
+                          ),
+                        );
+                      }).toList()
+                    : [const ListTile(title: Text("No prescription history"))],
               ),
             ),
 
             const SizedBox(height: 16),
 
             // Orders Card
-            Card(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-              elevation: 3,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: const [
-                  Padding(
-                    padding: EdgeInsets.all(16.0),
-                    child: Text(
-                      "Orders",
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
+            FutureBuilder(
+              future: OrderRepository(
+                IsarService(),
+              ).getOrdersForCustomer(customer.id),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                  return Card(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
                     ),
-                  ),
-                  ListTile(
-                    leading: Icon(Icons.check_circle, color: Colors.green),
-                    title: Text("RayBan Frame"),
-                    subtitle: Text("₹4500 | 2025-08-02"),
-                    trailing: Text(
-                      "Completed",
-                      style: TextStyle(color: Colors.green),
-                    ),
-                  ),
-                  ListTile(
-                    leading: Icon(Icons.pending_actions, color: Colors.orange),
-                    title: Text("Acuvue Contact Lenses"),
-                    subtitle: Text("₹2200 | 2025-08-18"),
-                    trailing: Text(
-                      "Pending",
-                      style: TextStyle(color: Colors.orange),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 16),
-
-            // Reminders Card
-            Card(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-              elevation: 3,
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      "Reminders",
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    const ListTile(
-                      leading: Icon(Icons.alarm),
-                      title: Text("Lens replacement due in 2 weeks"),
-                    ),
-                    const ListTile(
-                      leading: Icon(Icons.calendar_month),
-                      title: Text("Next eye test: Apr 2026"),
-                    ),
-                    const SizedBox(height: 10),
-                    ElevatedButton.icon(
-                      onPressed: () {},
-                      icon: Icon(Icons.send),
-                      label: Text("Send Reminder"),
-                      style: ElevatedButton.styleFrom(
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                    elevation: 3,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: const [
+                        Padding(
+                          padding: EdgeInsets.all(16.0),
+                          child: Text(
+                            "Orders",
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                         ),
-                        minimumSize: const Size.fromHeight(45),
-                      ),
+                        ListTile(
+                          leading: Icon(Icons.error, color: Colors.red),
+                          title: Text("No orders yet."),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-              ),
+                  );
+                }
+
+                final orders = snapshot.data!;
+                return Column(
+                  children: orders.map((o) {
+                    return ListTile(
+                      leading: Icon(
+                        o.status == "Completed"
+                            ? Icons.check_circle
+                            : Icons.pending_actions,
+                        color: o.status == "Completed"
+                            ? Colors.green
+                            : Colors.orange,
+                      ),
+                      title: Text("Order #${o.id}"),
+                      subtitle: Text(
+                        "₹${o.totalAmount} | ${o.orderDate.toLocal().toString().split(" ").first}",
+                      ),
+                      trailing: Text(
+                        o.status,
+                        style: TextStyle(
+                          color: o.status == "Completed"
+                              ? Colors.green
+                              : Colors.orange,
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                );
+              },
             ),
 
             const SizedBox(height: 16),
+
+            // Reminders Card : HelpText - can add reminders
+            // Card(
+            //   shape: RoundedRectangleBorder(
+            //     borderRadius: BorderRadius.circular(16),
+            //   ),
+            //   elevation: 3,
+            //   child: Padding(
+            //     padding: const EdgeInsets.all(16.0),
+            //     child: Column(
+            //       crossAxisAlignment: CrossAxisAlignment.start,
+            //       children: [
+            //         const Text(
+            //           "Reminders",
+            //           style: TextStyle(
+            //             fontSize: 18,
+            //             fontWeight: FontWeight.bold,
+            //           ),
+            //         ),
+            //         const SizedBox(height: 10),
+            //         const ListTile(
+            //           leading: Icon(Icons.alarm),
+            //           title: Text("Lens replacement due in 2 weeks"),
+            //         ),
+            //         const ListTile(
+            //           leading: Icon(Icons.calendar_month),
+            //           title: Text("Next eye test: Apr 2026"),
+            //         ),
+            //         const SizedBox(height: 10),
+            //         ElevatedButton.icon(
+            //           onPressed: () {},
+            //           icon: Icon(Icons.send),
+            //           label: Text("Send Reminder"),
+            //           style: ElevatedButton.styleFrom(
+            //             shape: RoundedRectangleBorder(
+            //               borderRadius: BorderRadius.circular(12),
+            //             ),
+            //             minimumSize: const Size.fromHeight(45),
+            //           ),
+            //         ),
+            //       ],
+            //     ),
+            //   ),
+            // ),
+
+            // const SizedBox(height: 16),
 
             // Insights Card
-            Card(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-              elevation: 3,
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Row(
+            // Card(
+            //   shape: RoundedRectangleBorder(
+            //     borderRadius: BorderRadius.circular(16),
+            //   ),
+            //   elevation: 3,
+            //   child: Padding(
+            //     padding: const EdgeInsets.all(16.0),
+            //     child: Row(
+            //       mainAxisAlignment: MainAxisAlignment.spaceAround,
+            //       children: const [
+            //         Column(
+            //           children: [
+            //             Text(
+            //               "₹35,000",
+            //               style: TextStyle(
+            //                 fontSize: 18,
+            //                 fontWeight: FontWeight.bold,
+            //               ),
+            //             ),
+            //             Text("Total Spend"),
+            //           ],
+            //         ),
+            //         Column(
+            //           children: [
+            //             Text(
+            //               "2 months",
+            //               style: TextStyle(
+            //                 fontSize: 18,
+            //                 fontWeight: FontWeight.bold,
+            //               ),
+            //             ),
+            //             Text("Last Visit"),
+            //           ],
+            //         ),
+            //         Column(
+            //           children: [
+            //             Text(
+            //               "Progressive",
+            //               style: TextStyle(
+            //                 fontSize: 18,
+            //                 fontWeight: FontWeight.bold,
+            //               ),
+            //             ),
+            //             Text("Fav Product"),
+            //           ],
+            //         ),
+            //       ],
+            //     ),
+            //   ),
+            // ),
+            FutureBuilder(
+              future: Future.wait([
+                OrderRepository(
+                  IsarService(),
+                ).getOrdersForCustomer(customer.id),
+                OrderRepository(IsarService()).getLastVisitDate(customer.id),
+              ]),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                if (!snapshot.hasData) {
+                  return const Text("No insights available");
+                }
+
+                final orders = snapshot.data![0] as List<OrderModel>;
+                final lastVisit = snapshot.data![1] as DateTime?;
+
+                final totalSpend = orders.fold(
+                  0.0,
+                  (sum, o) => sum + o.totalAmount,
+                );
+                final lastVisitText = lastVisit != null
+                    ? "${DateTime.now().difference(lastVisit).inDays ~/ 30} months"
+                    : "N/A";
+
+                return Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: const [
+                  children: [
                     Column(
                       children: [
                         Text(
-                          "₹35,000",
-                          style: TextStyle(
+                          "₹${totalSpend.toStringAsFixed(0)}",
+                          style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        Text("Total Spend"),
+                        const Text("Total Spend"),
                       ],
                     ),
                     Column(
                       children: [
                         Text(
-                          "2 months",
-                          style: TextStyle(
+                          lastVisitText,
+                          style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        Text("Last Visit"),
-                      ],
-                    ),
-                    Column(
-                      children: [
-                        Text(
-                          "Progressive",
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        Text("Fav Product"),
+                        const Text("Last Visit"),
                       ],
                     ),
                   ],
-                ),
-              ),
+                );
+              },
             ),
 
             const SizedBox(height: 20),

@@ -11,12 +11,14 @@ class CustomerViewModel extends ChangeNotifier {
   bool _isLoading = false;
   String? _errorMessage;
   List<CustomerModel> _searchResults = [];
+  CustomerModel? _selectedCustomer;
 
   // Getters to expose state to the UI
   List<CustomerModel> get customers => _customers;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
   List<CustomerModel> get searchResults => _searchResults;
+  CustomerModel? get selectedCustomer => _selectedCustomer;
 
   CustomerViewModel(this._customerRepository);
 
@@ -97,6 +99,16 @@ class CustomerViewModel extends ChangeNotifier {
       _isLoading = false;
       notifyListeners();
     }
+  }
+
+  void selectCustomer(CustomerModel customer) {
+    _selectedCustomer = customer;
+    notifyListeners();
+  }
+
+  void clearSelectedCustomer() {
+    _selectedCustomer = null;
+    notifyListeners();
   }
 
   void clearSearchResults() {
