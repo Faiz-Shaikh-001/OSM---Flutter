@@ -12,6 +12,8 @@ import 'package:osm/features/orders/data/models/order_model.dart';
 import 'package:osm/features/orders/data/models/payment_model.dart';
 import 'package:osm/features/prescription/data/models/prescription_model.dart';
 import 'package:osm/features/inventory/data/models/store_location_model.dart';
+// --- FIX: Import the Store model ---
+import 'package:osm/features/orders/data/models/store_model.dart';
 
 class IsarService {
   late Future<Isar> db;
@@ -35,6 +37,8 @@ class IsarService {
     final dir = await getApplicationDocumentsDirectory();
     final isar = await Isar.open(
       [
+        // --- FIX: Add the StoreSchema to the list ---
+        StoreSchema,
         CustomerModelSchema,
         DoctorModelSchema,
         FrameModelSchema,
@@ -51,6 +55,12 @@ class IsarService {
     );
     debugPrint('Isar database opened successfully at: ${dir.path}');
     return isar;
+  }
+
+  // --- FIX: Add a getter for the new Store collection ---
+  Future<IsarCollection<Store>> getStores() async {
+    final isar = await db;
+    return isar.stores;
   }
 
   // Methods here to get specific collections
@@ -114,3 +124,4 @@ class IsarService {
     debugPrint('Isar database closed.');
   }
 }
+
