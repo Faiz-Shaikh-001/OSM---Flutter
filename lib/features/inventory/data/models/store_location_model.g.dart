@@ -18,8 +18,16 @@ const StoreLocationModelSchema = CollectionSchema(
   name: r'StoreLocationModel',
   id: -2709181983127839825,
   properties: {
-    r'address': PropertySchema(id: 0, name: r'address', type: IsarType.string),
-    r'name': PropertySchema(id: 1, name: r'name', type: IsarType.string),
+    r'address': PropertySchema(
+      id: 0,
+      name: r'address',
+      type: IsarType.string,
+    ),
+    r'name': PropertySchema(
+      id: 1,
+      name: r'name',
+      type: IsarType.string,
+    ),
     r'operatingHours': PropertySchema(
       id: 2,
       name: r'operatingHours',
@@ -29,7 +37,7 @@ const StoreLocationModelSchema = CollectionSchema(
       id: 3,
       name: r'phoneNumber',
       type: IsarType.string,
-    ),
+    )
   },
   estimateSize: _storeLocationModelEstimateSize,
   serialize: _storeLocationModelSerialize,
@@ -47,9 +55,9 @@ const StoreLocationModelSchema = CollectionSchema(
           name: r'name',
           type: IndexType.hash,
           caseSensitive: true,
-        ),
+        )
       ],
-    ),
+    )
   },
   links: {
     r'doctors': LinkSchema(
@@ -65,7 +73,7 @@ const StoreLocationModelSchema = CollectionSchema(
       target: r'OrderModel',
       single: false,
       linkName: r'storeLocation',
-    ),
+    )
   },
   embeddedSchemas: {},
   getId: _storeLocationModelGetId,
@@ -140,23 +148,15 @@ Id _storeLocationModelGetId(StoreLocationModel object) {
 }
 
 List<IsarLinkBase<dynamic>> _storeLocationModelGetLinks(
-  StoreLocationModel object,
-) {
+    StoreLocationModel object) {
   return [object.doctors, object.orders];
 }
 
 void _storeLocationModelAttach(
-  IsarCollection<dynamic> col,
-  Id id,
-  StoreLocationModel object,
-) {
+    IsarCollection<dynamic> col, Id id, StoreLocationModel object) {
   object.id = id;
-  object.doctors.attach(
-    col,
-    col.isar.collection<DoctorModel>(),
-    r'doctors',
-    id,
-  );
+  object.doctors
+      .attach(col, col.isar.collection<DoctorModel>(), r'doctors', id);
   object.orders.attach(col, col.isar.collection<OrderModel>(), r'orders', id);
 }
 
@@ -209,10 +209,8 @@ extension StoreLocationModelByIndex on IsarCollection<StoreLocationModel> {
     return putAllByIndex(r'name', objects);
   }
 
-  List<Id> putAllByNameSync(
-    List<StoreLocationModel> objects, {
-    bool saveLinks = true,
-  }) {
+  List<Id> putAllByNameSync(List<StoreLocationModel> objects,
+      {bool saveLinks = true}) {
     return putAllByIndexSync(r'name', objects, saveLinks: saveLinks);
   }
 }
@@ -229,14 +227,17 @@ extension StoreLocationModelQueryWhereSort
 extension StoreLocationModelQueryWhere
     on QueryBuilder<StoreLocationModel, StoreLocationModel, QWhereClause> {
   QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterWhereClause>
-  idEqualTo(Id id) {
+      idEqualTo(Id id) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IdWhereClause.between(lower: id, upper: id));
+      return query.addWhereClause(IdWhereClause.between(
+        lower: id,
+        upper: id,
+      ));
     });
   }
 
   QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterWhereClause>
-  idNotEqualTo(Id id) {
+      idNotEqualTo(Id id) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
@@ -259,7 +260,7 @@ extension StoreLocationModelQueryWhere
   }
 
   QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterWhereClause>
-  idGreaterThan(Id id, {bool include = false}) {
+      idGreaterThan(Id id, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
         IdWhereClause.greaterThan(lower: id, includeLower: include),
@@ -268,7 +269,7 @@ extension StoreLocationModelQueryWhere
   }
 
   QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterWhereClause>
-  idLessThan(Id id, {bool include = false}) {
+      idLessThan(Id id, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
         IdWhereClause.lessThan(upper: id, includeUpper: include),
@@ -277,72 +278,63 @@ extension StoreLocationModelQueryWhere
   }
 
   QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterWhereClause>
-  idBetween(
+      idBetween(
     Id lowerId,
     Id upperId, {
     bool includeLower = true,
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(
-        IdWhereClause.between(
-          lower: lowerId,
-          includeLower: includeLower,
-          upper: upperId,
-          includeUpper: includeUpper,
-        ),
-      );
+      return query.addWhereClause(IdWhereClause.between(
+        lower: lowerId,
+        includeLower: includeLower,
+        upper: upperId,
+        includeUpper: includeUpper,
+      ));
     });
   }
 
   QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterWhereClause>
-  nameEqualTo(String name) {
+      nameEqualTo(String name) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(
-        IndexWhereClause.equalTo(indexName: r'name', value: [name]),
-      );
+      return query.addWhereClause(IndexWhereClause.equalTo(
+        indexName: r'name',
+        value: [name],
+      ));
     });
   }
 
   QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterWhereClause>
-  nameNotEqualTo(String name) {
+      nameNotEqualTo(String name) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
-            .addWhereClause(
-              IndexWhereClause.between(
-                indexName: r'name',
-                lower: [],
-                upper: [name],
-                includeUpper: false,
-              ),
-            )
-            .addWhereClause(
-              IndexWhereClause.between(
-                indexName: r'name',
-                lower: [name],
-                includeLower: false,
-                upper: [],
-              ),
-            );
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'name',
+              lower: [],
+              upper: [name],
+              includeUpper: false,
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'name',
+              lower: [name],
+              includeLower: false,
+              upper: [],
+            ));
       } else {
         return query
-            .addWhereClause(
-              IndexWhereClause.between(
-                indexName: r'name',
-                lower: [name],
-                includeLower: false,
-                upper: [],
-              ),
-            )
-            .addWhereClause(
-              IndexWhereClause.between(
-                indexName: r'name',
-                lower: [],
-                upper: [name],
-                includeUpper: false,
-              ),
-            );
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'name',
+              lower: [name],
+              includeLower: false,
+              upper: [],
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'name',
+              lower: [],
+              upper: [name],
+              includeUpper: false,
+            ));
       }
     });
   }
@@ -351,56 +343,53 @@ extension StoreLocationModelQueryWhere
 extension StoreLocationModelQueryFilter
     on QueryBuilder<StoreLocationModel, StoreLocationModel, QFilterCondition> {
   QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterFilterCondition>
-  addressEqualTo(String value, {bool caseSensitive = true}) {
+      addressEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(
-          property: r'address',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'address',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterFilterCondition>
-  addressGreaterThan(
+      addressGreaterThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(
-          include: include,
-          property: r'address',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'address',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterFilterCondition>
-  addressLessThan(
+      addressLessThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.lessThan(
-          include: include,
-          property: r'address',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'address',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterFilterCondition>
-  addressBetween(
+      addressBetween(
     String lower,
     String upper, {
     bool includeLower = true,
@@ -408,195 +397,191 @@ extension StoreLocationModelQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.between(
-          property: r'address',
-          lower: lower,
-          includeLower: includeLower,
-          upper: upper,
-          includeUpper: includeUpper,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'address',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterFilterCondition>
-  addressStartsWith(String value, {bool caseSensitive = true}) {
+      addressStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.startsWith(
-          property: r'address',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'address',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterFilterCondition>
-  addressEndsWith(String value, {bool caseSensitive = true}) {
+      addressEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.endsWith(
-          property: r'address',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'address',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterFilterCondition>
-  addressContains(String value, {bool caseSensitive = true}) {
+      addressContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.contains(
-          property: r'address',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'address',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterFilterCondition>
-  addressMatches(String pattern, {bool caseSensitive = true}) {
+      addressMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.matches(
-          property: r'address',
-          wildcard: pattern,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'address',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterFilterCondition>
-  addressIsEmpty() {
+      addressIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'address', value: ''),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'address',
+        value: '',
+      ));
     });
   }
 
   QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterFilterCondition>
-  addressIsNotEmpty() {
+      addressIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(property: r'address', value: ''),
-      );
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'address',
+        value: '',
+      ));
     });
   }
 
   QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterFilterCondition>
-  idEqualTo(Id value) {
+      idEqualTo(Id value) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'id', value: value),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'id',
+        value: value,
+      ));
     });
   }
 
   QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterFilterCondition>
-  idGreaterThan(Id value, {bool include = false}) {
+      idGreaterThan(
+    Id value, {
+    bool include = false,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(
-          include: include,
-          property: r'id',
-          value: value,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'id',
+        value: value,
+      ));
     });
   }
 
   QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterFilterCondition>
-  idLessThan(Id value, {bool include = false}) {
+      idLessThan(
+    Id value, {
+    bool include = false,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.lessThan(
-          include: include,
-          property: r'id',
-          value: value,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'id',
+        value: value,
+      ));
     });
   }
 
   QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterFilterCondition>
-  idBetween(
+      idBetween(
     Id lower,
     Id upper, {
     bool includeLower = true,
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.between(
-          property: r'id',
-          lower: lower,
-          includeLower: includeLower,
-          upper: upper,
-          includeUpper: includeUpper,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'id',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
     });
   }
 
   QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterFilterCondition>
-  nameEqualTo(String value, {bool caseSensitive = true}) {
+      nameEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(
-          property: r'name',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'name',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterFilterCondition>
-  nameGreaterThan(
+      nameGreaterThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(
-          include: include,
-          property: r'name',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'name',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterFilterCondition>
-  nameLessThan(
+      nameLessThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.lessThan(
-          include: include,
-          property: r'name',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'name',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterFilterCondition>
-  nameBetween(
+      nameBetween(
     String lower,
     String upper, {
     bool includeLower = true,
@@ -604,140 +589,135 @@ extension StoreLocationModelQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.between(
-          property: r'name',
-          lower: lower,
-          includeLower: includeLower,
-          upper: upper,
-          includeUpper: includeUpper,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'name',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterFilterCondition>
-  nameStartsWith(String value, {bool caseSensitive = true}) {
+      nameStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.startsWith(
-          property: r'name',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'name',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterFilterCondition>
-  nameEndsWith(String value, {bool caseSensitive = true}) {
+      nameEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.endsWith(
-          property: r'name',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'name',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterFilterCondition>
-  nameContains(String value, {bool caseSensitive = true}) {
+      nameContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.contains(
-          property: r'name',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'name',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterFilterCondition>
-  nameMatches(String pattern, {bool caseSensitive = true}) {
+      nameMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.matches(
-          property: r'name',
-          wildcard: pattern,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'name',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterFilterCondition>
-  nameIsEmpty() {
+      nameIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'name', value: ''),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'name',
+        value: '',
+      ));
     });
   }
 
   QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterFilterCondition>
-  nameIsNotEmpty() {
+      nameIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(property: r'name', value: ''),
-      );
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'name',
+        value: '',
+      ));
     });
   }
 
   QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterFilterCondition>
-  operatingHoursEqualTo(String value, {bool caseSensitive = true}) {
+      operatingHoursEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(
-          property: r'operatingHours',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'operatingHours',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterFilterCondition>
-  operatingHoursGreaterThan(
+      operatingHoursGreaterThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(
-          include: include,
-          property: r'operatingHours',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'operatingHours',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterFilterCondition>
-  operatingHoursLessThan(
+      operatingHoursLessThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.lessThan(
-          include: include,
-          property: r'operatingHours',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'operatingHours',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterFilterCondition>
-  operatingHoursBetween(
+      operatingHoursBetween(
     String lower,
     String upper, {
     bool includeLower = true,
@@ -745,140 +725,135 @@ extension StoreLocationModelQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.between(
-          property: r'operatingHours',
-          lower: lower,
-          includeLower: includeLower,
-          upper: upper,
-          includeUpper: includeUpper,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'operatingHours',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterFilterCondition>
-  operatingHoursStartsWith(String value, {bool caseSensitive = true}) {
+      operatingHoursStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.startsWith(
-          property: r'operatingHours',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'operatingHours',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterFilterCondition>
-  operatingHoursEndsWith(String value, {bool caseSensitive = true}) {
+      operatingHoursEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.endsWith(
-          property: r'operatingHours',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'operatingHours',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterFilterCondition>
-  operatingHoursContains(String value, {bool caseSensitive = true}) {
+      operatingHoursContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.contains(
-          property: r'operatingHours',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'operatingHours',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterFilterCondition>
-  operatingHoursMatches(String pattern, {bool caseSensitive = true}) {
+      operatingHoursMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.matches(
-          property: r'operatingHours',
-          wildcard: pattern,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'operatingHours',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterFilterCondition>
-  operatingHoursIsEmpty() {
+      operatingHoursIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'operatingHours', value: ''),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'operatingHours',
+        value: '',
+      ));
     });
   }
 
   QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterFilterCondition>
-  operatingHoursIsNotEmpty() {
+      operatingHoursIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(property: r'operatingHours', value: ''),
-      );
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'operatingHours',
+        value: '',
+      ));
     });
   }
 
   QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterFilterCondition>
-  phoneNumberEqualTo(String value, {bool caseSensitive = true}) {
+      phoneNumberEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(
-          property: r'phoneNumber',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'phoneNumber',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterFilterCondition>
-  phoneNumberGreaterThan(
+      phoneNumberGreaterThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(
-          include: include,
-          property: r'phoneNumber',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'phoneNumber',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterFilterCondition>
-  phoneNumberLessThan(
+      phoneNumberLessThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.lessThan(
-          include: include,
-          property: r'phoneNumber',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'phoneNumber',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterFilterCondition>
-  phoneNumberBetween(
+      phoneNumberBetween(
     String lower,
     String upper, {
     bool includeLower = true,
@@ -886,86 +861,84 @@ extension StoreLocationModelQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.between(
-          property: r'phoneNumber',
-          lower: lower,
-          includeLower: includeLower,
-          upper: upper,
-          includeUpper: includeUpper,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'phoneNumber',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterFilterCondition>
-  phoneNumberStartsWith(String value, {bool caseSensitive = true}) {
+      phoneNumberStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.startsWith(
-          property: r'phoneNumber',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'phoneNumber',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterFilterCondition>
-  phoneNumberEndsWith(String value, {bool caseSensitive = true}) {
+      phoneNumberEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.endsWith(
-          property: r'phoneNumber',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'phoneNumber',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterFilterCondition>
-  phoneNumberContains(String value, {bool caseSensitive = true}) {
+      phoneNumberContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.contains(
-          property: r'phoneNumber',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'phoneNumber',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterFilterCondition>
-  phoneNumberMatches(String pattern, {bool caseSensitive = true}) {
+      phoneNumberMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.matches(
-          property: r'phoneNumber',
-          wildcard: pattern,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'phoneNumber',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterFilterCondition>
-  phoneNumberIsEmpty() {
+      phoneNumberIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'phoneNumber', value: ''),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'phoneNumber',
+        value: '',
+      ));
     });
   }
 
   QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterFilterCondition>
-  phoneNumberIsNotEmpty() {
+      phoneNumberIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(property: r'phoneNumber', value: ''),
-      );
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'phoneNumber',
+        value: '',
+      ));
     });
   }
 }
@@ -976,49 +949,55 @@ extension StoreLocationModelQueryObject
 extension StoreLocationModelQueryLinks
     on QueryBuilder<StoreLocationModel, StoreLocationModel, QFilterCondition> {
   QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterFilterCondition>
-  doctors(FilterQuery<DoctorModel> q) {
+      doctors(FilterQuery<DoctorModel> q) {
     return QueryBuilder.apply(this, (query) {
       return query.link(q, r'doctors');
     });
   }
 
   QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterFilterCondition>
-  doctorsLengthEqualTo(int length) {
+      doctorsLengthEqualTo(int length) {
     return QueryBuilder.apply(this, (query) {
       return query.linkLength(r'doctors', length, true, length, true);
     });
   }
 
   QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterFilterCondition>
-  doctorsIsEmpty() {
+      doctorsIsEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.linkLength(r'doctors', 0, true, 0, true);
     });
   }
 
   QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterFilterCondition>
-  doctorsIsNotEmpty() {
+      doctorsIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.linkLength(r'doctors', 0, false, 999999, true);
     });
   }
 
   QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterFilterCondition>
-  doctorsLengthLessThan(int length, {bool include = false}) {
+      doctorsLengthLessThan(
+    int length, {
+    bool include = false,
+  }) {
     return QueryBuilder.apply(this, (query) {
       return query.linkLength(r'doctors', 0, true, length, include);
     });
   }
 
   QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterFilterCondition>
-  doctorsLengthGreaterThan(int length, {bool include = false}) {
+      doctorsLengthGreaterThan(
+    int length, {
+    bool include = false,
+  }) {
     return QueryBuilder.apply(this, (query) {
       return query.linkLength(r'doctors', length, include, 999999, true);
     });
   }
 
   QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterFilterCondition>
-  doctorsLengthBetween(
+      doctorsLengthBetween(
     int lower,
     int upper, {
     bool includeLower = true,
@@ -1026,59 +1005,60 @@ extension StoreLocationModelQueryLinks
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.linkLength(
-        r'doctors',
-        lower,
-        includeLower,
-        upper,
-        includeUpper,
-      );
+          r'doctors', lower, includeLower, upper, includeUpper);
     });
   }
 
   QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterFilterCondition>
-  orders(FilterQuery<OrderModel> q) {
+      orders(FilterQuery<OrderModel> q) {
     return QueryBuilder.apply(this, (query) {
       return query.link(q, r'orders');
     });
   }
 
   QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterFilterCondition>
-  ordersLengthEqualTo(int length) {
+      ordersLengthEqualTo(int length) {
     return QueryBuilder.apply(this, (query) {
       return query.linkLength(r'orders', length, true, length, true);
     });
   }
 
   QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterFilterCondition>
-  ordersIsEmpty() {
+      ordersIsEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.linkLength(r'orders', 0, true, 0, true);
     });
   }
 
   QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterFilterCondition>
-  ordersIsNotEmpty() {
+      ordersIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.linkLength(r'orders', 0, false, 999999, true);
     });
   }
 
   QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterFilterCondition>
-  ordersLengthLessThan(int length, {bool include = false}) {
+      ordersLengthLessThan(
+    int length, {
+    bool include = false,
+  }) {
     return QueryBuilder.apply(this, (query) {
       return query.linkLength(r'orders', 0, true, length, include);
     });
   }
 
   QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterFilterCondition>
-  ordersLengthGreaterThan(int length, {bool include = false}) {
+      ordersLengthGreaterThan(
+    int length, {
+    bool include = false,
+  }) {
     return QueryBuilder.apply(this, (query) {
       return query.linkLength(r'orders', length, include, 999999, true);
     });
   }
 
   QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterFilterCondition>
-  ordersLengthBetween(
+      ordersLengthBetween(
     int lower,
     int upper, {
     bool includeLower = true,
@@ -1086,12 +1066,7 @@ extension StoreLocationModelQueryLinks
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.linkLength(
-        r'orders',
-        lower,
-        includeLower,
-        upper,
-        includeUpper,
-      );
+          r'orders', lower, includeLower, upper, includeUpper);
     });
   }
 }
@@ -1099,56 +1074,56 @@ extension StoreLocationModelQueryLinks
 extension StoreLocationModelQuerySortBy
     on QueryBuilder<StoreLocationModel, StoreLocationModel, QSortBy> {
   QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterSortBy>
-  sortByAddress() {
+      sortByAddress() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'address', Sort.asc);
     });
   }
 
   QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterSortBy>
-  sortByAddressDesc() {
+      sortByAddressDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'address', Sort.desc);
     });
   }
 
   QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterSortBy>
-  sortByName() {
+      sortByName() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'name', Sort.asc);
     });
   }
 
   QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterSortBy>
-  sortByNameDesc() {
+      sortByNameDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'name', Sort.desc);
     });
   }
 
   QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterSortBy>
-  sortByOperatingHours() {
+      sortByOperatingHours() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'operatingHours', Sort.asc);
     });
   }
 
   QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterSortBy>
-  sortByOperatingHoursDesc() {
+      sortByOperatingHoursDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'operatingHours', Sort.desc);
     });
   }
 
   QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterSortBy>
-  sortByPhoneNumber() {
+      sortByPhoneNumber() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'phoneNumber', Sort.asc);
     });
   }
 
   QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterSortBy>
-  sortByPhoneNumberDesc() {
+      sortByPhoneNumberDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'phoneNumber', Sort.desc);
     });
@@ -1158,70 +1133,70 @@ extension StoreLocationModelQuerySortBy
 extension StoreLocationModelQuerySortThenBy
     on QueryBuilder<StoreLocationModel, StoreLocationModel, QSortThenBy> {
   QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterSortBy>
-  thenByAddress() {
+      thenByAddress() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'address', Sort.asc);
     });
   }
 
   QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterSortBy>
-  thenByAddressDesc() {
+      thenByAddressDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'address', Sort.desc);
     });
   }
 
   QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterSortBy>
-  thenById() {
+      thenById() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'id', Sort.asc);
     });
   }
 
   QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterSortBy>
-  thenByIdDesc() {
+      thenByIdDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'id', Sort.desc);
     });
   }
 
   QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterSortBy>
-  thenByName() {
+      thenByName() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'name', Sort.asc);
     });
   }
 
   QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterSortBy>
-  thenByNameDesc() {
+      thenByNameDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'name', Sort.desc);
     });
   }
 
   QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterSortBy>
-  thenByOperatingHours() {
+      thenByOperatingHours() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'operatingHours', Sort.asc);
     });
   }
 
   QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterSortBy>
-  thenByOperatingHoursDesc() {
+      thenByOperatingHoursDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'operatingHours', Sort.desc);
     });
   }
 
   QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterSortBy>
-  thenByPhoneNumber() {
+      thenByPhoneNumber() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'phoneNumber', Sort.asc);
     });
   }
 
   QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterSortBy>
-  thenByPhoneNumberDesc() {
+      thenByPhoneNumberDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'phoneNumber', Sort.desc);
     });
@@ -1231,31 +1206,29 @@ extension StoreLocationModelQuerySortThenBy
 extension StoreLocationModelQueryWhereDistinct
     on QueryBuilder<StoreLocationModel, StoreLocationModel, QDistinct> {
   QueryBuilder<StoreLocationModel, StoreLocationModel, QDistinct>
-  distinctByAddress({bool caseSensitive = true}) {
+      distinctByAddress({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'address', caseSensitive: caseSensitive);
     });
   }
 
   QueryBuilder<StoreLocationModel, StoreLocationModel, QDistinct>
-  distinctByName({bool caseSensitive = true}) {
+      distinctByName({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'name', caseSensitive: caseSensitive);
     });
   }
 
   QueryBuilder<StoreLocationModel, StoreLocationModel, QDistinct>
-  distinctByOperatingHours({bool caseSensitive = true}) {
+      distinctByOperatingHours({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(
-        r'operatingHours',
-        caseSensitive: caseSensitive,
-      );
+      return query.addDistinctBy(r'operatingHours',
+          caseSensitive: caseSensitive);
     });
   }
 
   QueryBuilder<StoreLocationModel, StoreLocationModel, QDistinct>
-  distinctByPhoneNumber({bool caseSensitive = true}) {
+      distinctByPhoneNumber({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'phoneNumber', caseSensitive: caseSensitive);
     });
@@ -1283,14 +1256,14 @@ extension StoreLocationModelQueryProperty
   }
 
   QueryBuilder<StoreLocationModel, String, QQueryOperations>
-  operatingHoursProperty() {
+      operatingHoursProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'operatingHours');
     });
   }
 
   QueryBuilder<StoreLocationModel, String, QQueryOperations>
-  phoneNumberProperty() {
+      phoneNumberProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'phoneNumber');
     });

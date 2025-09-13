@@ -1,6 +1,14 @@
 import 'package:flutter/material.dart';
-// Note: To make the currency picker work, you would add this package:
-// import 'package:currency_picker/currency_picker.dart';
+import 'package:isar/isar.dart';
+import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+// Adjust paths as needed
+import 'accounts_screen.dart';
+import 'package:osm/core/services/isar_service.dart';
+import 'select_store_screen.dart';
+import 'package:osm/core/theme_provider.dart'; // Import the new provider
+import '../../../orders/data/models/store_model.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -10,16 +18,55 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPageState extends State<SettingsPage> {
-  // --- State variables for the new UI ---
-  bool _isDarkModeEnabled = false;
+  final IsarService isarService = IsarService();
+  String _selectedStoreName = 'No Store Selected';
+
+  // State variables for other toggles
   bool _pushNotificationsEnabled = true;
   bool _lowStockAlertsEnabled = true;
   bool _newOrderNotificationsEnabled = true;
   bool _dailySummaryEnabled = false;
 
   @override
+  void initState() {
+    super.initState();
+    _loadSelectedStore();
+  }
+
+  Future<void> _loadSelectedStore() async {
+    final prefs = await SharedPreferences.getInstance();
+    final storeId = prefs.getInt(selectedStoreIdKey);
+
+    if (storeId != null) {
+      final isar = await isarService.db;
+      final store = await isar.stores.get(storeId);
+      if (store != null && mounted) {
+        setState(() {
+          _selectedStoreName = store.name;
+        });
+      }
+    } else if (mounted) {
+      setState(() {
+        _selectedStoreName = 'Select a Store';
+      });
+    }
+  }
+
+  void _navigateAndSelectStore() async {
+    final result = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(
+        builder: (context) => const SelectStoreScreen(),
+      ),
+    );
+    if (result == true) {
+      _loadSelectedStore();
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    // Using Theme.of(context) to make colors adapt to light/dark mode
+    // Access the ThemeProvider
+    final themeProvider = Provider.of<ThemeProvider>(context);
     final theme = Theme.of(context);
     final headingColor = theme.textTheme.titleLarge?.color?.withOpacity(0.8);
 
@@ -35,12 +82,9 @@ class _SettingsPageState extends State<SettingsPage> {
           // --- Store/Branch Selector ---
           ListTile(
             leading: Icon(Icons.storefront_outlined, color: theme.colorScheme.primary),
-            title: const Text('Select Store/Branch', style: TextStyle(fontWeight: FontWeight.w500)),
+            title: Text(_selectedStoreName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
             trailing: const Icon(Icons.swap_horiz),
-            onTap: () {
-              // TODO: Implement store/branch selection logic
-              print('Select Store/Branch tapped');
-            },
+            onTap: _navigateAndSelectStore,
           ),
           const Divider(height: 20),
 
@@ -49,14 +93,13 @@ class _SettingsPageState extends State<SettingsPage> {
           _buildSwitchItem(
             Icons.brightness_6_outlined,
             'Enable Dark Mode',
-            _isDarkModeEnabled,
-            (value) => setState(() => _isDarkModeEnabled = value),
+            themeProvider.themeMode == ThemeMode.dark,
+            (value) => themeProvider.setTheme(value),
           ),
           _buildSettingsItem(
             Icons.currency_rupee_outlined,
             'Currency Preference (INR, USD, etc.)',
             onTap: () {
-              // TODO: Show currency picker from the 'currency_picker' package
               print('Currency Preference tapped');
             },
           ),
@@ -89,7 +132,7 @@ class _SettingsPageState extends State<SettingsPage> {
             (value) => setState(() => _dailySummaryEnabled = value),
           ),
           const Divider(height: 30),
-
+          
           // --- Inventory Settings Section ---
           _buildSectionTitle(Icons.inventory_2_outlined, 'Inventory Settings', headingColor),
           _buildSettingsItem(Icons.production_quantity_limits_outlined, 'Default Stock Warning Threshold'),
@@ -111,8 +154,7 @@ class _SettingsPageState extends State<SettingsPage> {
             title: Text('Account', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
             trailing: Icon(Icons.arrow_forward_ios, size: 16),
             onTap: () {
-              // TODO: Navigate to a new Account page
-              print('Navigate to Account Page');
+              Navigator.of(context).push(MaterialPageRoute(builder: (context) => const AccountScreen()));
             },
           ),
           const Divider(height: 30),
@@ -135,7 +177,6 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
-  // Helper for section titles with an icon
   Widget _buildSectionTitle(IconData icon, String title, Color? color) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
@@ -152,7 +193,6 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
-  // Helper for standard navigation items
   Widget _buildSettingsItem(IconData icon, String title, {VoidCallback? onTap, bool isDestructive = false}) {
     final theme = Theme.of(context);
     final color = isDestructive ? Colors.red : theme.colorScheme.primary;
@@ -166,11 +206,10 @@ class _SettingsPageState extends State<SettingsPage> {
         ),
       ),
       trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-      onTap: onTap ?? () => print('$title tapped'), // Use provided onTap or default print
+      onTap: onTap ?? () => print('$title tapped'),
     );
   }
 
-  // Helper for toggle/switch items
   Widget _buildSwitchItem(IconData icon, String title, bool value, ValueChanged<bool> onChanged) {
     return SwitchListTile(
       secondary: Icon(icon, color: Theme.of(context).colorScheme.primary),
@@ -184,3 +223,4 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 }
+
