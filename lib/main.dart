@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:osm/core/theme_provider.dart';
 import 'package:osm/features/prescription/viewmodels/prescription_viewmodel.dart';
 import 'package:osm/features/inventory/viewmodels/store_location_viewmodel.dart';
 import 'package:provider/provider.dart';
@@ -18,10 +19,10 @@ import 'package:osm/features/inventory/data/repositories/inventory_repository.da
 import 'package:osm/features/inventory/data/repositories/frame_repository.dart';
 import 'package:osm/features/inventory/data/repositories/lens_repository.dart';
 
-// Import your ViewModels
-import 'package:osm/features/customer/viewmodel/customer_viewmodel.dart';
-import 'package:osm/features/inventory/viewmodels/frame_viewmodel.dart';
-import 'package:osm/features/inventory/viewmodels/lens_viewmodel.dart';
+// Import your new ViewModel
+import 'package:osm/features/customer/viewmodel/customer_viewmodel.dart'; // NEW IMPORT
+import 'package:osm/features/inventory/viewmodels/frame_viewmodel.dart'; // NEW IMPORT
+import 'package:osm/features/inventory/viewmodels/lens_viewmodel.dart'; // NEW IMPORT
 import 'features/orders/viewmodel/order_viewmodel.dart';
 
 // Import your initial screen
@@ -29,9 +30,6 @@ import 'features/dashboard/presentation/screens/dashboard_screen.dart';
 
 // Import dummydatagenerator
 import 'core/utils/dummy_data_generator.dart';
-
-// --- NEW IMPORT ---
-import 'package:osm/core/theme_provider.dart';
 
 late SharedPreferences sharedPreferences;
 
@@ -81,10 +79,6 @@ void main() async {
         ),
 
         // ViewModels (ChangeNotifierProvider for mutable state)
-        // --- NEW THEME PROVIDER ---
-        ChangeNotifierProvider<ThemeProvider>(
-          create: (_) => ThemeProvider(),
-        ),
         ChangeNotifierProvider<CustomerViewModel>(
           create: (context) =>
               CustomerViewModel(context.read<CustomerRepository>()),
@@ -109,6 +103,9 @@ void main() async {
           create: (context) =>
               StoreLocationViewModel(context.read<StoreLocationRepository>()),
         ),
+        ChangeNotifierProvider<ThemeProvider>(
+          create: (context) => ThemeProvider(),
+        ),
         // Add other ViewModels here as you create them (e.g., DoctorViewModel)
       ],
       child: const MyApp(),
@@ -121,28 +118,14 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // --- WRAP WITH CONSUMER TO LISTEN FOR THEME CHANGES ---
-    return Consumer<ThemeProvider>(
-      builder: (context, themeProvider, child) {
-        return MaterialApp(
-          title: 'Optics Store Management',
-          debugShowCheckedModeBanner: true,
-          // --- THEME CONFIGURATION ---
-          theme: ThemeData(
-            primarySwatch: Colors.blue,
-            visualDensity: VisualDensity.adaptivePlatformDensity,
-            brightness: Brightness.light,
-          ), // Light theme
-          darkTheme: ThemeData(
-            primarySwatch: Colors.lightBlue,
-            visualDensity: VisualDensity.adaptivePlatformDensity,
-            brightness: Brightness.dark,
-          ), // Dark theme
-          themeMode: themeProvider.themeMode, // Connects to the provider
-          home: const DashboardScreen(),
-        );
-      },
+    return MaterialApp(
+      title: 'Optics Store Management',
+      debugShowCheckedModeBanner: true,
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+        visualDensity: VisualDensity.adaptivePlatformDensity,
+      ),
+      home: const DashboardScreen(),
     );
   }
 }
-

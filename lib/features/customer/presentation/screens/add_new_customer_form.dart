@@ -159,11 +159,13 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:osm/core/widgets/image_selector.dart';
 import 'package:osm/features/customer/data/customer_model.dart';
+import 'package:osm/features/customer/viewmodel/customer_viewmodel.dart';
 import 'package:osm/features/orders/viewmodel/order_viewmodel.dart';
 import 'package:provider/provider.dart';
 
 class AddNewCustomerForm extends StatefulWidget {
-  const AddNewCustomerForm({super.key});
+  final bool fromCustomerStep;
+  const AddNewCustomerForm({super.key, this.fromCustomerStep = false});
 
   @override
   State<AddNewCustomerForm> createState() => _AddNewCustomerFormState();
@@ -183,7 +185,7 @@ class _AddNewCustomerFormState extends State<AddNewCustomerForm> {
   String _gender = "Male";
   File? _pickedImage;
 
-  void _saveForm() {
+  void _saveForm() async {
     if (_formKey.currentState!.validate()) {
       final newCustomer = CustomerModel(
         firstName: _firstNameCtrl.text.trim(),
@@ -196,7 +198,13 @@ class _AddNewCustomerFormState extends State<AddNewCustomerForm> {
         profileImageUrl: _pickedImage?.path ?? "",
       );
 
-      context.read<OrderViewModel>().selectCustomer(newCustomer);
+      if (widget.fromCustomerStep) {
+        context.read<OrderViewModel>().selectCustomer(newCustomer);
+        Navigator.pop(context, newCustomer);
+      } else {
+        await context.read<CustomerViewModel>().addCustomer(newCustomer);
+        Navigator.pop(context);
+      }
     }
   }
 

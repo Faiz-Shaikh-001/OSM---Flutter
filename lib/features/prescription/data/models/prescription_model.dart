@@ -43,7 +43,7 @@ class PrescriptionModel {
     required this.axisLeft,
     this.addLeft,
     this.pd,
-    this.notes,
+    this.notes = '',
     IsarLink<CustomerModel>? customer,
     IsarLink<DoctorModel>? doctor,
     IsarLinks<OrderModel>? orders,

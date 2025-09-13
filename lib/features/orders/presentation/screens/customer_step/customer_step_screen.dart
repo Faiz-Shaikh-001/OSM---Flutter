@@ -48,7 +48,9 @@ class _CustomerStepScreenState extends State<CustomerStepScreen> {
 
   void _navigateToAddCustomer() async {
     final newCustomer = await Navigator.of(context).push<CustomerModel>(
-      MaterialPageRoute(builder: (context) => const AddNewCustomerForm()),
+      MaterialPageRoute(
+        builder: (context) => const AddNewCustomerForm(fromCustomerStep: true),
+      ),
     );
     if (newCustomer != null && mounted) {
       context.read<OrderViewModel>().selectCustomer(newCustomer);

@@ -148,4 +148,29 @@ class PrescriptionRepository {
       rethrow;
     }
   }
+
+  Future<PrescriptionModel?> getLatestPrescriptionForCustomer(
+    Id customerId,
+  ) async {
+    try {
+      final isar = await _isarService.db;
+      final latest = await isar.prescriptionModels
+          .filter()
+          .customer((q) => q.idEqualTo(customerId))
+          .sortByPrescriptionDateDesc()
+          .findFirst();
+      if (latest != null) {
+        await latest.customer.load();
+        await latest.doctor.load();
+        await latest.orders.load();
+      }
+
+      return latest;
+    } catch (e) {
+      debugPrint(
+        'Error getting latest prescription for customer $customerId: $e',
+      );
+      rethrow;
+    }
+  }
 }
