@@ -36,6 +36,8 @@ class ProductMapper {
     final products = <Product>[];
 
     if (inventory.frame.value != null) {
+      await inventory.frame.load();
+
       final frame = inventory.frame.value!;
       for (final variant in frame.variants) {
         products.add(fromFrame(frame, variant));
@@ -43,12 +45,15 @@ class ProductMapper {
     }
 
     if (inventory.lens.value != null) {
+      await inventory.lens.load();
+
       final lens = inventory.lens.value!;
       for (final variant in lens.variants) {
         products.add(fromLens(lens, variant));
       }
     }
 
+    debugPrint("Mapped products: ${products.map((p) => p.name).toList()}");
     return products;
   }
 }
@@ -69,6 +74,7 @@ class ProductRepository {
       for (final inventory in allInventory) {
         products.addAll(await ProductMapper.fromInventory(inventory));
       }
+
       return products;
     } catch (e) {
       debugPrint("Error getting all products: $e");

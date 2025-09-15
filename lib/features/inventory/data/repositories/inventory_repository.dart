@@ -65,11 +65,19 @@ class InventoryRepository {
       late Id newId;
       await isar.writeTxn(() async {
         if (frame != null) {
+          await isar.frameModels.put(frame);
           inventory.frame.value = frame;
         } else if (lens != null) {
+          await isar.lensModels.put(lens);
           inventory.lens.value = lens;
         }
         newId = await isar.inventoryModels.put(inventory);
+
+        if (frame != null) {
+          await inventory.frame.save();
+        } else if (lens != null) {
+          await inventory.lens.save();
+        }
       });
       return newId;
     } catch (e) {
@@ -79,10 +87,26 @@ class InventoryRepository {
   }
 
   // Updates an existing inventory entry in the database.
-  Future<void> update(InventoryModel inventory) async {
+  Future<void> update(
+    InventoryModel inventory,
+    FrameModel? frame,
+    LensModel? lens,
+  ) async {
     try {
       final isar = await _isarService.db;
       await isar.writeTxn(() async {
+        if (frame != null) {
+          await isar.frameModels.put(frame);
+          inventory.frame.value = frame;
+          inventory.lens.value = null;
+          await inventory.lens.save();
+        } else if (lens != null) {
+          await isar.lensModels.put(lens);
+          inventory.lens.value = lens;
+          inventory.frame.value = null;
+          await inventory.frame.save();
+        }
+
         await isar.inventoryModels.put(inventory);
       });
     } catch (e) {
@@ -97,6 +121,19 @@ class InventoryRepository {
       final isar = await _isarService.db;
       late bool deleted;
       await isar.writeTxn(() async {
+        final inventory = await isar.inventoryModels.get(id);
+        if (inventory == null) {
+          deleted = false;
+          return;
+        }
+
+        if (inventory.frame.value != null) {
+          await isar.frameModels.delete(inventory.frame.value!.id);
+        }
+
+        if (inventory.lens.value != null) {
+          await isar.lensModels.delete(inventory.lens.value!.id);
+        }
         deleted = await isar.inventoryModels.delete(id);
       });
       return deleted;

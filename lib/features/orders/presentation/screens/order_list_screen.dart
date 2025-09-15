@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:osm/features/orders/data/models/order_model.dart';
+import 'package:osm/features/orders/presentation/screens/order_detail_screen/order_detail_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart'; // For date formatting
 import 'package:osm/features/orders/viewmodel/order_viewmodel.dart';
@@ -103,10 +105,12 @@ class _OrderListScreenState extends State<OrderListScreen> {
                       },
                     ),
                     onTap: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Tapped on Order #${order.id}')),
+                      Navigator.of(context).push<OrderModel>(
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              OrderDetailsScreen(order: order),
+                        ),
                       );
-                      // TODO: Navigate to OrderDetailScreen when implemented
                     },
                   ),
                 );

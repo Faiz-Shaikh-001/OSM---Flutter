@@ -14,6 +14,8 @@ class OrderModel {
 
   final DateTime orderDate;
   final double totalAmount;
+
+  @Enumerated(EnumType.name)
   final String status;
 
   // ---- RelationShips ----

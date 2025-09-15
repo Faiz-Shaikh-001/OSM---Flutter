@@ -88,7 +88,7 @@ const FrameModelSchema = CollectionSchema(
       id: 7180153793639634491,
       name: r'inventoryEntry',
       target: r'InventoryModel',
-      single: false,
+      single: true,
       linkName: r'frame',
     )
   },
@@ -1261,56 +1261,9 @@ extension FrameModelQueryLinks
   }
 
   QueryBuilder<FrameModel, FrameModel, QAfterFilterCondition>
-      inventoryEntryLengthEqualTo(int length) {
-    return QueryBuilder.apply(this, (query) {
-      return query.linkLength(r'inventoryEntry', length, true, length, true);
-    });
-  }
-
-  QueryBuilder<FrameModel, FrameModel, QAfterFilterCondition>
-      inventoryEntryIsEmpty() {
+      inventoryEntryIsNull() {
     return QueryBuilder.apply(this, (query) {
       return query.linkLength(r'inventoryEntry', 0, true, 0, true);
-    });
-  }
-
-  QueryBuilder<FrameModel, FrameModel, QAfterFilterCondition>
-      inventoryEntryIsNotEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.linkLength(r'inventoryEntry', 0, false, 999999, true);
-    });
-  }
-
-  QueryBuilder<FrameModel, FrameModel, QAfterFilterCondition>
-      inventoryEntryLengthLessThan(
-    int length, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.linkLength(r'inventoryEntry', 0, true, length, include);
-    });
-  }
-
-  QueryBuilder<FrameModel, FrameModel, QAfterFilterCondition>
-      inventoryEntryLengthGreaterThan(
-    int length, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.linkLength(r'inventoryEntry', length, include, 999999, true);
-    });
-  }
-
-  QueryBuilder<FrameModel, FrameModel, QAfterFilterCondition>
-      inventoryEntryLengthBetween(
-    int lower,
-    int upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.linkLength(
-          r'inventoryEntry', lower, includeLower, upper, includeUpper);
     });
   }
 }
