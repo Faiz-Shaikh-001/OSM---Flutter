@@ -4,6 +4,7 @@ import 'package:osm/features/orders/data/models/order_model.dart';
 import 'package:osm/features/customer/data/customer_model.dart';
 import 'package:osm/features/prescription/data/models/prescription_model.dart';
 import 'package:osm/features/inventory/data/models/store_location_model.dart';
+import 'package:osm/features/orders/data/models/order_model_enums.dart';
 import 'package:osm/core/services/isar_service.dart';
 
 class OrderRepository {
@@ -27,13 +28,7 @@ class OrderRepository {
     try {
       final isar = await _isarService.db;
       final order = await isar.orderModels.get(id);
-      if (order != null) {
-        await order.customer.load();
-        await order.prescription.load();
-        await order.items.load();
-        await order.payments.load();
-        await order.storeLocation.load();
-      }
+      await order?.loadAllRelations();
       return order;
     } catch (e) {
       debugPrint('Error getting order with details by ID $id: $e');
@@ -119,11 +114,7 @@ class OrderRepository {
           .findAll();
 
       for (final order in orders) {
-        await order.customer.load();
-        await order.prescription.load();
-        await order.items.load();
-        await order.payments.load();
-        await order.storeLocation.load();
+        await order.loadAllRelations();
       }
 
       return orders;
@@ -162,5 +153,10 @@ class OrderRepository {
       debugPrint('Error getting last visit for $customerId: $e');
       rethrow;
     }
+  }
+
+  Future<List<OrderModel>> getUnpaidOrders() async {
+    final isar = await _isarService.db;
+    return await isar.orderModels.filter().paymentsLengthEqualTo(0).findAll();
   }
 }

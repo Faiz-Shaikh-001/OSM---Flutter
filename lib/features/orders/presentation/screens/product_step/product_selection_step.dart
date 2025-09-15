@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:osm/core/services/isar_service.dart';
-import 'package:osm/features/inventory/data/repositories/inventory_repository.dart';
 import 'package:osm/features/orders/data/repositories/product_repository.dart';
 import 'package:provider/provider.dart';
 import 'package:osm/features/inventory/data/models/product_model.dart';
@@ -33,6 +32,9 @@ class _ProductSelectionStepState extends State<ProductSelectionStep> {
   Future<void> _loadProducts() async {
     try {
       final products = await _productRepository.getAllProducts();
+
+      debugPrint("\n\n\nProducts: $products \n\n\n");
+
       setState(() {
         _allProducts = products;
         _isLoading = false;

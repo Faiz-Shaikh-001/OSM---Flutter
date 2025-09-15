@@ -104,4 +104,15 @@ class PaymentRepository {
       rethrow;
     }
   }
+
+  // Calculates outstanding balance of an order
+  Future<double> getOutstandingBalance(OrderModel order) async {
+    await order.items.load();
+    await order.payments.load();
+
+    final total = order.totalAmount;
+    final paid = order.payments.fold(0.0, (sum, p) => sum + p.amountPaid);
+
+    return total - paid;
+  }
 }

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:osm/features/orders/presentation/screens/customer_step/customer_step_screen.dart';
-import 'package:osm/features/orders/presentation/screens/payment_step.dart';
+import 'package:osm/features/orders/presentation/screens/payment_step/payment_step.dart';
 import 'package:osm/features/orders/presentation/screens/product_step/product_selection_step.dart';
 import 'package:osm/features/orders/presentation/widgets/order_stepper.dart';
 

@@ -31,7 +31,7 @@ class FrameModel {
 
   // --- Relationships ---
   @Backlink(to: 'frame')
-  final IsarLinks<InventoryModel> inventoryEntry; // Initialized in constructor
+  final IsarLink<InventoryModel> inventoryEntry; // Initialized in constructor
 
   FrameModel._internal({
     required this.date,
@@ -39,9 +39,9 @@ class FrameModel {
     required this.frameType,
     required this.name,
     this.variants = const [],
-    IsarLinks<InventoryModel>? inventoryEntry, // Add to constructor
+    IsarLink<InventoryModel>? inventoryEntry, // Add to constructor
   }) : inventoryEntry =
-           inventoryEntry ?? IsarLinks<InventoryModel>(); // Initialize here
+           inventoryEntry ?? IsarLink<InventoryModel>(); // Initialize here
 
   factory FrameModel({
     DateTime? date, // Optional, nullable parameter
@@ -56,7 +56,7 @@ class FrameModel {
       frameType: frameType,
       name: name,
       variants: variants,
-      inventoryEntry: IsarLinks<InventoryModel>(), // Pass new instance
+      inventoryEntry: IsarLink<InventoryModel>(), // Pass new instance
     );
   }
 
@@ -68,7 +68,7 @@ class FrameModel {
     String? companyName,
     String? name,
     List<FrameVariant>? variants,
-    IsarLinks<InventoryModel>? inventoryEntry,
+    IsarLink<InventoryModel>? inventoryEntry,
   }) {
     return FrameModel._internal(
       // Call internal constructor

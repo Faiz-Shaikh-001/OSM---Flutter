@@ -1,4 +1,3 @@
-import 'dart:io'; // Keep if you use File objects, otherwise remove
 import 'package:osm/features/inventory/data/models/inventory_model.dart';
 
 import 'lens_enums.dart';
@@ -27,7 +26,7 @@ class LensModel {
 
   // --- Relationships ---
   @Backlink(to: 'lens')
-  final IsarLinks<InventoryModel> inventoryEntry;
+  final IsarLink<InventoryModel> inventoryEntry;
 
   LensModel._internal({
     required this.date,
@@ -36,8 +35,8 @@ class LensModel {
     required this.lensType,
     this.imageUrls = const [],
     this.variants = const [],
-    IsarLinks<InventoryModel>? inventoryEntry, // Add to constructor
-  }) : inventoryEntry = inventoryEntry ?? IsarLinks<InventoryModel>();
+    IsarLink<InventoryModel>? inventoryEntry, // Add to constructor
+  }) : inventoryEntry = inventoryEntry ?? IsarLink<InventoryModel>();
 
   factory LensModel({
     DateTime? date, // Optional, nullable parameter for convenience
@@ -53,7 +52,7 @@ class LensModel {
       productName: productName,
       lensType: lensType,
       variants: variants,
-      inventoryEntry: IsarLinks<InventoryModel>(), // Pass new instance
+      inventoryEntry: IsarLink<InventoryModel>(), // Pass new instance
       imageUrls: imageUrls,
     );
   }
@@ -65,7 +64,7 @@ class LensModel {
     String? companyName,
     String? productName,
     List<LensVariant>? variants,
-    IsarLinks<InventoryModel>? inventoryEntry,
+    IsarLink<InventoryModel>? inventoryEntry,
     List<String>? imageUrls,
   }) {
     return LensModel._internal(
