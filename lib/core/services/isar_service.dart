@@ -12,8 +12,9 @@ import 'package:osm/features/orders/data/models/order_model.dart';
 import 'package:osm/features/orders/data/models/payment_model.dart';
 import 'package:osm/features/prescription/data/models/prescription_model.dart';
 import 'package:osm/features/inventory/data/models/store_location_model.dart';
-// --- FIX: Import the Store model ---
 import 'package:osm/features/orders/data/models/store_model.dart';
+// --- NEW: IMPORT THE STAFF MODEL ---
+import 'package:osm/features/staff/models/staff_model.dart';
 
 class IsarService {
   late Future<Isar> db;
@@ -37,7 +38,8 @@ class IsarService {
     final dir = await getApplicationDocumentsDirectory();
     final isar = await Isar.open(
       [
-        // --- FIX: Add the StoreSchema to the list ---
+        // --- NEW: ADD THE STAFF SCHEMA ---
+        StaffSchema,
         StoreSchema,
         CustomerModelSchema,
         DoctorModelSchema,
@@ -57,7 +59,12 @@ class IsarService {
     return isar;
   }
 
-  // --- FIX: Add a getter for the new Store collection ---
+  // --- NEW: ADD A GETTER FOR THE STAFF COLLECTION ---
+  Future<IsarCollection<Staff>> getStaff() async {
+    final isar = await db;
+    return isar.staffs;
+  }
+
   Future<IsarCollection<Store>> getStores() async {
     final isar = await db;
     return isar.stores;

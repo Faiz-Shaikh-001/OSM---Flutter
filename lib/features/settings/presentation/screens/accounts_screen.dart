@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
-import 'manage_stores_screen.dart'; // Import the new manage stores screen
+// Adjust these paths if your file structure is different
+import 'manage_stores_screen.dart';
+import '../../../staff/presentation/screens/manage_staff_screen.dart';
+
 
 class AccountScreen extends StatelessWidget {
   const AccountScreen({super.key});
@@ -84,7 +87,6 @@ class AccountScreen extends StatelessWidget {
             Icons.store_mall_directory_outlined,
             'Manage Stores',
             onTap: () {
-              // *** NAVIGATION LOGIC ADDED HERE ***
               Navigator.of(context).push(
                 MaterialPageRoute(builder: (context) => const ManageStoresScreen()),
               );
@@ -94,7 +96,10 @@ class AccountScreen extends StatelessWidget {
             Icons.people_outline,
             'Manage Staff',
             onTap: () {
-              // TODO: Navigate to Manage Staff page
+              // --- NAVIGATION ADDED HERE ---
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (context) => const ManageStaffScreen()),
+              );
             },
           ),
           const Divider(height: 40),
