@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:isar/isar.dart';
 import 'package:osm/core/services/isar_service.dart';
-import 'package:osm/features/staff/models/staff_model.dart';
-import 'package:osm/features/staff/presentation/screens/invite_staff_screen.dart';
+import 'package:osm/features/settings/staff/models/staff_model.dart';
+import 'package:osm/features/settings/staff/presentation/screens/invite_staff_screen.dart';
 
 class ManageStaffScreen extends StatefulWidget {
   const ManageStaffScreen({super.key});

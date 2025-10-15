@@ -145,7 +145,7 @@ class _SettingsPageState extends State<SettingsPage> {
           _buildSectionTitle(Icons.security_outlined, 'Security & Support', headingColor),
           _buildSettingsItem(Icons.cloud_sync_outlined, 'Backup & Restore'),
           _buildSettingsItem(Icons.phonelink_lock_outlined, 'Enable App Lock (PIN/Biometric)'),
-          _buildSettingsItem(Icons.people_outline, 'Manage Staff Access'),
+        
           const Divider(height: 30),
           
           // --- Account Navigation Item ---

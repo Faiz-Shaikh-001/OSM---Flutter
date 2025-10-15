@@ -32,18 +32,21 @@ class _SelectStoreScreenState extends State<SelectStoreScreen> {
     final prefs = await SharedPreferences.getInstance();
     final allStores = await isar.stores.where().findAll();
     
-    setState(() {
-      _stores = allStores;
-      _currentlySelectedId = prefs.getInt(selectedStoreIdKey);
-    });
+    if (mounted) {
+      setState(() {
+        _stores = allStores;
+        _currentlySelectedId = prefs.getInt(selectedStoreIdKey);
+      });
+    }
   }
 
-  Future<void> _selectStore(int storeId) async {
+  Future<void> _selectStore(Store store) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setInt(selectedStoreIdKey, storeId);
-    // Pop the screen, returning 'true' to indicate a selection was made.
+    await prefs.setInt(selectedStoreIdKey, store.id);
+    
     if (mounted) {
-      Navigator.of(context).pop(true);
+      // --- CHANGE: Return the entire selected store object ---
+      Navigator.of(context).pop(store);
     }
   }
 
@@ -51,7 +54,6 @@ class _SelectStoreScreenState extends State<SelectStoreScreen> {
     await Navigator.of(context).push(
       MaterialPageRoute(builder: (context) => const ManageStoresScreen()),
     );
-    // After returning from managing stores, reload the list in case of changes
     _loadStoresAndSelection();
   }
 
@@ -95,7 +97,7 @@ class _SelectStoreScreenState extends State<SelectStoreScreen> {
                     title: Text(store.name, style: const TextStyle(fontWeight: FontWeight.bold)),
                     subtitle: Text('${store.address}, ${store.city}'),
                     trailing: isSelected ? const Icon(Icons.check_circle, color: Colors.green) : null,
-                    onTap: () => _selectStore(store.id),
+                    onTap: () => _selectStore(store),
                   ),
                 );
               },

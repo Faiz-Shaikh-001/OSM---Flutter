@@ -13,8 +13,9 @@ import 'package:osm/features/orders/data/models/payment_model.dart';
 import 'package:osm/features/prescription/data/models/prescription_model.dart';
 import 'package:osm/features/inventory/data/models/store_location_model.dart';
 import 'package:osm/features/orders/data/models/store_model.dart';
-// --- NEW: IMPORT THE STAFF MODEL ---
-import 'package:osm/features/staff/models/staff_model.dart';
+import 'package:osm/features/settings/staff/models/staff_model.dart';
+// --- NEW: IMPORT THE USER PROFILE MODEL ---
+import 'package:osm/features/settings/profile/models/profile_model.dart';
 
 class IsarService {
   late Future<Isar> db;
@@ -25,7 +26,6 @@ class IsarService {
     return _instance;
   }
 
-  // Initializes database future in the private constructor
   IsarService._internal() {
     db = openIsar();
   }
@@ -38,9 +38,10 @@ class IsarService {
     final dir = await getApplicationDocumentsDirectory();
     final isar = await Isar.open(
       [
-        // --- NEW: ADD THE STAFF SCHEMA ---
-        StaffSchema,
+        // --- NEW: ADD THE USER PROFILE SCHEMA ---
+        UserProfileSchema,
         StoreSchema,
+        StaffSchema,
         CustomerModelSchema,
         DoctorModelSchema,
         FrameModelSchema,
@@ -59,18 +60,23 @@ class IsarService {
     return isar;
   }
 
-  // --- NEW: ADD A GETTER FOR THE STAFF COLLECTION ---
-  Future<IsarCollection<Staff>> getStaff() async {
+  // --- NEW: ADD A GETTER FOR THE USER PROFILE COLLECTION ---
+  Future<IsarCollection<UserProfile>> getUserProfiles() async {
     final isar = await db;
-    return isar.staffs;
+    return isar.userProfiles;
   }
 
   Future<IsarCollection<Store>> getStores() async {
     final isar = await db;
     return isar.stores;
   }
+  
+  Future<IsarCollection<Staff>> getStaff() async {
+    final isar = await db;
+    return isar.staffs;
+  }
 
-  // Methods here to get specific collections
+  // ... rest of your existing getters
   Future<IsarCollection<CustomerModel>> getCustomers() async {
     final isar = await db;
     return isar.customerModels;
@@ -80,8 +86,7 @@ class IsarService {
     final isar = await db;
     return isar.doctorModels;
   }
-
-  // Add getters for other collections as needed
+  
   Future<IsarCollection<PrescriptionModel>> getPrescriptions() async {
     final isar = await db;
     return isar.prescriptionModels;
@@ -122,12 +127,11 @@ class IsarService {
     return isar.lensModels;
   }
 
-  // Method to close the Isar database (optional, usually done on app shutdown or hot restart)
   Future<void> closeDb() async {
     final isar = await db;
     await isar.close(
       deleteFromDisk: false,
-    ); // Set to true if you want to delete data on close
+    );
     debugPrint('Isar database closed.');
   }
 }

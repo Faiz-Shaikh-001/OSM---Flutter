@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
-// Adjust these paths if your file structure is different
 import 'manage_stores_screen.dart';
-import '../../../staff/presentation/screens/manage_staff_screen.dart';
+import 'package:osm/features/settings/staff/presentation/screens/manage_staff_screen.dart';
+import 'package:osm/features/settings/profile/models/screens/edit_profile_screen.dart';
+// --- NEW: IMPORT THE CHANGE CREDENTIALS SCREEN ---
+import 'package:osm/features/settings/staff/presentation/screens/change_credentials_screen.dart';
 
 
 class AccountScreen extends StatelessWidget {
   const AccountScreen({super.key});
 
-  // Helper method to create section titles
   Widget _buildSectionTitle(String title, BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
@@ -21,7 +22,6 @@ class AccountScreen extends StatelessWidget {
     );
   }
 
-  // Helper method for standard list items
   Widget _buildListTile(IconData icon, String title, {VoidCallback? onTap}) {
     return ListTile(
       leading: Icon(icon),
@@ -31,7 +31,6 @@ class AccountScreen extends StatelessWidget {
     );
   }
 
-  // Helper method for destructive action items
   Widget _buildDestructiveTile(IconData icon, String title, {VoidCallback? onTap}) {
     return ListTile(
       leading: Icon(icon, color: Colors.red),
@@ -45,6 +44,7 @@ class AccountScreen extends StatelessWidget {
       onTap: onTap ?? () {},
     );
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -62,23 +62,12 @@ class AccountScreen extends StatelessWidget {
             Icons.edit_outlined,
             'View/Edit Profile',
             onTap: () {
-              // TODO: Navigate to Edit Profile page
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (context) => const EditProfileScreen()),
+              );
             },
           ),
-          _buildListTile(
-            Icons.email_outlined,
-            'Change Email / Phone Number',
-            onTap: () {
-              // TODO: Navigate to change credentials page
-            },
-          ),
-          _buildListTile(
-            Icons.lock_outline,
-            'Change Password',
-            onTap: () {
-              // TODO: Navigate to change password page
-            },
-          ),
+          // --- REDUNDANT OPTIONS REMOVED ---
           const Divider(height: 40),
 
           // --- Store & Staff Management Section ---
@@ -96,7 +85,6 @@ class AccountScreen extends StatelessWidget {
             Icons.people_outline,
             'Manage Staff',
             onTap: () {
-              // --- NAVIGATION ADDED HERE ---
               Navigator.of(context).push(
                 MaterialPageRoute(builder: (context) => const ManageStaffScreen()),
               );
@@ -125,3 +113,4 @@ class AccountScreen extends StatelessWidget {
     );
   }
 }
+
