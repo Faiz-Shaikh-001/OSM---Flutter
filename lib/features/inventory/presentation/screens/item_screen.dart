@@ -18,11 +18,11 @@ import 'package:osm/features/inventory/presentation/screens/update_stock_screen.
 class ItemPage extends StatefulWidget {
   final dynamic product;
   final ProductType productType;
-  final int heroIndex;
+  final int? heroIndex;
 
   const ItemPage({
     super.key,
-    required this.heroIndex,
+    this.heroIndex,
     required this.product,
     required this.productType,
   });

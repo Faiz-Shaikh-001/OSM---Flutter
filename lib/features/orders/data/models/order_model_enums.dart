@@ -14,12 +14,15 @@ extension OrderStatusX on OrderStatus {
 
 extension OrderModelX on OrderModel {
   Future<void> loadAllRelations() async {
-    await Future.wait([
-      customer.load(),
-      prescription.load(),
-      items.load(),
-      payments.load(),
-      storeLocation.load(),
-    ]);
+    await customer.load();
+    await prescription.load();
+    await payments.load();
+    await items.load();
+    await storeLocation.load();
+
+    for (final item in items) {
+      await item.frame.load();
+      await item.lens.load();
+    }
   }
 }

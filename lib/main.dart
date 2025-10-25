@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:osm/core/theme_provider.dart';
+import 'package:osm/features/dashboard/presentation/screens/dashboard_screen_test.dart';
 import 'package:osm/features/prescription/viewmodels/prescription_viewmodel.dart';
 import 'package:osm/features/inventory/viewmodels/store_location_viewmodel.dart';
 import 'package:provider/provider.dart';
@@ -20,16 +21,10 @@ import 'package:osm/features/inventory/data/repositories/frame_repository.dart';
 import 'package:osm/features/inventory/data/repositories/lens_repository.dart';
 
 // Import your new ViewModel
-import 'package:osm/features/customer/viewmodel/customer_viewmodel.dart'; // NEW IMPORT
-import 'package:osm/features/inventory/viewmodels/frame_viewmodel.dart'; // NEW IMPORT
-import 'package:osm/features/inventory/viewmodels/lens_viewmodel.dart'; // NEW IMPORT
+import 'package:osm/features/customer/viewmodel/customer_viewmodel.dart';
+import 'package:osm/features/inventory/viewmodels/frame_viewmodel.dart';
+import 'package:osm/features/inventory/viewmodels/lens_viewmodel.dart';
 import 'features/orders/viewmodel/order_viewmodel.dart';
-
-// Import your initial screen
-import 'features/dashboard/presentation/screens/dashboard_screen.dart';
-
-// Import dummydatagenerator
-import 'core/utils/dummy_data_generator.dart';
 
 late SharedPreferences sharedPreferences;
 
@@ -39,9 +34,6 @@ void main() async {
   final isarService = IsarService();
   await isarService.db;
   sharedPreferences = await SharedPreferences.getInstance();
-
-  // Dummy data population call
-  await DummyDataGenerator.generate(isarService);
 
   runApp(
     MultiProvider(
@@ -54,9 +46,6 @@ void main() async {
         Provider<DoctorRepository>(
           create: (context) => DoctorRepository(context.read<IsarService>()),
         ),
-        Provider<OrderRepository>(
-          create: (context) => OrderRepository(context.read<IsarService>()),
-        ),
         Provider<PrescriptionRepository>(
           create: (context) =>
               PrescriptionRepository(context.read<IsarService>()),
@@ -68,9 +57,6 @@ void main() async {
           create: (context) =>
               StoreLocationRepository(context.read<IsarService>()),
         ),
-        Provider<InventoryRepository>(
-          create: (context) => InventoryRepository(context.read<IsarService>()),
-        ),
         Provider<FrameRepository>(
           create: (context) => FrameRepository(context.read<IsarService>()),
         ),
@@ -79,6 +65,14 @@ void main() async {
         ),
 
         // ViewModels (ChangeNotifierProvider for mutable state)
+        ChangeNotifierProvider<InventoryRepository>(
+          create: (context) =>
+              InventoryRepository(context.read<IsarService>())..init(),
+        ),
+        ChangeNotifierProvider(
+          create: (context) =>
+              OrderRepository(context.read<IsarService>())..init(),
+        ),
         ChangeNotifierProvider<CustomerViewModel>(
           create: (context) =>
               CustomerViewModel(context.read<CustomerRepository>()),
@@ -106,7 +100,6 @@ void main() async {
         ChangeNotifierProvider<ThemeProvider>(
           create: (context) => ThemeProvider(),
         ),
-        // Add other ViewModels here as you create them (e.g., DoctorViewModel)
       ],
       child: const MyApp(),
     ),
@@ -120,12 +113,12 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Optics Store Management',
-      debugShowCheckedModeBanner: true,
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
         primarySwatch: Colors.blue,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: const DashboardScreen(),
+      home: const DashboardScreenTest(),
     );
   }
 }

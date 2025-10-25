@@ -140,7 +140,9 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
                       ),
                       const SizedBox(width: 10),
                       DropdownButton<String>(
-                        value: order.status,
+                        value: _statuses.contains(order.status)
+                            ? order.status
+                            : _statuses.first,
                         items: _statuses
                             .map(
                               (s) => DropdownMenuItem(
