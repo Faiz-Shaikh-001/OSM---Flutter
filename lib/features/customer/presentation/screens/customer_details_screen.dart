@@ -4,7 +4,6 @@ import 'package:osm/features/customer/data/customer_model.dart';
 import 'package:osm/features/customer/services/build_customer_image.dart';
 import 'package:osm/features/orders/data/models/order_model.dart';
 import 'package:osm/features/orders/data/repositories/order_repository.dart';
-import 'package:osm/features/prescription/data/repositories/prescription_repository.dart';
 
 class CustomerDetailsScreen extends StatelessWidget {
   final CustomerModel customer;

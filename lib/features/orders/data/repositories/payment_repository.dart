@@ -52,9 +52,17 @@ class PaymentRepository {
       final isar = await _isarService.db;
       late Id newId;
       await isar.writeTxn(() async {
+        // Ensure order has an ID
+        if (order.id == Isar.autoIncrement) {
+          await isar.orderModels.put(order);
+        }
+
         payment.order.value = order;
         newId = await isar.paymentModels.put(payment);
-        await order.payments.save(); // Save the backlink on the order
+
+        // Save the forward link
+        order.payments.add(payment);
+        await isar.orderModels.put(order);
       });
       return newId;
     } catch (e) {
@@ -92,15 +100,12 @@ class PaymentRepository {
   }
 
   // Retrieves payments for a specific order.
-  Future<List<PaymentModel>> getPaymentsForOrder(Id orderId) async {
+  Future<List<PaymentModel>> getPaymentsForOrder(OrderModel order) async {
     try {
-      final isar = await _isarService.db;
-      return await isar.paymentModels
-          .filter()
-          .order((q) => q.idEqualTo(orderId))
-          .findAll();
+      await order.payments.load(); // load backlink
+      return order.payments.toList();
     } catch (e) {
-      debugPrint('Error getting payments for order $orderId: $e');
+      debugPrint('Error getting payments for order $order: $e');
       rethrow;
     }
   }

@@ -5,10 +5,29 @@ import 'package:osm/core/services/isar_service.dart';
 import '../models/frame_model.dart';
 import '../models/lens_model.dart';
 
-class InventoryRepository {
+class InventoryRepository extends ChangeNotifier{
   final IsarService _isarService;
 
   InventoryRepository(this._isarService);
+
+
+  int _lowStockCount = 0;
+  List<InventoryModel>  _lowStockItems = [];
+
+  int get lowStockCount => _lowStockCount;
+  List<InventoryModel> get lowStockItems => _lowStockItems;
+
+  Future<void> init() async {
+    _watchInventoryChanges();
+    await getLowStockItems();
+  }
+
+  void _watchInventoryChanges() async {
+    final isar = await _isarService.db;
+    isar.inventoryModels.watchLazy().listen((_) {
+      getLowStockItems();
+    });
+  }
 
   // Retrieves all inventory entries from the database.
   Future<List<InventoryModel>> getAll() async {
@@ -144,13 +163,15 @@ class InventoryRepository {
   }
 
   // Retrieves inventory entries below their minimum stock level.
-  Future<List<InventoryModel>> getLowStockItems() async {
+  Future<void> getLowStockItems() async {
     try {
       final isar = await _isarService.db;
       final allInventory = await isar.inventoryModels.where().findAll();
-      return allInventory
+      _lowStockItems = allInventory
           .where((item) => item.quantityOnHand < item.minStockLevel)
           .toList();
+      _lowStockCount = _lowStockItems.length;
+      notifyListeners();
     } catch (e) {
       debugPrint('Error getting low stock items: $e');
       rethrow;

@@ -88,7 +88,7 @@ class _CustomerStepScreenState extends State<CustomerStepScreen> {
     if (orderViewModel.selectedCustomer != null) {
       return SelectedCustomerView(
         customer: orderViewModel.selectedCustomer!,
-        onRemove: () => context.read<OrderViewModel>().resetForm(),
+        onRemove: () => context.read<OrderViewModel>().removeCustomer(),
         onNext: widget.onNext,
       );
     }

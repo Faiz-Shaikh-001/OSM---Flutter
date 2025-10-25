@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:osm/features/orders/data/models/order_model.dart';
+import 'package:osm/features/orders/presentation/screens/add_order_screen.dart';
 import 'package:osm/features/orders/presentation/screens/order_detail_screen/order_detail_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart'; // For date formatting
@@ -37,14 +38,10 @@ class _OrderListScreenState extends State<OrderListScreen> {
           IconButton(
             icon: const Icon(Icons.add),
             onPressed: () {
-              // TODO: Navigate to AddOrderScreen when it's implemented
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Add Order Screen Coming Soon!')),
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const AddOrderScreen()),
               );
-              // Navigator.push(
-              //   context,
-              //   MaterialPageRoute(builder: (context) => const AddOrderScreen()),
-              // );
             },
           ),
         ],
