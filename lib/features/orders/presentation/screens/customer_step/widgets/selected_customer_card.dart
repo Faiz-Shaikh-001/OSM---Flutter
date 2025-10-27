@@ -73,7 +73,7 @@ class SelectedCustomerCard extends StatelessWidget {
               context,
               Icons.location_city,
               'City',
-              customer.city,
+              customer.city ?? "Unknown",
             ),
             _buildDetailRow(
               context,

@@ -9,21 +9,36 @@ class CustomerModel {
   Id id = Isar.autoIncrement;
 
   @Name('creationDate')
-  final DateTime? date;
+  final DateTime? dateCreated;
 
   @Index(type: IndexType.hash)
   final String firstName;
 
   @Index(type: IndexType.hash)
   final String lastName;
-  final String city;
 
+  final DateTime? dateOfBirth;
+  final String gender;
+  final int? age;
+
+  // Contact Details
   @Index(unique: true)
   final String primaryPhoneNumber;
   final String? secondaryPhoneNumber;
   final String? email;
-  final String gender;
-  final int age;
+
+  // Address
+  final String? streetAddress;
+  final String? city;
+  final String? state;
+  final String? postalCode;
+  final String? country;
+
+  // Additional Store Information
+  @Enumerated(EnumType.name)
+  final String? customerType;
+  final String? notes;
+  final DateTime? lastVisitDate;
   final String profileImageUrl;
 
   // ---- RelationShips ----
@@ -34,15 +49,23 @@ class CustomerModel {
   final IsarLinks<OrderModel> orders;
 
   CustomerModel._internal({
-    this.date,
+    this.dateCreated,
     required this.firstName,
     required this.lastName,
-    required this.city,
+    this.dateOfBirth,
+    this.gender = "Unknown",
+    this.age,
     required this.primaryPhoneNumber,
     this.secondaryPhoneNumber,
     this.email,
-    required this.gender,
-    required this.age,
+    this.streetAddress,
+    this.city,
+    this.state,
+    this.postalCode,
+    this.country,
+    this.customerType,
+    this.notes,
+    this.lastVisitDate,
     required this.profileImageUrl,
     IsarLinks<PrescriptionModel>? prescriptions,
     IsarLinks<OrderModel>? orders,
@@ -51,27 +74,43 @@ class CustomerModel {
 
   // Factory constructor for creating new CustomerModel instances
   factory CustomerModel({
-    DateTime? date,
+    DateTime? dateCreated,
     required String firstName,
     required String lastName,
-    required String city,
+    DateTime? dateOfBirth,
+    String gender = "Unknown",
+    int? age,
     required String primaryPhoneNumber,
     String? secondaryPhoneNumber,
     String? email,
-    required String gender,
-    required int age,
+    String? streetAddress,
+    String? city,
+    String? state,
+    String? postalCode,
+    String? country,
+    String? customerType,
+    String? notes,
+    DateTime? lastVisitDate,
     required String profileImageUrl,
   }) {
     return CustomerModel._internal(
-      date: date ?? DateTime.now(),
+      dateCreated: dateCreated ?? DateTime.now(),
       firstName: firstName,
       lastName: lastName,
-      city: city,
+      dateOfBirth: dateOfBirth,
+      gender: gender,
+      age: age,
       primaryPhoneNumber: primaryPhoneNumber,
       secondaryPhoneNumber: secondaryPhoneNumber,
       email: email,
-      gender: gender,
-      age: age,
+      streetAddress: streetAddress,
+      city: city,
+      state: state,
+      postalCode: postalCode,
+      country: country,
+      customerType: customerType ?? 'Walk-In',
+      notes: notes,
+      lastVisitDate: lastVisitDate,
       profileImageUrl: profileImageUrl,
       prescriptions: IsarLinks<PrescriptionModel>(),
       orders: IsarLinks<OrderModel>(),
@@ -81,29 +120,44 @@ class CustomerModel {
   // copyWith method for creating modified copies
   CustomerModel copyWith({
     Id? id,
-    DateTime? date,
+    DateTime? dateCreated,
     String? firstName,
     String? lastName,
-    String? city,
+    DateTime? dateOfBirth,
+    String? gender,
+    int? age,
     String? primaryPhoneNumber,
     String? secondaryPhoneNumber,
     String? email,
-    String? gender,
-    int? age,
+    String? streetAddress,
+    String? city,
+    String? state,
+    String? postalCode,
+    String? country,
+    String? customerType,
+    String? notes,
+    DateTime? lastVisitDate,
     String? profileImageUrl,
     IsarLinks<PrescriptionModel>? prescriptions,
     IsarLinks<OrderModel>? orders,
   }) {
     return CustomerModel._internal(
-      date: date ?? this.date,
+      dateCreated: dateCreated ?? this.dateCreated,
       firstName: firstName ?? this.firstName,
       lastName: lastName ?? this.lastName,
-      city: city ?? this.city,
+      dateOfBirth: dateOfBirth ?? this.dateOfBirth,
+      gender: gender ?? this.gender,
+      age: age ?? this.age,
       primaryPhoneNumber: primaryPhoneNumber ?? this.primaryPhoneNumber,
       secondaryPhoneNumber: secondaryPhoneNumber ?? this.secondaryPhoneNumber,
       email: email ?? this.email,
-      gender: gender ?? this.gender,
-      age: age ?? this.age,
+      streetAddress: streetAddress ?? this.streetAddress,
+      city: city ?? this.city,
+      state: state ?? this.state,
+      postalCode: postalCode ?? this.postalCode,
+      customerType: customerType ?? this.customerType,
+      notes: notes ?? this.notes,
+      lastVisitDate: lastVisitDate ?? this.lastVisitDate,
       profileImageUrl: profileImageUrl ?? this.profileImageUrl,
       prescriptions: prescriptions ?? this.prescriptions,
       orders: orders ?? this.orders,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:isar/isar.dart';
-import 'package:osm/features/orders/data/models/order_item_model.dart';
+import 'package:osm/features/dashboard/presentation/data/models/activity_repository.dart';
+import 'package:osm/features/dashboard/presentation/data/models/recent_activities.dart';
 import 'package:osm/features/orders/data/models/order_model.dart';
 import 'package:osm/features/customer/data/customer_model.dart';
 import 'package:osm/features/prescription/data/models/prescription_model.dart';
@@ -10,15 +11,19 @@ import 'package:osm/core/services/isar_service.dart';
 
 class OrderRepository extends ChangeNotifier {
   final IsarService _isarService;
+  final ActivityRepository _activityRepository;
+
   int _totalOrders = 0;
   double _todaysSale = 0.0;
   double _pendingPayments = 0.0;
+  List<double> _weeklySummary = [];
 
+  List<double> get weeklySummary => _weeklySummary;
   double get todaysSale => _todaysSale;
   double get pendingPayments => _pendingPayments;
   int get totalOrders => _totalOrders;
 
-  OrderRepository(this._isarService) {
+  OrderRepository(this._isarService, this._activityRepository) {
     _isarService.db.then((isar) {
       // Whenever orders change, recalc all metrics
       isar.orderModels.watchLazy().listen((_) async {
@@ -56,7 +61,9 @@ class OrderRepository extends ChangeNotifier {
         order.prescription.value = prescription;
         if (storeLocation != null) {
           if (storeLocation.id == Isar.autoIncrement) {
-            storeLocation.id = await isar.storeLocationModels.put(storeLocation);
+            storeLocation.id = await isar.storeLocationModels.put(
+              storeLocation,
+            );
           }
           order.storeLocation.value = storeLocation;
         }
@@ -74,6 +81,16 @@ class OrderRepository extends ChangeNotifier {
           storeLocation.orders.add(order);
           await storeLocation.orders.save();
         }
+        await _activityRepository.log(
+          ActivityModel(
+            type: ActivityType.newOrder,
+            title: "New Order #$newOrderId",
+            subtitle:
+                "${customer.firstName} ${customer.lastName} • ${order.totalAmount}",
+            time: DateTime.now(),
+          ),
+          isar: isar,
+        );
       });
       refreshAllMetrics();
       return newOrderId;
@@ -227,6 +244,48 @@ class OrderRepository extends ChangeNotifier {
     }
   }
 
+  Future<List<OrderModel>> getOrderByDate(DateTime date) async {
+    try {
+      final isar = await _isarService.db;
+      final start = DateTime(date.year, date.month, date.day);
+      final end = start.add(const Duration(days: 1));
+
+      final orders = await isar.orderModels
+          .filter()
+          .orderDateBetween(start, end, includeLower: true, includeUpper: false)
+          .findAll();
+      await Future.wait(orders.map((o) => o.loadAllRelations()));
+      return orders;
+    } catch (e) {
+      debugPrint("Error getting order for date $date: $e");
+      rethrow;
+    }
+  }
+
+  Future<void> getWeeklySummary() async {
+    DateTime today = DateTime.now();
+
+    int weekday = today.weekday;
+    DateTime startOfWeek = today.subtract(Duration(days: weekday - 1));
+
+    for (int i = 0; i < 7; i++) {
+      DateTime targetDay = DateTime(
+        startOfWeek.year,
+        startOfWeek.month,
+        startOfWeek.day + i,
+      );
+
+      List<OrderModel> orders = await getOrderByDate(targetDay);
+
+      double total = orders.fold(
+        0.0,
+        (sum, order) => sum + (order.totalAmount),
+      );
+
+      _weeklySummary.add(total);
+    }
+  }
+
   Future<List<OrderModel>> getUnpaidOrders() async {
     final isar = await _isarService.db;
     return await isar.orderModels.filter().paymentsLengthEqualTo(0).findAll();
@@ -239,6 +298,7 @@ class OrderRepository extends ChangeNotifier {
   }
 
   Future<void> refreshAllMetrics() async {
+    await getWeeklySummary();
     await refreshTotalOrdersCount();
     await calculateTodaysSale();
     await calculatePendingPayments();

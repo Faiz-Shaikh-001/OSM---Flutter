@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:isar/isar.dart';
+import 'package:osm/features/dashboard/presentation/data/models/recent_activities.dart';
 import 'package:osm/features/orders/data/models/payment_model.dart';
 import 'package:osm/features/orders/data/models/order_model.dart';
 import 'package:osm/core/services/isar_service.dart';
@@ -63,6 +64,15 @@ class PaymentRepository {
         // Save the forward link
         order.payments.add(payment);
         await isar.orderModels.put(order);
+
+        await isar.activityModels.put(
+          ActivityModel(
+            type: ActivityType.paymentReceived,
+            title: "Payment received ₹${payment.amountPaid} from ${order.customer.value?.firstName} ${order.customer.value?.lastName}",
+            subtitle: "Remaining payment: ₹${order.totalAmount - payment.amountPaid}",
+            time: DateTime.now()
+          )
+        );
       });
       return newId;
     } catch (e) {

@@ -1,6 +1,7 @@
 // imports
 import 'package:flutter/material.dart';
 import 'package:isar/isar.dart';
+import 'package:osm/features/dashboard/presentation/data/models/recent_activities.dart';
 import 'package:osm/features/inventory/data/models/inventory_model.dart';
 import '../models/frame_model.dart';
 import '../../../../core/services/isar_service.dart';
@@ -86,6 +87,15 @@ class FrameRepository {
         // Save links both ways
         await model.inventoryEntry.save();
         await inventory.frame.save();
+
+        await isar.activityModels.put(
+          ActivityModel(
+            type: ActivityType.newStockAdded,
+            title: "New Frame added ${model.name}-${model.companyName}",
+            subtitle: "QTY: ${model.inventoryEntry.value?.quantityOnHand}",
+            time: DateTime.now()
+          )
+        );
       });
 
       debugPrint(

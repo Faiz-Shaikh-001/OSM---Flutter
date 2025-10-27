@@ -4,6 +4,7 @@ import 'package:osm/features/customer/data/customer_model.dart';
 import 'package:osm/features/customer/services/build_customer_image.dart';
 import 'package:osm/features/orders/data/models/order_model.dart';
 import 'package:osm/features/orders/data/repositories/order_repository.dart';
+import 'package:provider/provider.dart';
 
 class CustomerDetailsScreen extends StatelessWidget {
   final CustomerModel customer;
@@ -12,6 +13,7 @@ class CustomerDetailsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+
     return Scaffold(
       appBar: AppBar(
         title: const Text("Customer Detail"),
@@ -83,7 +85,7 @@ class CustomerDetailsScreen extends StatelessWidget {
                     ),
                     ListTile(
                       leading: Icon(Icons.home),
-                      title: Text(customer.city),
+                      title: Text(customer.city ?? 'Unknown'),
                     ),
                   ],
                 ),
@@ -129,9 +131,7 @@ class CustomerDetailsScreen extends StatelessWidget {
 
             // Orders Card
             FutureBuilder(
-              future: OrderRepository(
-                IsarService(),
-              ).getOrdersForCustomer(customer.id),
+              future: context.read<OrderRepository>().getOrdersForCustomer(customer.id),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());
@@ -195,110 +195,10 @@ class CustomerDetailsScreen extends StatelessWidget {
             ),
 
             const SizedBox(height: 16),
-
-            // Reminders Card : HelpText - can add reminders
-            // Card(
-            //   shape: RoundedRectangleBorder(
-            //     borderRadius: BorderRadius.circular(16),
-            //   ),
-            //   elevation: 3,
-            //   child: Padding(
-            //     padding: const EdgeInsets.all(16.0),
-            //     child: Column(
-            //       crossAxisAlignment: CrossAxisAlignment.start,
-            //       children: [
-            //         const Text(
-            //           "Reminders",
-            //           style: TextStyle(
-            //             fontSize: 18,
-            //             fontWeight: FontWeight.bold,
-            //           ),
-            //         ),
-            //         const SizedBox(height: 10),
-            //         const ListTile(
-            //           leading: Icon(Icons.alarm),
-            //           title: Text("Lens replacement due in 2 weeks"),
-            //         ),
-            //         const ListTile(
-            //           leading: Icon(Icons.calendar_month),
-            //           title: Text("Next eye test: Apr 2026"),
-            //         ),
-            //         const SizedBox(height: 10),
-            //         ElevatedButton.icon(
-            //           onPressed: () {},
-            //           icon: Icon(Icons.send),
-            //           label: Text("Send Reminder"),
-            //           style: ElevatedButton.styleFrom(
-            //             shape: RoundedRectangleBorder(
-            //               borderRadius: BorderRadius.circular(12),
-            //             ),
-            //             minimumSize: const Size.fromHeight(45),
-            //           ),
-            //         ),
-            //       ],
-            //     ),
-            //   ),
-            // ),
-
-            // const SizedBox(height: 16),
-
-            // Insights Card
-            // Card(
-            //   shape: RoundedRectangleBorder(
-            //     borderRadius: BorderRadius.circular(16),
-            //   ),
-            //   elevation: 3,
-            //   child: Padding(
-            //     padding: const EdgeInsets.all(16.0),
-            //     child: Row(
-            //       mainAxisAlignment: MainAxisAlignment.spaceAround,
-            //       children: const [
-            //         Column(
-            //           children: [
-            //             Text(
-            //               "₹35,000",
-            //               style: TextStyle(
-            //                 fontSize: 18,
-            //                 fontWeight: FontWeight.bold,
-            //               ),
-            //             ),
-            //             Text("Total Spend"),
-            //           ],
-            //         ),
-            //         Column(
-            //           children: [
-            //             Text(
-            //               "2 months",
-            //               style: TextStyle(
-            //                 fontSize: 18,
-            //                 fontWeight: FontWeight.bold,
-            //               ),
-            //             ),
-            //             Text("Last Visit"),
-            //           ],
-            //         ),
-            //         Column(
-            //           children: [
-            //             Text(
-            //               "Progressive",
-            //               style: TextStyle(
-            //                 fontSize: 18,
-            //                 fontWeight: FontWeight.bold,
-            //               ),
-            //             ),
-            //             Text("Fav Product"),
-            //           ],
-            //         ),
-            //       ],
-            //     ),
-            //   ),
-            // ),
             FutureBuilder(
               future: Future.wait([
-                OrderRepository(
-                  IsarService(),
-                ).getOrdersForCustomer(customer.id),
-                OrderRepository(IsarService()).getLastVisitDate(customer.id),
+                context.read<OrderRepository>().getOrdersForCustomer(customer.id),
+                context.read<OrderRepository>().getLastVisitDate(customer.id),
               ]),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {

@@ -9,10 +9,12 @@ import 'package:osm/features/customer/data/customer_model.dart';
 import 'package:osm/features/customer/data/customer_repository.dart';
 import 'package:osm/features/customer/presentation/screens/customer_details_screen.dart';
 import 'package:osm/features/customer/presentation/screens/customer_list_screen.dart';
+import 'package:osm/features/dashboard/presentation/data/models/recent_activities.dart';
 import 'package:osm/features/dashboard/presentation/screens/lowStockItemsScreen.dart';
 import 'package:osm/features/dashboard/presentation/widgets/global_search_delegate.dart';
 import 'package:osm/features/dashboard/presentation/widgets/historyGraph/bar_graph.dart';
 import 'package:osm/features/dashboard/presentation/widgets/summary_chip.dart';
+import 'package:osm/features/dashboard/viewmodel/activity_view_model.dart';
 import 'package:osm/features/inventory/data/models/frame_model.dart';
 import 'package:osm/features/inventory/data/models/lens_model.dart';
 import 'package:osm/features/inventory/data/repositories/frame_repository.dart';
@@ -76,7 +78,6 @@ class _DashboardScreenTestState extends State<DashboardScreenTest> {
   int _selectedIndex = 2;
   bool _isDialOpen = false;
 
-
   final List<Widget> _pages = [
     const OrderListScreen(),
     const InventoryScreen(),
@@ -108,12 +109,14 @@ class _DashboardScreenTestState extends State<DashboardScreenTest> {
           : null,
       body: Stack(
         children: [
-          _selectedIndex == 2 ? BuildDashboardBody(
-            frameRepository: context.read<FrameRepository>(),
-            lensRepository: context.read<LensRepository>(),
-            customerRepository: context.read<CustomerRepository>(),
-            orderRepository: context.read<OrderRepository>(),
-          ) : _pages[_selectedIndex],
+          _selectedIndex == 2
+              ? BuildDashboardBody(
+                  frameRepository: context.read<FrameRepository>(),
+                  lensRepository: context.read<LensRepository>(),
+                  customerRepository: context.read<CustomerRepository>(),
+                  orderRepository: context.read<OrderRepository>(),
+                )
+              : _pages[_selectedIndex],
           if (_isDialOpen && _selectedIndex == 2) _buildBlurOverlay(),
           if (_isDialOpen && _selectedIndex == 2) ..._buildFloatingActions(),
         ],
@@ -309,7 +312,7 @@ class _BuildDashboardBodyState extends State<BuildDashboardBody> {
             SizedBox(height: 30),
             _buildHistoryBarGraph(),
             SizedBox(height: 30),
-            _buildRecentActivities(),
+            _buildRecentActivities(context.watch<ActivityViewModel>().activities),
           ],
         ),
       ),
@@ -384,7 +387,9 @@ class _BuildDashboardBodyState extends State<BuildDashboardBody> {
           decoration: InputDecoration(
             labelText: 'Search Orders, Customer, Product,...',
             suffixIcon: Icon(Icons.search),
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10.0)),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10.0),
+            ),
           ),
           onChanged: (text) {
             print('Text changed: $text');
@@ -400,7 +405,6 @@ class _BuildDashboardBodyState extends State<BuildDashboardBody> {
     final todaysSale = context.watch<OrderRepository>().todaysSale;
     final pendingPayments = context.watch<OrderRepository>().pendingPayments;
     final lowStockCount = context.watch<InventoryRepository>().lowStockCount;
-
 
     return SizedBox(
       width: MediaQuery.of(context).size.width * .90,
@@ -435,7 +439,12 @@ class _BuildDashboardBodyState extends State<BuildDashboardBody> {
               ),
               GestureDetector(
                 onTap: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (_) => const LowStockItemsScreen()));
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const LowStockItemsScreen(),
+                    ),
+                  );
                 },
                 child: SummaryChip(
                   color: Colors.red[100],
@@ -453,15 +462,7 @@ class _BuildDashboardBodyState extends State<BuildDashboardBody> {
 
   Widget _buildHistoryBarGraph() {
     // List of weekly income
-    List<double> weeklySummary = [
-      4.40,
-      9.30,
-      43.03,
-      234.53,
-      100.20,
-      39.21,
-      23.21,
-    ];
+    List<double> weeklySummary = context.watch<OrderRepository>().weeklySummary;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -478,7 +479,7 @@ class _BuildDashboardBodyState extends State<BuildDashboardBody> {
     );
   }
 
-  Widget _buildRecentActivities() {
+  Widget _buildRecentActivities(List<ActivityModel> activities) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -490,44 +491,34 @@ class _BuildDashboardBodyState extends State<BuildDashboardBody> {
           ),
         ),
         const SizedBox(height: 10),
-        ListView(
+        ListView.builder(
+          itemCount: activities.length,
           shrinkWrap: true,
           physics: NeverScrollableScrollPhysics(),
-          children: [
-            InkWell(
-              onTap: () {
-                debugPrint('Tapped on New Order #1234');
-                // You can add navigation or custom logic here
-              },
-              child: ListTile(
-                title: Text('New Order #1234'),
-                subtitle: Text('John Doe • Progressive Lenses'),
-                trailing: Text('2 mins ago'),
+          itemBuilder: (context, index) {
+            final activity = activities[index];
+            return ListTile(
+              title: Text(activity.title),
+              subtitle: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(activity.subtitle),
+                  Text(_formatTimeAgo(activity.time))
+                ],
               ),
-            ),
-            InkWell(
-              onTap: () {
-                debugPrint('Tapped on Payment received');
-              },
-              child: ListTile(
-                title: Text('Payment received'),
-                subtitle: Text('Order #1233 • \$350.00'),
-                trailing: Text('10 mins ago'),
-              ),
-            ),
-            InkWell(
-              onTap: () {
-                debugPrint('Tapped on Low stock alert');
-              },
-              child: ListTile(
-                title: Text('Low stock alert'),
-                subtitle: Text('Ray-Ban Frames - 3 items left'),
-                trailing: Text('2 hours ago'),
-              ),
-            ),
-          ],
+            );
+          },
         ),
       ],
     );
+  }
+
+  String _formatTimeAgo(DateTime date) {
+    final diff = DateTime.now().difference(date);
+
+    if (diff.inMinutes < 1) return "Just now";
+    if (diff.inMinutes < 60) return "${diff.inMinutes} mins ago";
+    if (diff.inHours < 24) return "${diff.inHours} hours ago";
+    return "${diff.inDays} days ago";
   }
 }
