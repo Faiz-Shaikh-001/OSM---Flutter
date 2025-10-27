@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:osm/core/providers/repositories_providers.dart';
+import 'package:osm/core/providers/services_providers.dart';
+import 'package:osm/core/providers/viewmodel_providers.dart';
 import 'package:osm/core/theme_provider.dart';
+import 'package:osm/features/dashboard/presentation/data/models/activity_repository.dart';
 import 'package:osm/features/dashboard/presentation/screens/dashboard_screen_test.dart';
-import 'package:osm/features/prescription/viewmodels/prescription_viewmodel.dart';
-import 'package:osm/features/inventory/viewmodels/store_location_viewmodel.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -10,21 +12,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:osm/core/services/isar_service.dart';
 
 // Import all your repository files
-import 'package:osm/features/customer/data/customer_repository.dart';
-import 'package:osm/features/doctors/data/repositories/doctor_repository.dart';
 import 'package:osm/features/orders/data/repositories/order_repository.dart';
-import 'package:osm/features/prescription/data/repositories/prescription_repository.dart';
-import 'package:osm/features/orders/data/repositories/payment_repository.dart';
-import 'package:osm/features/inventory/data/repositories/store_location_repository.dart';
 import 'package:osm/features/inventory/data/repositories/inventory_repository.dart';
-import 'package:osm/features/inventory/data/repositories/frame_repository.dart';
-import 'package:osm/features/inventory/data/repositories/lens_repository.dart';
-
-// Import your new ViewModel
-import 'package:osm/features/customer/viewmodel/customer_viewmodel.dart';
-import 'package:osm/features/inventory/viewmodels/frame_viewmodel.dart';
-import 'package:osm/features/inventory/viewmodels/lens_viewmodel.dart';
-import 'features/orders/viewmodel/order_viewmodel.dart';
 
 late SharedPreferences sharedPreferences;
 
@@ -38,65 +27,18 @@ void main() async {
   runApp(
     MultiProvider(
       providers: [
-        // Core Services/Repositories (Provider<T> for immutable instances)
-        Provider<IsarService>(create: (_) => isarService),
-        Provider<CustomerRepository>(
-          create: (context) => CustomerRepository(context.read<IsarService>()),
-        ),
-        Provider<DoctorRepository>(
-          create: (context) => DoctorRepository(context.read<IsarService>()),
-        ),
-        Provider<PrescriptionRepository>(
-          create: (context) =>
-              PrescriptionRepository(context.read<IsarService>()),
-        ),
-        Provider<PaymentRepository>(
-          create: (context) => PaymentRepository(context.read<IsarService>()),
-        ),
-        Provider<StoreLocationRepository>(
-          create: (context) =>
-              StoreLocationRepository(context.read<IsarService>()),
-        ),
-        Provider<FrameRepository>(
-          create: (context) => FrameRepository(context.read<IsarService>()),
-        ),
-        Provider<LensRepository>(
-          create: (context) => LensRepository(context.read<IsarService>()),
-        ),
-
-        // ViewModels (ChangeNotifierProvider for mutable state)
+        ...servicesProvider,
+        ...repositoryProviders,
         ChangeNotifierProvider<InventoryRepository>(
           create: (context) =>
               InventoryRepository(context.read<IsarService>())..init(),
         ),
         ChangeNotifierProvider(
           create: (context) =>
-              OrderRepository(context.read<IsarService>())..init(),
+              OrderRepository(context.read<IsarService>(), context.read<ActivityRepository>())..init(),
         ),
-        ChangeNotifierProvider<CustomerViewModel>(
-          create: (context) =>
-              CustomerViewModel(context.read<CustomerRepository>()),
-        ),
-        ChangeNotifierProvider<FrameViewmodel>(
-          create: (context) => FrameViewmodel(context.read<FrameRepository>()),
-        ),
-        ChangeNotifierProvider<LensViewmodel>(
-          create: (context) => LensViewmodel(context.read<LensRepository>()),
-        ),
-        ChangeNotifierProvider<OrderViewModel>(
-          create: (context) => OrderViewModel(
-            context.read<OrderRepository>(),
-            context.read<CustomerViewModel>(),
-          ),
-        ),
-        ChangeNotifierProvider<PrescriptionViewModel>(
-          create: (context) =>
-              PrescriptionViewModel(context.read<PrescriptionRepository>()),
-        ),
-        ChangeNotifierProvider<StoreLocationViewModel>(
-          create: (context) =>
-              StoreLocationViewModel(context.read<StoreLocationRepository>()),
-        ),
+        ...viewModelProviders,
+        
         ChangeNotifierProvider<ThemeProvider>(
           create: (context) => ThemeProvider(),
         ),
