@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-// --- CORRECTED IMPORTS ---
+// --- IMPORTS ---
 import 'package:osm/core/services/isar_service.dart'; 
 import 'package:osm/core/theme_provider.dart'; 
 import 'package:osm/features/orders/data/models/store_model.dart';
@@ -10,6 +10,8 @@ import 'package:osm/features/orders/data/models/store_model.dart';
 // Relative screen imports
 import 'select_store_screen.dart';
 import 'accounts_screen.dart'; 
+import 'inventory_settings_screen.dart'; 
+import 'notification_settings_screen.dart'; // New import
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -21,12 +23,7 @@ class SettingsPage extends StatefulWidget {
 class _SettingsPageState extends State<SettingsPage> {
   final IsarService isarService = IsarService();
   String _selectedStoreName = 'No Store Selected';
-  
-  // State variables
-  bool _pushNotificationsEnabled = true;
-  bool _lowStockAlertsEnabled = true;
-  bool _newOrderNotificationsEnabled = true;
-  bool _dailySummaryEnabled = false;
+  int? _selectedStoreId;
 
   @override
   void initState() {
@@ -44,27 +41,42 @@ class _SettingsPageState extends State<SettingsPage> {
       if (store != null && mounted) {
         setState(() {
           _selectedStoreName = store.name;
+          _selectedStoreId = store.id;
         });
       }
     } else if (mounted) {
        setState(() {
         _selectedStoreName = 'Select a Store';
+        _selectedStoreId = null;
       });
     }
   }
 
   void _navigateAndSelectStore() async {
-    // --- FIX: Removed <bool> type argument so it accepts the Store object ---
     final result = await Navigator.of(context).push(
       MaterialPageRoute(
         builder: (context) => const SelectStoreScreen(),
       ),
     );
     
-    // Check if result is not null (meaning a selection was made)
     if (result != null) {
       _loadSelectedStore();
     }
+  }
+
+  void _openInventorySettings() {
+    if (_selectedStoreId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please select a store first.')),
+      );
+      return;
+    }
+    
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => InventorySettingsScreen(storeId: _selectedStoreId!),
+      ),
+    );
   }
   
   @override
@@ -112,37 +124,27 @@ class _SettingsPageState extends State<SettingsPage> {
           const Divider(height: 30),
 
           _buildSectionTitle(Icons.notifications_outlined, 'Notifications', headingColor),
-          _buildSwitchItem(
+          // --- UPDATED: Single entry point for Notifications ---
+          _buildSettingsItem(
             Icons.notifications_active_outlined,
-            'Enable Push Notifications',
-            _pushNotificationsEnabled,
-            (value) => setState(() => _pushNotificationsEnabled = value),
-          ),
-          _buildSwitchItem(
-            Icons.warning_amber_rounded,
-            'Low Stock Alerts',
-            _lowStockAlertsEnabled,
-            (value) => setState(() => _lowStockAlertsEnabled = value),
-          ),
-          _buildSwitchItem(
-            Icons.inventory_2_outlined,
-            'New Order Notifications',
-            _newOrderNotificationsEnabled,
-            (value) => setState(() => _newOrderNotificationsEnabled = value),
-          ),
-          _buildSwitchItem(
-            Icons.today_outlined,
-            'Daily Summary Notification',
-            _dailySummaryEnabled,
-            (value) => setState(() => _dailySummaryEnabled = value),
+            'Manage Notifications',
+            subtitle: 'Push alerts, Stock warnings, Daily summaries',
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (context) => const NotificationSettingsScreen()),
+              );
+            },
           ),
           const Divider(height: 30),
           
           _buildSectionTitle(Icons.inventory_2_outlined, 'Inventory Settings', headingColor),
-          _buildSettingsItem(Icons.production_quantity_limits_outlined, 'Default Stock Warning Threshold'),
-          _buildSettingsItem(Icons.edit_note_outlined, 'Set Invoice Footer Message'),
-          _buildSettingsItem(Icons.price_change_outlined, 'Default Tax Rate (GST %)'),
-          _buildSettingsItem(Icons.percent_outlined, 'Default Discount Rate'),
+          
+          _buildSettingsItem(
+            Icons.tune, 
+            'General Configuration',
+            subtitle: 'Stock Threshold, Tax Rate, Footer Message',
+            onTap: _openInventorySettings,
+          ),
           const Divider(height: 30),
           
           _buildSectionTitle(Icons.security_outlined, 'Security & Support', headingColor),
@@ -193,7 +195,13 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
-  Widget _buildSettingsItem(IconData icon, String title, {VoidCallback? onTap, bool isDestructive = false}) {
+  Widget _buildSettingsItem(
+    IconData icon, 
+    String title, {
+    VoidCallback? onTap, 
+    bool isDestructive = false,
+    String? subtitle,
+  }) {
     final theme = Theme.of(context);
     final color = isDestructive ? Colors.red : theme.colorScheme.primary;
     return ListTile(
@@ -205,21 +213,9 @@ class _SettingsPageState extends State<SettingsPage> {
           fontWeight: FontWeight.w500,
         ),
       ),
+      subtitle: subtitle != null ? Text(subtitle, style: TextStyle(color: Colors.grey[600])) : null,
       trailing: const Icon(Icons.arrow_forward_ios, size: 16),
       onTap: onTap ?? () => print('$title tapped'),
-    );
-  }
-
-  Widget _buildSwitchItem(IconData icon, String title, bool value, ValueChanged<bool> onChanged) {
-    return SwitchListTile(
-      secondary: Icon(icon, color: Theme.of(context).colorScheme.primary),
-      title: Text(
-        title,
-        style: const TextStyle(fontWeight: FontWeight.w500),
-      ),
-      value: value,
-      onChanged: onChanged,
-      activeColor: Theme.of(context).colorScheme.primary,
     );
   }
 }
