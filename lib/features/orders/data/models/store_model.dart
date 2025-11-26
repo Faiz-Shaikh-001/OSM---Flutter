@@ -1,25 +1,32 @@
 import 'package:isar/isar.dart';
 
-// You will need to run the build runner to generate this file:
-// flutter pub run build_runner build
 part 'store_model.g.dart';
 
 @Collection()
 class Store {
-  Id id = Isar.autoIncrement; // Isar's auto-incrementing ID
+  Id id = Isar.autoIncrement;
 
   final String name;
-  
   final String address;
-  
   final String city;
-  
   final String phone;
+
+  // --- NEW: Store-Specific Inventory Settings ---
+  // We set default values so existing code doesn't break
+  int stockThreshold;
+  double taxRate;
+  double discountRate;
+  String invoiceFooterMessage;
 
   Store({
     required this.name,
     required this.address,
     required this.city,
     required this.phone,
+    // Initialize defaults
+    this.stockThreshold = 5,
+    this.taxRate = 0.0,
+    this.discountRate = 0.0,
+    this.invoiceFooterMessage = '',
   });
 }

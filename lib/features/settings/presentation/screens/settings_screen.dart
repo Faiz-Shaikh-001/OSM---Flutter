@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:isar/isar.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-// Adjust paths as needed
-import 'accounts_screen.dart';
-import 'package:osm/core/services/isar_service.dart';
+// --- CORRECTED IMPORTS ---
+import 'package:osm/core/services/isar_service.dart'; 
+import 'package:osm/core/theme_provider.dart'; 
+import 'package:osm/features/orders/data/models/store_model.dart';
+
+// Relative screen imports
 import 'select_store_screen.dart';
-import 'package:osm/core/theme_provider.dart'; // Import the new provider
-import '../../../orders/data/models/store_model.dart';
+import 'accounts_screen.dart'; 
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -20,8 +21,8 @@ class SettingsPage extends StatefulWidget {
 class _SettingsPageState extends State<SettingsPage> {
   final IsarService isarService = IsarService();
   String _selectedStoreName = 'No Store Selected';
-
-  // State variables for other toggles
+  
+  // State variables
   bool _pushNotificationsEnabled = true;
   bool _lowStockAlertsEnabled = true;
   bool _newOrderNotificationsEnabled = true;
@@ -46,26 +47,28 @@ class _SettingsPageState extends State<SettingsPage> {
         });
       }
     } else if (mounted) {
-      setState(() {
+       setState(() {
         _selectedStoreName = 'Select a Store';
       });
     }
   }
 
   void _navigateAndSelectStore() async {
-    final result = await Navigator.of(context).push<bool>(
+    // --- FIX: Removed <bool> type argument so it accepts the Store object ---
+    final result = await Navigator.of(context).push(
       MaterialPageRoute(
         builder: (context) => const SelectStoreScreen(),
       ),
     );
-    if (result == true) {
+    
+    // Check if result is not null (meaning a selection was made)
+    if (result != null) {
       _loadSelectedStore();
     }
   }
-
+  
   @override
   Widget build(BuildContext context) {
-    // Access the ThemeProvider
     final themeProvider = Provider.of<ThemeProvider>(context);
     final theme = Theme.of(context);
     final headingColor = theme.textTheme.titleLarge?.color?.withOpacity(0.8);
@@ -79,7 +82,6 @@ class _SettingsPageState extends State<SettingsPage> {
       body: ListView(
         padding: const EdgeInsets.symmetric(vertical: 16.0),
         children: [
-          // --- Store/Branch Selector ---
           ListTile(
             leading: Icon(Icons.storefront_outlined, color: theme.colorScheme.primary),
             title: Text(_selectedStoreName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
@@ -87,15 +89,19 @@ class _SettingsPageState extends State<SettingsPage> {
             onTap: _navigateAndSelectStore,
           ),
           const Divider(height: 20),
-
-          // --- App Preferences Section ---
+          
           _buildSectionTitle(Icons.settings_outlined, 'App Preferences', headingColor),
-          _buildSwitchItem(
-            Icons.brightness_6_outlined,
-            'Enable Dark Mode',
-            themeProvider.themeMode == ThemeMode.dark,
-            (value) => themeProvider.setTheme(value),
+          
+          SwitchListTile(
+            secondary: Icon(Icons.brightness_6_outlined, color: theme.colorScheme.primary),
+            title: const Text('Enable Dark Mode', style: TextStyle(fontWeight: FontWeight.w500)),
+            value: themeProvider.themeMode == ThemeMode.dark, 
+            activeColor: theme.colorScheme.primary,
+            onChanged: (bool value) {
+              themeProvider.setTheme(value);
+            },
           ),
+
           _buildSettingsItem(
             Icons.currency_rupee_outlined,
             'Currency Preference (INR, USD, etc.)',
@@ -105,7 +111,6 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
           const Divider(height: 30),
 
-          // --- Notifications Section ---
           _buildSectionTitle(Icons.notifications_outlined, 'Notifications', headingColor),
           _buildSwitchItem(
             Icons.notifications_active_outlined,
@@ -133,7 +138,6 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
           const Divider(height: 30),
           
-          // --- Inventory Settings Section ---
           _buildSectionTitle(Icons.inventory_2_outlined, 'Inventory Settings', headingColor),
           _buildSettingsItem(Icons.production_quantity_limits_outlined, 'Default Stock Warning Threshold'),
           _buildSettingsItem(Icons.edit_note_outlined, 'Set Invoice Footer Message'),
@@ -141,32 +145,28 @@ class _SettingsPageState extends State<SettingsPage> {
           _buildSettingsItem(Icons.percent_outlined, 'Default Discount Rate'),
           const Divider(height: 30),
           
-          // --- Security & Support Section ---
           _buildSectionTitle(Icons.security_outlined, 'Security & Support', headingColor),
           _buildSettingsItem(Icons.cloud_sync_outlined, 'Backup & Restore'),
           _buildSettingsItem(Icons.phonelink_lock_outlined, 'Enable App Lock (PIN/Biometric)'),
-        
+          _buildSettingsItem(Icons.people_outline, 'Manage Staff Access'),
           const Divider(height: 30),
           
-          // --- Account Navigation Item ---
           ListTile(
-            leading: Text('👤', style: TextStyle(fontSize: 24)),
-            title: Text('Account', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-            trailing: Icon(Icons.arrow_forward_ios, size: 16),
+            leading: const Text('👤', style: TextStyle(fontSize: 24)),
+            title: const Text('Account', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+            trailing: const Icon(Icons.arrow_forward_ios, size: 16),
             onTap: () {
               Navigator.of(context).push(MaterialPageRoute(builder: (context) => const AccountScreen()));
             },
           ),
           const Divider(height: 30),
 
-          // --- Help & Support Section ---
           _buildSectionTitle(Icons.help_outline, 'Help & Support', headingColor),
           _buildSettingsItem(Icons.quiz_outlined, 'FAQs'),
           _buildSettingsItem(Icons.support_agent_outlined, 'Contact Support'),
           _buildSettingsItem(Icons.menu_book_outlined, 'User Manual'),
           const Divider(height: 30),
 
-          // --- About Section ---
           _buildSectionTitle(Icons.info_outline, 'About', headingColor),
           _buildSettingsItem(Icons.info_outline, 'App Version'),
           _buildSettingsItem(Icons.description_outlined, 'Terms & Conditions'),
@@ -223,4 +223,3 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 }
-

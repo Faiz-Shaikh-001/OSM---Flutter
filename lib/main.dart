@@ -4,7 +4,8 @@ import 'package:osm/core/providers/services_providers.dart';
 import 'package:osm/core/providers/viewmodel_providers.dart';
 import 'package:osm/core/theme_provider.dart';
 import 'package:osm/features/dashboard/presentation/data/models/activity_repository.dart';
-import 'package:osm/features/dashboard/presentation/screens/dashboard_screen_test.dart';
+// --- FIX: Corrected import from _test.dart to the actual screen ---
+import 'package:osm/features/dashboard/presentation/screens/dashboard_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -29,13 +30,17 @@ void main() async {
       providers: [
         ...servicesProvider,
         ...repositoryProviders,
+        // Ensure InventoryRepository extends ChangeNotifier if using ChangeNotifierProvider
         ChangeNotifierProvider<InventoryRepository>(
           create: (context) =>
               InventoryRepository(context.read<IsarService>())..init(),
         ),
+        // Ensure OrderRepository extends ChangeNotifier if using ChangeNotifierProvider
         ChangeNotifierProvider(
-          create: (context) =>
-              OrderRepository(context.read<IsarService>(), context.read<ActivityRepository>())..init(),
+          create: (context) => OrderRepository(
+            context.read<IsarService>(),
+            context.read<ActivityRepository>(), // Ensure ActivityRepository is provided in repositoryProviders
+          )..init(),
         ),
         ...viewModelProviders,
         
@@ -53,14 +58,34 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Optics Store Management',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-        visualDensity: VisualDensity.adaptivePlatformDensity,
-      ),
-      home: const DashboardScreenTest(),
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, child) {
+        return MaterialApp(
+          title: 'Optics Store Management',
+          debugShowCheckedModeBanner: false,
+          // --- THEME CONFIGURATION ---
+          theme: ThemeData(
+            useMaterial3: true, // Adapts colors for better contrast
+            colorScheme: ColorScheme.fromSeed(
+              seedColor: Colors.blue, 
+              brightness: Brightness.light
+            ),
+            scaffoldBackgroundColor: Colors.grey[50], // Matches your light UI background
+            visualDensity: VisualDensity.adaptivePlatformDensity,
+          ),
+          darkTheme: ThemeData(
+            useMaterial3: true,
+            colorScheme: ColorScheme.fromSeed(
+              seedColor: Colors.blue, 
+              brightness: Brightness.dark
+            ),
+            scaffoldBackgroundColor: const Color(0xFF121212), // Proper dark background
+            visualDensity: VisualDensity.adaptivePlatformDensity,
+          ),
+          themeMode: themeProvider.themeMode, // Connects to the provider
+          home: const DashboardScreen(),
+        );
+      },
     );
   }
 }

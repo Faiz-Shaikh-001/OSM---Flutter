@@ -122,6 +122,8 @@ const _ActivityModeltypeEnumValueMap = {
   r'stockUpdated': r'stockUpdated',
   r'newStockAdded': r'newStockAdded',
   r'newCustomerAdded': r'newCustomerAdded',
+  r'customerUpdated': r'customerUpdated',
+  r'customerDeleted': r'customerDeleted',
 };
 const _ActivityModeltypeValueEnumMap = {
   r'newOrder': ActivityType.newOrder,
@@ -130,6 +132,8 @@ const _ActivityModeltypeValueEnumMap = {
   r'stockUpdated': ActivityType.stockUpdated,
   r'newStockAdded': ActivityType.newStockAdded,
   r'newCustomerAdded': ActivityType.newCustomerAdded,
+  r'customerUpdated': ActivityType.customerUpdated,
+  r'customerDeleted': ActivityType.customerDeleted,
 };
 
 Id _activityModelGetId(ActivityModel object) {

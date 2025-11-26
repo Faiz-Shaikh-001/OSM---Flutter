@@ -2,11 +2,12 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:isar/isar.dart';
-import 'package:osm/core/services/isar_service.dart';
-import 'package:osm/features/settings/profile/models/profile_model.dart';
 
-import 'package:osm/features/orders/data/models/store_model.dart';
-import 'package:osm/features/settings/presentation/screens/select_store_screen.dart';
+// Corrected relative paths based on new structure
+import '../../../../../../core/services/isar_service.dart';
+import '../profile_model.dart'; 
+import '../../../../orders/data/models/store_model.dart';
+import '../../../presentation/screens/select_store_screen.dart';
 
 class EditProfileScreen extends StatefulWidget {
   const EditProfileScreen({super.key});
@@ -65,7 +66,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         });
       }
     } catch (e) {
-      // Handle error
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _errorMessage = "Failed to load profile: $e";
+        });
+      }
     }
   }
 
@@ -80,8 +86,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       _userProfile.address = _addressController.text;
       
       await isar.writeTxn(() async {
-        await _userProfile.currentBranch.save();
+        // --- FIX: Save the profile FIRST to ensure it is managed by Isar ---
         await isar.userProfiles.put(_userProfile);
+        // --- Then save the link ---
+        await _userProfile.currentBranch.save();
       });
       
       if (mounted) {
@@ -200,4 +208,3 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     );
   }
 }
-

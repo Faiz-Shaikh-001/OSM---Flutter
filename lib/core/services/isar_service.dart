@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:isar/isar.dart';
-import 'package:osm/features/dashboard/presentation/data/models/recent_activities.dart';
 import 'package:path_provider/path_provider.dart';
 
 import 'package:osm/features/customer/data/customer_model.dart';
@@ -15,7 +14,6 @@ import 'package:osm/features/prescription/data/models/prescription_model.dart';
 import 'package:osm/features/inventory/data/models/store_location_model.dart';
 import 'package:osm/features/orders/data/models/store_model.dart';
 import 'package:osm/features/settings/staff/models/staff_model.dart';
-// --- NEW: IMPORT THE USER PROFILE MODEL ---
 import 'package:osm/features/settings/profile/models/profile_model.dart';
 
 class IsarService {
@@ -39,10 +37,9 @@ class IsarService {
     final dir = await getApplicationDocumentsDirectory();
     final isar = await Isar.open(
       [
-        // --- NEW: ADD THE USER PROFILE SCHEMA ---
-        UserProfileSchema,
         StoreSchema,
         StaffSchema,
+        UserProfileSchema,
         CustomerModelSchema,
         DoctorModelSchema,
         FrameModelSchema,
@@ -53,7 +50,6 @@ class IsarService {
         PaymentModelSchema,
         StoreLocationModelSchema,
         InventoryModelSchema,
-        ActivityModelSchema,
       ],
       directory: dir.path,
       inspector: true,
@@ -62,10 +58,11 @@ class IsarService {
     return isar;
   }
 
-  // --- NEW: ADD A GETTER FOR THE USER PROFILE COLLECTION ---
-  Future<IsarCollection<UserProfile>> getUserProfiles() async {
+  // --- Getters ---
+  
+  Future<IsarCollection<Staff>> getStaff() async {
     final isar = await db;
-    return isar.userProfiles;
+    return isar.staffs;
   }
 
   Future<IsarCollection<Store>> getStores() async {
@@ -73,12 +70,11 @@ class IsarService {
     return isar.stores;
   }
   
-  Future<IsarCollection<Staff>> getStaff() async {
+  Future<IsarCollection<UserProfile>> getUserProfiles() async {
     final isar = await db;
-    return isar.staffs;
+    return isar.userProfiles;
   }
 
-  // ... rest of your existing getters
   Future<IsarCollection<CustomerModel>> getCustomers() async {
     final isar = await db;
     return isar.customerModels;
@@ -88,7 +84,7 @@ class IsarService {
     final isar = await db;
     return isar.doctorModels;
   }
-  
+
   Future<IsarCollection<PrescriptionModel>> getPrescriptions() async {
     final isar = await db;
     return isar.prescriptionModels;
@@ -136,5 +132,13 @@ class IsarService {
     );
     debugPrint('Isar database closed.');
   }
-}
 
+  // --- NEW METHOD: Fixes the error in accounts_screen.dart ---
+  Future<void> cleanDb() async {
+    final isar = await db;
+    await isar.writeTxn(() async {
+      await isar.clear();
+    });
+    debugPrint('Isar database cleared.');
+  }
+}
