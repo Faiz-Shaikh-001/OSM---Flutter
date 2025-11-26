@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:isar/isar.dart';
+import 'package:osm/features/dashboard/presentation/data/models/recent_activities.dart';
 import 'package:path_provider/path_provider.dart';
 
 import 'package:osm/features/customer/data/customer_model.dart';
@@ -52,6 +53,7 @@ class IsarService {
         PaymentModelSchema,
         StoreLocationModelSchema,
         InventoryModelSchema,
+        ActivityModelSchema,
       ],
       directory: dir.path,
       inspector: true,

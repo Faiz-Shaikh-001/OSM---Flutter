@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:osm/features/dashboard/presentation/widgets/global_search_delegate.dart';
 import 'package:osm/features/orders/presentation/screens/add_order_screen.dart';
 import 'package:osm/features/customer/presentation/screens/customer_list_screen.dart';
 import 'package:osm/features/inventory/presentation/screens/inventory_screen.dart';
@@ -190,78 +191,84 @@ class _BuildDashboardContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        TextField(
-          decoration: InputDecoration(
-            hintText: 'Search orders, products...',
-            prefixIcon: const Icon(Icons.search),
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(15)),
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Column(
+        children: [
+          GestureDetector(
+            // onTap: () {showSearch(context: context, delegate: GlobalSearchDelegate());},
+            child: TextField(
+              decoration: InputDecoration(
+                hintText: 'Search orders, products...',
+                prefixIcon: const Icon(Icons.search),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(15)),
+              ),
+            ),
           ),
-        ),
-        const SizedBox(height: 20),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            _buildStatCard(context, 'Total Orders', '156'),
-            _buildStatCard(context, 'Pending Payments', '\$2,850'),
-          ],
-        ),
-        const SizedBox(height: 10),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            _buildStatCard(context, 'Stock Alerts', '23'),
-            _buildStatCard(context, 'Today\'s Sales', '\$1,203'),
-          ],
-        ),
-        const SizedBox(height: 30),
-        Align(
-          alignment: Alignment.centerLeft,
-          child: Text(
-            'Recent Activities',
-            style: Theme.of(context).textTheme.titleMedium,
-          ),
-        ),
-        const SizedBox(height: 10),
-        Expanded(
-          child: ListView(
+          const SizedBox(height: 20),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              InkWell(
-                onTap: () {
-                  debugPrint('Tapped on New Order #1234');
-                  // You can add navigation or custom logic here
-                },
-                child: ListTile(
-                  title: Text('New Order #1234'),
-                  subtitle: Text('John Doe • Progressive Lenses'),
-                  trailing: Text('2 mins ago'),
-                ),
-              ),
-              InkWell(
-                onTap: () {
-                  debugPrint('Tapped on Payment received');
-                },
-                child: ListTile(
-                  title: Text('Payment received'),
-                  subtitle: Text('Order #1233 • \$350.00'),
-                  trailing: Text('10 mins ago'),
-                ),
-              ),
-              InkWell(
-                onTap: () {
-                  debugPrint('Tapped on Low stock alert');
-                },
-                child: ListTile(
-                  title: Text('Low stock alert'),
-                  subtitle: Text('Ray-Ban Frames - 3 items left'),
-                  trailing: Text('2 hours ago'),
-                ),
-              ),
+              _buildStatCard(context, 'Total Orders', '156'),
+              _buildStatCard(context, 'Pending Payments', '\$2,850'),
             ],
           ),
-        ),
-      ],
+          const SizedBox(height: 10),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              _buildStatCard(context, 'Stock Alerts', '23'),
+              _buildStatCard(context, 'Today\'s Sales', '\$1,203'),
+            ],
+          ),
+          const SizedBox(height: 30),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Text(
+              'Recent Activities',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+          ),
+          const SizedBox(height: 10),
+          Expanded(
+            child: ListView(
+              children: [
+                InkWell(
+                  onTap: () {
+                    debugPrint('Tapped on New Order #1234');
+                    // You can add navigation or custom logic here
+                  },
+                  child: ListTile(
+                    title: Text('New Order #1234'),
+                    subtitle: Text('John Doe • Progressive Lenses'),
+                    trailing: Text('2 mins ago'),
+                  ),
+                ),
+                InkWell(
+                  onTap: () {
+                    debugPrint('Tapped on Payment received');
+                  },
+                  child: ListTile(
+                    title: Text('Payment received'),
+                    subtitle: Text('Order #1233 • \$350.00'),
+                    trailing: Text('10 mins ago'),
+                  ),
+                ),
+                InkWell(
+                  onTap: () {
+                    debugPrint('Tapped on Low stock alert');
+                  },
+                  child: ListTile(
+                    title: Text('Low stock alert'),
+                    subtitle: Text('Ray-Ban Frames - 3 items left'),
+                    trailing: Text('2 hours ago'),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 

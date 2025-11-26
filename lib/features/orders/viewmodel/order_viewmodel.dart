@@ -3,6 +3,8 @@ import 'package:flutter/foundation.dart';
 import 'package:isar/isar.dart';
 import 'package:osm/features/inventory/data/models/product_model.dart';
 import 'package:osm/features/customer/viewmodel/customer_viewmodel.dart';
+import 'package:osm/features/orders/data/models/order_item_model.dart';
+import 'package:osm/features/orders/data/models/order_model_enums.dart';
 
 // Model imports
 import '../data/models/order_model.dart';
@@ -22,12 +24,16 @@ class OrderViewModel extends ChangeNotifier {
   bool _isLoading = false;
   String? _errorMessage;
   CustomerModel? _selectedCustomer;
+  OrderModel? _currentOrder;
+  final Map<Product, int> _selectedProducts = {};
 
   // Getters to expose state to the UI
   List<OrderModel> get orders => _orders;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
   CustomerModel? get selectedCustomer => _selectedCustomer;
+  OrderModel? get currentOrder => _currentOrder;
+  Map<Product, int> get selectedProducts => _selectedProducts;
 
   OrderViewModel(this._orderRepository, this._customerViewModel);
 
@@ -139,23 +145,36 @@ class OrderViewModel extends ChangeNotifier {
   void selectCustomer(CustomerModel customer) {
     _selectedCustomer = customer;
     _customerViewModel.clearSearchResults();
+
+    _currentOrder ??= OrderModel(
+      orderDate: DateTime.now(),
+      totalAmount: 0.0,
+      status: OrderStatus.pending.name,
+    );
+
+    _currentOrder!.customer.value = customer;
     notifyListeners();
   }
 
   void resetForm() {
     _selectedCustomer = null;
     _selectedProducts.clear();
+    _currentOrder = null;
     _customerViewModel.clearSearchResults();
     notifyListeners();
   }
-
-  // NEW: To manage the products in the current order
-  final Map<Product, int> _selectedProducts = {};
-  Map<Product, int> get selectedProducts => _selectedProducts;
+  
+  void clearCurrentOrder() {
+    _selectedCustomer = null;
+    _selectedProducts.clear();
+    _currentOrder = null;
+    notifyListeners();
+  }
 
   // Method to add or increase the quantity of a product
   void addProduct(Product product) {
     _selectedProducts[product] = (_selectedProducts[product] ?? 0) + 1;
+    _updateCurrentOrderTotal();
     notifyListeners();
   }
 
@@ -167,8 +186,16 @@ class OrderViewModel extends ChangeNotifier {
     } else {
       _selectedProducts.remove(product);
     }
+    _updateCurrentOrderTotal();
     notifyListeners();
   }
+
+  void removeCustomer() {
+    _selectedCustomer = null;
+    _currentOrder?.customer.value = null;
+    notifyListeners();
+  }
+
 
   // Calculated property for the total price
   double get totalPrice {
@@ -182,5 +209,21 @@ class OrderViewModel extends ChangeNotifier {
   int get totalItems {
     if (_selectedProducts.isEmpty) return 0;
     return _selectedProducts.values.reduce((value, element) => value + element);
+  }
+
+  void _updateCurrentOrderTotal() {
+    if (_currentOrder != null) {
+      _currentOrder = _currentOrder!.copyWith(totalAmount: totalPrice);
+    }
+  }
+
+  List<OrderItemModel> getOrderItems() {
+    return _selectedProducts.entries.map((entry) {
+      return OrderItemModel(
+        productName: entry.key.name,
+        quantity: entry.value,
+        unitPrice: entry.key.price,
+      );
+    }).toList();
   }
 }

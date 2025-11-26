@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:isar/isar.dart';
+import 'package:osm/features/dashboard/presentation/data/models/recent_activities.dart';
 import 'package:osm/features/orders/data/models/payment_model.dart';
 import 'package:osm/features/orders/data/models/order_model.dart';
 import 'package:osm/core/services/isar_service.dart';
@@ -52,9 +53,26 @@ class PaymentRepository {
       final isar = await _isarService.db;
       late Id newId;
       await isar.writeTxn(() async {
+        // Ensure order has an ID
+        if (order.id == Isar.autoIncrement) {
+          await isar.orderModels.put(order);
+        }
+
         payment.order.value = order;
         newId = await isar.paymentModels.put(payment);
-        await order.payments.save(); // Save the backlink on the order
+
+        // Save the forward link
+        order.payments.add(payment);
+        await isar.orderModels.put(order);
+
+        await isar.activityModels.put(
+          ActivityModel(
+            type: ActivityType.paymentReceived,
+            title: "Payment received ₹${payment.amountPaid} from ${order.customer.value?.firstName} ${order.customer.value?.lastName}",
+            subtitle: "Remaining payment: ₹${order.totalAmount - payment.amountPaid}",
+            time: DateTime.now()
+          )
+        );
       });
       return newId;
     } catch (e) {
@@ -92,15 +110,12 @@ class PaymentRepository {
   }
 
   // Retrieves payments for a specific order.
-  Future<List<PaymentModel>> getPaymentsForOrder(Id orderId) async {
+  Future<List<PaymentModel>> getPaymentsForOrder(OrderModel order) async {
     try {
-      final isar = await _isarService.db;
-      return await isar.paymentModels
-          .filter()
-          .order((q) => q.idEqualTo(orderId))
-          .findAll();
+      await order.payments.load(); // load backlink
+      return order.payments.toList();
     } catch (e) {
-      debugPrint('Error getting payments for order $orderId: $e');
+      debugPrint('Error getting payments for order $order: $e');
       rethrow;
     }
   }
