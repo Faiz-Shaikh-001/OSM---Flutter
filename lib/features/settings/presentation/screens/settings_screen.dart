@@ -1,17 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+// Ensure url_launcher is imported since we used it in the previous step
+import 'package:url_launcher/url_launcher.dart';
 
-// --- IMPORTS ---
 import 'package:osm/core/services/isar_service.dart'; 
 import 'package:osm/core/theme_provider.dart'; 
 import 'package:osm/features/orders/data/models/store_model.dart';
 
-// Relative screen imports
 import 'select_store_screen.dart';
 import 'accounts_screen.dart'; 
 import 'inventory_settings_screen.dart'; 
-import 'notification_settings_screen.dart'; // New import
+import 'notification_settings_screen.dart';
+import 'legal_text_screen.dart'; 
+import 'faq_screen.dart';
+import 'backup_restore_screen.dart'; // New import
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -78,6 +81,74 @@ class _SettingsPageState extends State<SettingsPage> {
       ),
     );
   }
+
+  void _showLegalScreen(String title, String content) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => LegalTextScreen(title: title, content: content),
+      ),
+    );
+  }
+
+  void _showContactSupportDialog() {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Contact Support',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 16),
+            ListTile(
+              leading: const CircleAvatar(
+                backgroundColor: Colors.blueAccent,
+                child: Icon(Icons.email, color: Colors.white),
+              ),
+              title: const Text('Email Us'),
+              subtitle: const Text('support@opticsstore.com'),
+              onTap: () async {
+                Navigator.pop(context);
+                final Uri emailLaunchUri = Uri(
+                  scheme: 'mailto',
+                  path: 'support@opticsstore.com',
+                  query: 'subject=Support Request&body=Hi, I need help with...',
+                );
+                if (await canLaunchUrl(emailLaunchUri)) {
+                  await launchUrl(emailLaunchUri);
+                }
+              },
+            ),
+            ListTile(
+              leading: const CircleAvatar(
+                backgroundColor: Colors.green,
+                child: Icon(Icons.phone, color: Colors.white),
+              ),
+              title: const Text('Call Us'),
+              subtitle: const Text('+1 800 123 4567'),
+              onTap: () async {
+                Navigator.pop(context);
+                final Uri phoneLaunchUri = Uri(
+                  scheme: 'tel',
+                  path: '+18001234567',
+                );
+                if (await canLaunchUrl(phoneLaunchUri)) {
+                  await launchUrl(phoneLaunchUri);
+                }
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
   
   @override
   Widget build(BuildContext context) {
@@ -114,17 +185,15 @@ class _SettingsPageState extends State<SettingsPage> {
             },
           ),
 
+          // --- UPDATED: Fixed Currency Preference ---
           _buildSettingsItem(
             Icons.currency_rupee_outlined,
-            'Currency Preference (INR, USD, etc.)',
-            onTap: () {
-              print('Currency Preference tapped');
-            },
+            'Currency Preference',
+            subtitle: 'INR (₹)', // Hardcoded to INR
           ),
           const Divider(height: 30),
 
           _buildSectionTitle(Icons.notifications_outlined, 'Notifications', headingColor),
-          // --- UPDATED: Single entry point for Notifications ---
           _buildSettingsItem(
             Icons.notifications_active_outlined,
             'Manage Notifications',
@@ -138,7 +207,6 @@ class _SettingsPageState extends State<SettingsPage> {
           const Divider(height: 30),
           
           _buildSectionTitle(Icons.inventory_2_outlined, 'Inventory Settings', headingColor),
-          
           _buildSettingsItem(
             Icons.tune, 
             'General Configuration',
@@ -148,9 +216,17 @@ class _SettingsPageState extends State<SettingsPage> {
           const Divider(height: 30),
           
           _buildSectionTitle(Icons.security_outlined, 'Security & Support', headingColor),
-          _buildSettingsItem(Icons.cloud_sync_outlined, 'Backup & Restore'),
-          _buildSettingsItem(Icons.phonelink_lock_outlined, 'Enable App Lock (PIN/Biometric)'),
-          _buildSettingsItem(Icons.people_outline, 'Manage Staff Access'),
+          // --- UPDATED: Backup & Restore Navigation ---
+          _buildSettingsItem(
+            Icons.cloud_sync_outlined, 
+            'Backup & Restore',
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (context) => const BackupRestoreScreen()),
+              );
+            },
+          ),
+          
           const Divider(height: 30),
           
           ListTile(
@@ -164,16 +240,53 @@ class _SettingsPageState extends State<SettingsPage> {
           const Divider(height: 30),
 
           _buildSectionTitle(Icons.help_outline, 'Help & Support', headingColor),
-          _buildSettingsItem(Icons.quiz_outlined, 'FAQs'),
-          _buildSettingsItem(Icons.support_agent_outlined, 'Contact Support'),
-          _buildSettingsItem(Icons.menu_book_outlined, 'User Manual'),
+          _buildSettingsItem(
+            Icons.quiz_outlined, 
+            'FAQs',
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (context) => const FAQScreen()),
+              );
+            },
+          ),
+          _buildSettingsItem(
+            Icons.support_agent_outlined, 
+            'Contact Support',
+            onTap: _showContactSupportDialog,
+          ),
+
           const Divider(height: 30),
 
           _buildSectionTitle(Icons.info_outline, 'About', headingColor),
-          _buildSettingsItem(Icons.info_outline, 'App Version'),
-          _buildSettingsItem(Icons.description_outlined, 'Terms & Conditions'),
-          _buildSettingsItem(Icons.privacy_tip_outlined, 'Privacy Policy'),
-          _buildSettingsItem(Icons.code_outlined, 'Licenses'),
+          _buildSettingsItem(
+            Icons.info_outline, 
+            'App Version',
+            subtitle: 'v1.0.0', 
+            onTap: () {}, 
+          ),
+          _buildSettingsItem(
+            Icons.description_outlined, 
+            'Terms & Conditions',
+            onTap: () => _showLegalScreen('Terms & Conditions', 'Here are the terms and conditions...\n\n1. Use responsibly.\n2. Data is stored locally.\n3. ...'),
+          ),
+          _buildSettingsItem(
+            Icons.privacy_tip_outlined, 
+            'Privacy Policy',
+            onTap: () => _showLegalScreen('Privacy Policy', 'Your privacy is important to us...\n\nWe do not share your data with third parties.'),
+          ),
+          _buildSettingsItem(
+            Icons.code_outlined, 
+            'Licenses',
+            onTap: () => showLicensePage(
+              context: context,
+              applicationName: 'Optics Store Management',
+              applicationVersion: 'v1.0.0',
+              applicationIcon: const Padding(
+                padding: EdgeInsets.all(8.0),
+                child: Icon(Icons.inventory_2, size: 48),
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -214,8 +327,8 @@ class _SettingsPageState extends State<SettingsPage> {
         ),
       ),
       subtitle: subtitle != null ? Text(subtitle, style: TextStyle(color: Colors.grey[600])) : null,
-      trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-      onTap: onTap ?? () => print('$title tapped'),
+      trailing: (onTap != null && subtitle != 'v1.0.0') ? const Icon(Icons.arrow_forward_ios, size: 16) : null,
+      onTap: onTap,
     );
   }
 }
