@@ -9,7 +9,11 @@ class DashboardHistorySection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // List of weekly income
-    List<double> weeklySummary = context.select((OrderRepository o) => o.weeklySummary);
+    // List<double> weeklySummary = context.select((OrderRepository o) => o.weeklySummary);
+    final orderRepository = Provider.of<OrderRepository>(
+      context,
+      listen: false,
+    );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -18,9 +22,33 @@ class DashboardHistorySection extends StatelessWidget {
           "Weekly Report",
           style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
         ),
-        SizedBox(
-          height: 200,
-          child: HistoryBarGraph(weeklySummary: weeklySummary),
+        FutureBuilder<List<double>>(
+          future: orderRepository.weeklySummary,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              final List<double> weeklySummary = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0];
+              return SizedBox(
+                height: 200,
+                child:  HistoryBarGraph(weeklySummary: weeklySummary),
+              );
+            } else if (snapshot.hasError) {
+              return SizedBox(
+                height: 200,
+                child: Center(child: Text("Error: ${snapshot.error}")),
+              );
+            } else if (snapshot.hasData) {
+              List<double> weeklySummary = snapshot.data!;
+              return SizedBox(
+                height: 200,
+                child: HistoryBarGraph(weeklySummary: weeklySummary),
+              );
+            } else {
+              return const SizedBox(
+                height: 200,
+                child: Center(child: Text('No weekly data available.')),
+              );
+            }
+          },
         ),
       ],
     );

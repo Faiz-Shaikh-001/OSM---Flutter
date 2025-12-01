@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:isar/isar.dart';
 import 'package:osm/features/dashboard/presentation/data/models/activity_repository.dart';
 import 'package:osm/features/dashboard/presentation/data/models/recent_activities.dart';
@@ -16,9 +17,9 @@ class OrderRepository extends ChangeNotifier {
   int _totalOrders = 0;
   double _todaysSale = 0.0;
   double _pendingPayments = 0.0;
-  List<double> _weeklySummary = [];
 
-  List<double> get weeklySummary => _weeklySummary;
+
+  Future<List<double>> get weeklySummary => _calculateWeeklySummary();
   double get todaysSale => _todaysSale;
   double get pendingPayments => _pendingPayments;
   int get totalOrders => _totalOrders;
@@ -262,7 +263,8 @@ class OrderRepository extends ChangeNotifier {
     }
   }
 
-  Future<void> getWeeklySummary() async {
+  Future<List<double>> _calculateWeeklySummary() async {
+    List<double> summary = [];
     DateTime today = DateTime.now();
 
     int weekday = today.weekday;
@@ -282,8 +284,10 @@ class OrderRepository extends ChangeNotifier {
         (sum, order) => sum + (order.totalAmount),
       );
 
-      _weeklySummary.add(total);
+      summary.add(total);
     }
+
+    return summary;
   }
 
   Future<List<OrderModel>> getUnpaidOrders() async {
@@ -298,7 +302,7 @@ class OrderRepository extends ChangeNotifier {
   }
 
   Future<void> refreshAllMetrics() async {
-    await getWeeklySummary();
+    await _calculateWeeklySummary();
     await refreshTotalOrdersCount();
     await calculateTodaysSale();
     await calculatePendingPayments();
