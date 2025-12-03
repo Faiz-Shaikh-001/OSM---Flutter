@@ -9,13 +9,9 @@ class HistoryBarGraph extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final safeData = (weeklySummary.length >= 7)
-        ? weeklySummary
-        : List.generate(7, (index) => index < weeklySummary.length ? weeklySummary[index] : 0.0);
-
-    final maxY = safeData.every((v) => v == 0)
+    final maxY = weeklySummary.every((v) => v == 0)
         ? 10.0
-        : safeData.reduce((a, b) => a > b ? a : b) * 1.1;
+        : weeklySummary.reduce((a, b) => a > b ? a : b) * 1.1;
 
     Bardata myBarData = Bardata(
       sunAmount: weeklySummary[0],
