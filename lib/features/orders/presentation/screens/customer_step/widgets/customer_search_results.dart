@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:osm/features/orders/presentation/screens/customer_step/widgets/no_result_found_view.dart';
 import 'package:provider/provider.dart';
-import 'package:osm/features/customer/viewmodel/customer_viewmodel.dart';
-import 'package:osm/features/customer/data/customer_model.dart';
+import 'package:osm/features/customer/presentation/viewmodel/customer_viewmodel.dart';
+import 'package:osm/features/customer/data/models/customer_model.dart';
 
 class CustomerSearchResults extends StatelessWidget {
   final Function(CustomerModel) onCustomerSelected;

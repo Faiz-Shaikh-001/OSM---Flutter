@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 // Corrected import path for the store model
-import '../../../orders/data/models/store_model.dart';
+import '../../../store/data/model/store_model.dart';
 
 class AddEditStoreScreen extends StatefulWidget {
   final Store? storeToEdit;

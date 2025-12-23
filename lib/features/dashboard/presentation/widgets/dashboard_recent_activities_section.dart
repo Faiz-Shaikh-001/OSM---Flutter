@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:osm/features/dashboard/presentation/data/models/recent_activities.dart';
+import 'package:osm/features/dashboard/presentation/models/activity_ui_model.dart';
 
 class DashboardRecentActivitiesSection extends StatelessWidget {
-  final List<ActivityModel> activities;
+  final List<ActivityUiModel> activities;
 
   const DashboardRecentActivitiesSection({super.key, required this.activities});
 
@@ -19,46 +19,45 @@ class DashboardRecentActivitiesSection extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 10),
-        ListView.builder(
-          itemCount: activities.length,
-          shrinkWrap: true,
-          physics: NeverScrollableScrollPhysics(),
-          itemBuilder: (context, index) {
-            final activity = activities[index];
-            if (activities.isEmpty) {
-              return const Center(
-                child: Padding(
-                  padding: EdgeInsets.all(20),
-                  child: Text(
-                    "No recent activities yet.",
-                    style: TextStyle(color: Colors.grey),
-                  ),
-                ),
-              );
-            } else {
+
+        if (activities.isEmpty)
+          const Padding(
+            padding: EdgeInsets.all(20),
+            child: Center(
+              child: Text(
+                "No recent activities yet.",
+                style: TextStyle(color: Colors.grey),
+              ),
+            ),
+          )
+        else
+          ListView.separated(
+            shrinkWrap: true,
+            physics: NeverScrollableScrollPhysics(),
+            itemCount: activities.length,
+            separatorBuilder: (_, __) => const Divider(height: 1),
+            itemBuilder: (context, index) {
+              final activity = activities[index];
+
               return ListTile(
+                leading: Icon(activity.icon),
                 title: Text(activity.title),
                 subtitle: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(activity.subtitle),
-                    Text(_formatTimeAgo(activity.time)),
+                    if (activity.subtitle.isNotEmpty) Text(activity.subtitle),
+                    Text(
+                      activity.time,
+                      style: Theme.of(
+                        context,
+                      ).textTheme.bodySmall?.copyWith(color: Colors.grey),
+                    ),
                   ],
                 ),
               );
-            }
-          },
-        ),
+            },
+          ),
       ],
     );
-  }
-
-  String _formatTimeAgo(DateTime date) {
-    final diff = DateTime.now().difference(date);
-
-    if (diff.inMinutes < 1) return "Just now";
-    if (diff.inMinutes < 60) return "${diff.inMinutes} mins ago";
-    if (diff.inHours < 24) return "${diff.inHours} hours ago";
-    return "${diff.inDays} days ago";
   }
 }

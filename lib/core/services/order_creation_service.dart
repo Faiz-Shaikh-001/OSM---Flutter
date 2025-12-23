@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:isar/isar.dart';
 import 'package:osm/core/services/isar_service.dart';
-import 'package:osm/features/orders/data/models/order_model.dart';
-import 'package:osm/features/orders/data/models/order_item_model.dart';
-import 'package:osm/features/orders/data/models/payment_model.dart';
-import 'package:osm/features/customer/data/customer_model.dart';
+import 'package:osm/features/orders/data/enums/order_status_model.dart';
+import 'package:osm/features/orders/data/models/order/order_model.dart';
+import 'package:osm/features/orders/data/models/order_item/order_item_model.dart';
+import 'package:osm/features/orders/data/models/payment/payment_model.dart';
+import 'package:osm/features/customer/data/models/customer_model.dart';
 import 'package:osm/features/prescription/data/models/prescription_model.dart';
-import 'package:osm/features/inventory/data/models/store_location_model.dart';
-import 'package:osm/features/orders/data/models/order_model_enums.dart';
+import 'package:osm/features/store/data/model/store_location_model.dart';
 
 class OrderCreationService {
   final IsarService _isarService;
@@ -30,9 +30,8 @@ class OrderCreationService {
       
       // 2. Create the order with all data
       final order = OrderModel(
-        orderDate: DateTime.now(),
-        totalAmount: totalAmount,
-        status: OrderStatus.pending.name,
+        createdAt: DateTime.now(),
+        status: OrderStatusModel.pendingPayment,
       );
 
       // 3. Save all entities and get their IDs
@@ -76,8 +75,6 @@ class OrderCreationService {
       customer.orders.add(order);
       await isar.customerModels.put(customer);
 
-      // Prescription -> Orders
-      actualPrescription.orders.add(order);
       await isar.prescriptionModels.put(actualPrescription);
 
       // Store Location -> Orders (if provided)
@@ -102,13 +99,13 @@ class OrderCreationService {
 
   PrescriptionModel _createDefaultPrescription() {
     return PrescriptionModel(
-      prescriptionDate: DateTime.now(),
+      createdAt: DateTime.now(),
       sphereRight: 0.0,
       sphereLeft: 0.0,
       cylinderRight: 0.0,
       cylinderLeft: 0.0,
-      axisRight: 0.0,
-      axisLeft: 0.0,
+      axisRight: 0,
+      axisLeft: 0,
       addRight: 0.0,
       addLeft: 0.0,
       pd: 0.0,
@@ -126,12 +123,6 @@ class OrderCreationService {
       await order.items.load();
       await order.payments.load();
       await order.storeLocation.load();
-      
-      // Load nested relations for items
-      for (final item in order.items) {
-        await item.frame.load();
-        await item.lens.load();
-      }
       
       // Load nested relations for payments
       for (final payment in order.payments) {

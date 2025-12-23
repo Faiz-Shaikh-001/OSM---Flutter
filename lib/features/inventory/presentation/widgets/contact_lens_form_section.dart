@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:osm/features/inventory/data/models/lens_enums.dart';
-import 'package:osm/features/inventory/data/models/lens_model.dart';
+import 'package:osm/features/inventory/data/enums/lens_type_model.dart';
+import 'package:osm/features/inventory/data/models/lens/lens_model.dart';
 import 'package:osm/core/widgets/build_text_field_widget.dart';
 import 'package:osm/core/widgets/button_increment_decrement_widget.dart';
 import 'package:osm/core/widgets/custom_button.dart';

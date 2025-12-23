@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:osm/features/inventory/data/models/product_model.dart';
+import 'package:osm/features/inventory/data/models/product/product_model.dart';
 import 'package:osm/features/orders/viewmodel/order_viewmodel.dart';
 import 'package:provider/provider.dart';
 

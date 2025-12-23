@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:osm/features/dashboard/presentation/widgets/historyGraph/bar_graph.dart';
-import 'package:osm/features/orders/data/repositories/order_repository.dart';
+import 'package:osm/features/orders/data/repositories/order_local_repository.dart';
 import 'package:provider/provider.dart';
 
 class DashboardHistorySection extends StatelessWidget {

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:osm/features/customer/data/customer_model.dart';
+import 'package:osm/features/customer/domain/entities/customer.dart';
 import 'package:osm/features/customer/presentation/widgets/customer_card.dart';
 
 class CustomerList extends StatelessWidget {
-  final List<CustomerModel> customers;
+  final List<Customer> customers;
 
   const CustomerList({super.key, required this.customers});
 

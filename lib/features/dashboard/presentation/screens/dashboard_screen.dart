@@ -1,13 +1,14 @@
-import 'dart:ui';
-import 'package:flutter/material.dart';
-import 'package:osm/features/dashboard/presentation/widgets/global_search_delegate.dart';
-import 'package:osm/features/orders/presentation/screens/add_order_screen.dart';
-import 'package:osm/features/customer/presentation/screens/customer_list_screen.dart';
-import 'package:osm/features/inventory/presentation/screens/inventory_screen.dart';
-import 'package:osm/features/orders/presentation/screens/order_list_screen.dart';
-import 'package:osm/features/settings/presentation/screens/settings_screen.dart';
-import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'dart:math';
+import 'dart:ui';
+
+import 'package:curved_navigation_bar/curved_navigation_bar.dart';
+import 'package:flutter/material.dart';
+import 'package:osm/features/customer/presentation/screens/customer_list_screen.dart';
+import 'package:osm/features/dashboard/presentation/screens/dashboard_body.dart';
+import 'package:osm/features/inventory/presentation/screens/inventory_screen.dart';
+import 'package:osm/features/orders/presentation/screens/add_order/add_order_screen.dart';
+import 'package:osm/features/orders/presentation/screens/order_list/order_list_screen.dart';
+import 'package:osm/features/settings/presentation/screens/settings_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -31,69 +32,78 @@ class _DashboardScreenState extends State<DashboardScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: _selectedIndex == 2
-          ? AppBar(
-              title: const Text('Dashboard'),
-              actions: [
-                IconButton(
-                  icon: const Icon(Icons.notifications_none),
-                  onPressed: () {},
-                ),
-              ],
-            )
-          : null,
+      appBar: _selectedIndex == 2 ? _buildAppBar(context) : null,
       body: Stack(
         children: [
-          _selectedIndex == 2
-              ? _BuildDashboardContent()
-              : _pages[_selectedIndex],
-
+          _selectedIndex == 2 ? BuildDashboardBody() : _pages[_selectedIndex],
           if (_isDialOpen && _selectedIndex == 2) _buildBlurOverlay(),
-
           if (_isDialOpen && _selectedIndex == 2) ..._buildFloatingActions(),
         ],
       ),
-      bottomNavigationBar: CurvedNavigationBar(
-        index: _selectedIndex,
-        height: 55,
-        backgroundColor: Colors.transparent,
-        color: Colors.blueAccent,
-        buttonBackgroundColor: Colors.blueAccent,
-        animationCurve: Curves.easeInOut,
-        animationDuration: const Duration(milliseconds: 300),
-        items: const [
-          Icon(Icons.receipt_long, size: 30, color: Colors.white),
-          Icon(Icons.store, size: 30, color: Colors.white),
-          Icon(Icons.dashboard, size: 30, color: Colors.white),
-          Icon(Icons.people_alt, size: 30, color: Colors.white),
-          Icon(Icons.settings, size: 30, color: Colors.white),
-        ],
-        onTap: (index) {
-          setState(() {
-            _selectedIndex = index;
-            _isDialOpen = false; // Close the dial when switching tabs
-          });
-        },
+      bottomNavigationBar: _buildBottomNavigationBar(),
+      floatingActionButton: _selectedIndex == 2 ? _buildMainFAB() : null,
+    );
+  }
+
+  PreferredSizeWidget _buildAppBar(BuildContext content) {
+    return AppBar(
+      title: const Text(
+        "Dashboard",
+        style: TextStyle(fontWeight: FontWeight.bold),
       ),
-      floatingActionButton: _selectedIndex == 2
-          ? FloatingActionButton(
-              onPressed: () => setState(() => _isDialOpen = !_isDialOpen),
-              backgroundColor: _isDialOpen
-                  ? Colors.transparent
-                  : Colors.blueAccent,
-              elevation: _isDialOpen ? 0 : 6,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(100),
-                side: _isDialOpen
-                    ? const BorderSide(color: Colors.red, width: 2)
-                    : BorderSide.none,
-              ),
-              child: Icon(
-                _isDialOpen ? Icons.close : Icons.add,
-                color: _isDialOpen ? Colors.red : Colors.white,
-              ),
-            )
-          : null,
+      actions: [
+        IconButton(
+          icon: const Icon(Icons.notifications),
+          onPressed: () {
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text("Notifications pressed")));
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildBottomNavigationBar() {
+    return CurvedNavigationBar(
+      index: _selectedIndex,
+      height: 55,
+      backgroundColor: Colors.transparent,
+      color: Colors.blueAccent,
+      buttonBackgroundColor: Colors.blueAccent,
+      animationCurve: Curves.easeInOut,
+      animationDuration: const Duration(milliseconds: 300),
+      items: const [
+        Icon(Icons.receipt_long, size: 30, color: Colors.white),
+        Icon(Icons.store, size: 30, color: Colors.white),
+        Icon(Icons.dashboard, size: 30, color: Colors.white),
+        Icon(Icons.people_alt, size: 30, color: Colors.white),
+        Icon(Icons.settings, size: 30, color: Colors.white),
+      ],
+      onTap: (index) {
+        setState(() {
+          _selectedIndex = index;
+          _isDialOpen = false;
+        });
+      },
+    );
+  }
+
+  Widget _buildMainFAB() {
+    return FloatingActionButton(
+      onPressed: () => setState(() => _isDialOpen = !_isDialOpen),
+      backgroundColor: _isDialOpen ? Colors.transparent : Colors.blueAccent,
+      elevation: _isDialOpen ? 0 : 6,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(100),
+        side: _isDialOpen
+            ? const BorderSide(color: Colors.red, width: 2)
+            : BorderSide.none,
+      ),
+      child: Icon(
+        _isDialOpen ? Icons.close : Icons.add,
+        color: _isDialOpen ? Colors.red : Colors.white,
+      ),
     );
   }
 
@@ -118,29 +128,28 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final Offset center = const Offset(20, 20);
 
     final actions = [
-      {
-        'tooltip': 'Create Order',
-        'icon': Icons.edit_note,
-        'color': Colors.blue,
-        'angle': 90.0,
-      },
-      {
-        'tooltip': 'Scan Barcode',
-        'icon': Icons.barcode_reader,
-        'color': Colors.green,
-        'angle': 45.0,
-      },
-      {
-        'tooltip': 'Manage Stock',
-        'icon': Icons.store,
-        'color': Colors.deepPurple,
-        'angle': 0.0,
-      },
+      _FabAction(
+        label: 'Create Order',
+        icon: Icons.edit_note,
+        angle: 90.0,
+        color: Colors.blue,
+      ),
+      _FabAction(
+        label: 'Scan Barcode',
+        icon: Icons.barcode_reader,
+        angle: 45.0,
+        color: Colors.green,
+      ),
+      _FabAction(
+        label: 'Manage Stock',
+        icon: Icons.store,
+        angle: 0.0,
+        color: Colors.deepPurple,
+      ),
     ];
 
     return actions.map((action) {
-      final double angle = action['angle'] as double;
-      final double rad = angle * (pi / 180.0);
+      final double rad = action.angle * (pi / 180.0);
       final double dx = radius * cos(rad);
       final double dy = radius * sin(rad);
 
@@ -148,17 +157,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
         bottom: center.dy + dy,
         right: center.dx + dx,
         child: Tooltip(
-          message: action['tooltip'] as String,
+          message: action.label,
           child: FloatingActionButton(
-            heroTag: action['tooltip'],
+            heroTag: action.label,
             mini: true,
             backgroundColor: Colors.white,
-            onPressed: () => _handleAction(action['tooltip'] as String),
-            child: Icon(
-              action['icon'] as IconData,
-              color: action['color'] as Color,
-              size: 30,
-            ),
+            onPressed: () => _handleAction(action.label),
+            child: Icon(action.icon, color: action.color, size: 30),
           ),
         ),
       );
@@ -185,119 +190,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 }
 
-// Dashboard content
-class _BuildDashboardContent extends StatelessWidget {
-  const _BuildDashboardContent();
+class _FabAction {
+  final String label;
+  final IconData icon;
+  final double angle;
+  final Color color;
 
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: Column(
-        children: [
-          GestureDetector(
-            // onTap: () {showSearch(context: context, delegate: GlobalSearchDelegate());},
-            child: TextField(
-              decoration: InputDecoration(
-                hintText: 'Search orders, products...',
-                prefixIcon: const Icon(Icons.search),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(15)),
-              ),
-            ),
-          ),
-          const SizedBox(height: 20),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              _buildStatCard(context, 'Total Orders', '156'),
-              _buildStatCard(context, 'Pending Payments', '\$2,850'),
-            ],
-          ),
-          const SizedBox(height: 10),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              _buildStatCard(context, 'Stock Alerts', '23'),
-              _buildStatCard(context, 'Today\'s Sales', '\$1,203'),
-            ],
-          ),
-          const SizedBox(height: 30),
-          Align(
-            alignment: Alignment.centerLeft,
-            child: Text(
-              'Recent Activities',
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-          ),
-          const SizedBox(height: 10),
-          Expanded(
-            child: ListView(
-              children: [
-                InkWell(
-                  onTap: () {
-                    debugPrint('Tapped on New Order #1234');
-                    // You can add navigation or custom logic here
-                  },
-                  child: ListTile(
-                    title: Text('New Order #1234'),
-                    subtitle: Text('John Doe • Progressive Lenses'),
-                    trailing: Text('2 mins ago'),
-                  ),
-                ),
-                InkWell(
-                  onTap: () {
-                    debugPrint('Tapped on Payment received');
-                  },
-                  child: ListTile(
-                    title: Text('Payment received'),
-                    subtitle: Text('Order #1233 • \$350.00'),
-                    trailing: Text('10 mins ago'),
-                  ),
-                ),
-                InkWell(
-                  onTap: () {
-                    debugPrint('Tapped on Low stock alert');
-                  },
-                  child: ListTile(
-                    title: Text('Low stock alert'),
-                    subtitle: Text('Ray-Ban Frames - 3 items left'),
-                    trailing: Text('2 hours ago'),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStatCard(BuildContext context, String title, String value) {
-    return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      elevation: 2,
-      child: Container(
-        width: MediaQuery.of(context).size.width * 0.42,
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              title,
-              style: const TextStyle(fontSize: 14, color: Colors.grey),
-            ),
-            const SizedBox(height: 5),
-            Text(
-              value,
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Colors.blue,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+  const _FabAction({
+    required this.label,
+    required this.icon,
+    required this.angle,
+    required this.color,
+  });
 }

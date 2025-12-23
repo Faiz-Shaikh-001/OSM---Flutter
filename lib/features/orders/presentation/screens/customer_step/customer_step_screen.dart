@@ -1,9 +1,9 @@
 import "dart:async";
 import 'package:flutter/material.dart';
-import 'package:osm/features/customer/data/customer_model.dart';
+import 'package:osm/features/customer/data/models/customer_model.dart';
 import 'package:osm/features/customer/presentation/screens/add_new_customer_form.dart';
 import 'package:osm/features/orders/presentation/screens/customer_step/widgets/customer_search.dart';
-import 'package:osm/features/customer/viewmodel/customer_viewmodel.dart';
+import 'package:osm/features/customer/presentation/viewmodel/customer_viewmodel.dart';
 import 'package:osm/features/orders/presentation/screens/customer_step/widgets/customer_search_results.dart';
 import 'package:osm/features/orders/presentation/screens/customer_step/widgets/initial_prompt_view.dart';
 import 'package:osm/features/orders/presentation/screens/customer_step/widgets/selected_customer_view.dart';
