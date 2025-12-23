@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:osm/core/services/order_creation_service.dart';
-import 'package:osm/features/orders/data/models/order_model_enums.dart';
+import 'package:osm/features/orders/domain/entities/order_enums.dart';
 import 'package:osm/features/orders/viewmodel/order_viewmodel.dart';
 import 'package:provider/provider.dart';
-import 'package:osm/features/orders/data/models/payment_model.dart';
+import 'package:osm/features/orders/data/models/payment/payment_model.dart';
 import 'package:osm/core/services/isar_service.dart';
 
 class PaymentStep extends StatefulWidget {

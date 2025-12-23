@@ -1,10 +1,10 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:osm/features/inventory/data/models/frame_model.dart';
-import 'package:osm/features/inventory/data/models/frame_enums.dart';
-import 'package:osm/features/inventory/data/models/lens_model.dart';
-import 'package:osm/features/inventory/data/models/lens_enums.dart';
+import 'package:osm/features/inventory/data/models/frame/frame_model_trial.dart';
+import 'package:osm/features/inventory/data/enums/frame_type_model.dart';
+import 'package:osm/features/inventory/data/models/lens/lens_model.dart';
+import 'package:osm/features/inventory/data/enums/lens_type_model.dart';
 import 'package:osm/core/utils/product_type.dart';
 import 'package:osm/features/inventory/viewmodels/frame_viewmodel.dart';
 import 'package:osm/features/inventory/viewmodels/lens_viewmodel.dart';

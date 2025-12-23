@@ -1,60 +1,92 @@
 import 'package:flutter/material.dart';
-import 'package:osm/features/customer/data/customer_model.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:osm/features/customer/domain/entities/customer.dart';
+import 'package:osm/features/customer/presentation/bloc/customer/customer_bloc.dart';
 import 'package:osm/features/customer/presentation/screens/add_new_customer_form.dart';
 import 'package:osm/features/customer/presentation/widgets/customer_list.dart';
 import 'package:osm/features/customer/presentation/widgets/error_message.dart';
-import 'package:osm/features/customer/presentation/widgets/loading_indicator.dart';
-import 'package:osm/features/customer/viewmodel/customer_viewmodel.dart';
-import 'package:provider/provider.dart';
 
-class CustomerListScreen extends StatefulWidget {
+class CustomerListScreen extends StatelessWidget {
   const CustomerListScreen({super.key});
 
   @override
-  State<CustomerListScreen> createState() => _CustomerListScreenState();
-}
-
-class _CustomerListScreenState extends State<CustomerListScreen> {
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<CustomerViewModel>().loadCustomers();
-    });
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Customers'),
-        actions: [
-          IconButton(
-            onPressed: () => context.read<CustomerViewModel>().loadCustomers(),
-            icon: const Icon(Icons.refresh),
-          ),
-          IconButton(
-            onPressed: () {
-              Navigator.of(context).push<CustomerModel>(
-                MaterialPageRoute(
-                  builder: (context) => const AddNewCustomerForm(),
+    return BlocProvider(
+      create: (_) => context.read<CustomerBloc>()..add(const WatchCustomers()),
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Customers'),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.refresh),
+              onPressed: () {
+                context.read<CustomerBloc>().add(const LoadCustomers());
+              },
+            ),
+            IconButton(
+              icon: const Icon(Icons.add),
+              onPressed: () async {
+                final customer = await showModalBottomSheet<Customer>(
+                  context: context,
+                  isScrollControlled: true,
+                  builder: (_) => const AddNewCustomerForm(),
+                );
+
+                if (customer != null && context.mounted) {
+                  context.read<CustomerBloc>().add(AddCustomerEvent(customer));
+                }
+              },
+            ),
+          ],
+        ),
+        body: BlocListener<CustomerBloc, CustomerState>(
+          listener: (context, state) {
+            if (state is CustomerActionSuccess) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(state.message),
+                  behavior: SnackBarBehavior.floating,
                 ),
               );
+            }
+
+            if (state is CustomerDeleted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    '${state.customer.firstName} deleted',
+                  ),
+                  behavior: SnackBarBehavior.floating,
+                  action: SnackBarAction(
+                    label: 'UNDO',
+                    onPressed: () {
+                      context
+                          .read<CustomerBloc>()
+                          .add(UndoDeleteCustomerEvent());
+                    },
+                  ),
+                ),
+              );
+            }
+          },
+          child: BlocBuilder<CustomerBloc, CustomerState>(
+            builder: (context, state) {
+              if (state is CustomerLoading) {
+                return const Center(child: CircularProgressIndicator());
+              }
+
+              if (state is CustomerError) {
+                return ErrorMessage(message: state.message);
+              }
+
+              if (state is CustomerLoaded) {
+                return CustomerList(customers: state.customers);
+              }
+
+              return const SizedBox.shrink();
             },
-            icon: const Icon(Icons.add),
           ),
-        ],
-      ),
-      body: Consumer<CustomerViewModel>(
-        builder: (context, customerViewModel, child) {
-          if (customerViewModel.isLoading) {
-            return const LoadingIndicator();
-          } else if (customerViewModel.errorMessage != null) {
-            return ErrorMessage(message: customerViewModel.errorMessage!);
-          } else {
-            return CustomerList(customers: customerViewModel.customers);
-          }
-        },
+        ),
       ),
     );
   }

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../data/models/product_model.dart';
+import '../../data/models/product/product_model.dart';
 
 class ProductSearchDelegate extends SearchDelegate<Product?> {
   final List<Product> searchableProducts;

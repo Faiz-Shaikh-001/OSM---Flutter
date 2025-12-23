@@ -3,7 +3,7 @@ import 'package:osm/core/constants/app_assets.dart';
 import 'package:osm/features/dashboard/presentation/screens/lowStockItemsScreen.dart';
 import 'package:osm/features/dashboard/presentation/widgets/summary_chip.dart';
 import 'package:osm/features/inventory/data/repositories/inventory_repository.dart';
-import 'package:osm/features/orders/data/repositories/order_repository.dart';
+import 'package:osm/features/orders/data/repositories/order_local_repository.dart';
 import 'package:provider/provider.dart';
 
 class DashboardSummarySection extends StatelessWidget {

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:isar/isar.dart';
-import 'package:osm/features/orders/data/models/order_model.dart';
+import 'package:osm/features/orders/data/models/order/order_model.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';

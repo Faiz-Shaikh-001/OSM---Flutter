@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:osm/features/customer/data/customer_model.dart';
+import 'package:osm/features/customer/data/models/customer_model.dart';
 import 'package:osm/core/widgets/custom_button.dart';
 import 'package:osm/features/orders/presentation/screens/customer_step/widgets/selected_customer_card.dart';
 

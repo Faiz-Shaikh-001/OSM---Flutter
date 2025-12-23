@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:osm/features/inventory/data/models/lens_enums.dart';
-import 'package:osm/features/inventory/data/models/lens_model.dart';
+import 'package:osm/features/inventory/data/enums/lens_type_model.dart';
+import 'package:osm/features/inventory/data/models/lens/lens_model.dart';
 import 'package:osm/features/inventory/presentation/widgets/bifocal_form_section.dart';
 import 'package:osm/features/inventory/presentation/widgets/contact_lens_form_section.dart';
 import 'package:osm/features/inventory/presentation/widgets/frame_form_widget.dart';
@@ -9,7 +9,7 @@ import 'package:osm/features/inventory/presentation/widgets/single_vision_form_s
 import 'package:osm/features/inventory/viewmodels/frame_viewmodel.dart';
 import 'package:osm/features/inventory/viewmodels/lens_viewmodel.dart';
 import 'package:provider/provider.dart';
-import '../../data/models/frame_model.dart';
+import '../../data/models/frame/frame_model_trial.dart';
 
 enum ProductTypeToAdd {
   frame,

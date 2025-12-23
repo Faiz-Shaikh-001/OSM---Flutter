@@ -22,9 +22,9 @@ const DoctorModelSchema = CollectionSchema(
       name: r'city',
       type: IsarType.string,
     ),
-    r'creationDate': PropertySchema(
+    r'createdAt': PropertySchema(
       id: 1,
-      name: r'creationDate',
+      name: r'createdAt',
       type: IsarType.dateTime,
     ),
     r'designation': PropertySchema(
@@ -32,14 +32,19 @@ const DoctorModelSchema = CollectionSchema(
       name: r'designation',
       type: IsarType.string,
     ),
-    r'doctorName': PropertySchema(
+    r'hospital': PropertySchema(
       id: 3,
-      name: r'doctorName',
+      name: r'hospital',
       type: IsarType.string,
     ),
-    r'hospital': PropertySchema(
+    r'isActive': PropertySchema(
       id: 4,
-      name: r'hospital',
+      name: r'isActive',
+      type: IsarType.bool,
+    ),
+    r'name': PropertySchema(
+      id: 5,
+      name: r'name',
       type: IsarType.string,
     )
   },
@@ -49,14 +54,14 @@ const DoctorModelSchema = CollectionSchema(
   deserializeProp: _doctorModelDeserializeProp,
   idName: r'id',
   indexes: {
-    r'doctorName': IndexSchema(
-      id: 6148945994998661170,
-      name: r'doctorName',
+    r'name': IndexSchema(
+      id: 879695947855722453,
+      name: r'name',
       unique: false,
       replace: false,
       properties: [
         IndexPropertySchema(
-          name: r'doctorName',
+          name: r'name',
           type: IndexType.hash,
           caseSensitive: true,
         )
@@ -119,8 +124,8 @@ int _doctorModelEstimateSize(
   var bytesCount = offsets.last;
   bytesCount += 3 + object.city.length * 3;
   bytesCount += 3 + object.designation.length * 3;
-  bytesCount += 3 + object.doctorName.length * 3;
   bytesCount += 3 + object.hospital.length * 3;
+  bytesCount += 3 + object.name.length * 3;
   return bytesCount;
 }
 
@@ -131,10 +136,11 @@ void _doctorModelSerialize(
   Map<Type, List<int>> allOffsets,
 ) {
   writer.writeString(offsets[0], object.city);
-  writer.writeDateTime(offsets[1], object.date);
+  writer.writeDateTime(offsets[1], object.createdAt);
   writer.writeString(offsets[2], object.designation);
-  writer.writeString(offsets[3], object.doctorName);
-  writer.writeString(offsets[4], object.hospital);
+  writer.writeString(offsets[3], object.hospital);
+  writer.writeBool(offsets[4], object.isActive);
+  writer.writeString(offsets[5], object.name);
 }
 
 DoctorModel _doctorModelDeserialize(
@@ -145,10 +151,11 @@ DoctorModel _doctorModelDeserialize(
 ) {
   final object = DoctorModel(
     city: reader.readString(offsets[0]),
-    date: reader.readDateTimeOrNull(offsets[1]),
+    createdAt: reader.readDateTime(offsets[1]),
     designation: reader.readString(offsets[2]),
-    doctorName: reader.readString(offsets[3]),
-    hospital: reader.readString(offsets[4]),
+    hospital: reader.readString(offsets[3]),
+    isActive: reader.readBool(offsets[4]),
+    name: reader.readString(offsets[5]),
   );
   object.id = id;
   return object;
@@ -164,12 +171,14 @@ P _doctorModelDeserializeProp<P>(
     case 0:
       return (reader.readString(offset)) as P;
     case 1:
-      return (reader.readDateTimeOrNull(offset)) as P;
+      return (reader.readDateTime(offset)) as P;
     case 2:
       return (reader.readString(offset)) as P;
     case 3:
       return (reader.readString(offset)) as P;
     case 4:
+      return (reader.readBool(offset)) as P;
+    case 5:
       return (reader.readString(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -286,45 +295,45 @@ extension DoctorModelQueryWhere
     });
   }
 
-  QueryBuilder<DoctorModel, DoctorModel, QAfterWhereClause> doctorNameEqualTo(
-      String doctorName) {
+  QueryBuilder<DoctorModel, DoctorModel, QAfterWhereClause> nameEqualTo(
+      String name) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(IndexWhereClause.equalTo(
-        indexName: r'doctorName',
-        value: [doctorName],
+        indexName: r'name',
+        value: [name],
       ));
     });
   }
 
-  QueryBuilder<DoctorModel, DoctorModel, QAfterWhereClause>
-      doctorNameNotEqualTo(String doctorName) {
+  QueryBuilder<DoctorModel, DoctorModel, QAfterWhereClause> nameNotEqualTo(
+      String name) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
             .addWhereClause(IndexWhereClause.between(
-              indexName: r'doctorName',
+              indexName: r'name',
               lower: [],
-              upper: [doctorName],
+              upper: [name],
               includeUpper: false,
             ))
             .addWhereClause(IndexWhereClause.between(
-              indexName: r'doctorName',
-              lower: [doctorName],
+              indexName: r'name',
+              lower: [name],
               includeLower: false,
               upper: [],
             ));
       } else {
         return query
             .addWhereClause(IndexWhereClause.between(
-              indexName: r'doctorName',
-              lower: [doctorName],
+              indexName: r'name',
+              lower: [name],
               includeLower: false,
               upper: [],
             ))
             .addWhereClause(IndexWhereClause.between(
-              indexName: r'doctorName',
+              indexName: r'name',
               lower: [],
-              upper: [doctorName],
+              upper: [name],
               includeUpper: false,
             ));
       }
@@ -738,68 +747,54 @@ extension DoctorModelQueryFilter
     });
   }
 
-  QueryBuilder<DoctorModel, DoctorModel, QAfterFilterCondition> dateIsNull() {
+  QueryBuilder<DoctorModel, DoctorModel, QAfterFilterCondition>
+      createdAtEqualTo(DateTime value) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'creationDate',
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'createdAt',
+        value: value,
       ));
     });
   }
 
   QueryBuilder<DoctorModel, DoctorModel, QAfterFilterCondition>
-      dateIsNotNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'creationDate',
-      ));
-    });
-  }
-
-  QueryBuilder<DoctorModel, DoctorModel, QAfterFilterCondition> dateEqualTo(
-      DateTime? value) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'creationDate',
-        value: value,
-      ));
-    });
-  }
-
-  QueryBuilder<DoctorModel, DoctorModel, QAfterFilterCondition> dateGreaterThan(
-    DateTime? value, {
+      createdAtGreaterThan(
+    DateTime value, {
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
         include: include,
-        property: r'creationDate',
+        property: r'createdAt',
         value: value,
       ));
     });
   }
 
-  QueryBuilder<DoctorModel, DoctorModel, QAfterFilterCondition> dateLessThan(
-    DateTime? value, {
+  QueryBuilder<DoctorModel, DoctorModel, QAfterFilterCondition>
+      createdAtLessThan(
+    DateTime value, {
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.lessThan(
         include: include,
-        property: r'creationDate',
+        property: r'createdAt',
         value: value,
       ));
     });
   }
 
-  QueryBuilder<DoctorModel, DoctorModel, QAfterFilterCondition> dateBetween(
-    DateTime? lower,
-    DateTime? upper, {
+  QueryBuilder<DoctorModel, DoctorModel, QAfterFilterCondition>
+      createdAtBetween(
+    DateTime lower,
+    DateTime upper, {
     bool includeLower = true,
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.between(
-        property: r'creationDate',
+        property: r'createdAt',
         lower: lower,
         includeLower: includeLower,
         upper: upper,
@@ -939,142 +934,6 @@ extension DoctorModelQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
         property: r'designation',
-        value: '',
-      ));
-    });
-  }
-
-  QueryBuilder<DoctorModel, DoctorModel, QAfterFilterCondition>
-      doctorNameEqualTo(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'doctorName',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<DoctorModel, DoctorModel, QAfterFilterCondition>
-      doctorNameGreaterThan(
-    String value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'doctorName',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<DoctorModel, DoctorModel, QAfterFilterCondition>
-      doctorNameLessThan(
-    String value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'doctorName',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<DoctorModel, DoctorModel, QAfterFilterCondition>
-      doctorNameBetween(
-    String lower,
-    String upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'doctorName',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<DoctorModel, DoctorModel, QAfterFilterCondition>
-      doctorNameStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'doctorName',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<DoctorModel, DoctorModel, QAfterFilterCondition>
-      doctorNameEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'doctorName',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<DoctorModel, DoctorModel, QAfterFilterCondition>
-      doctorNameContains(String value, {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'doctorName',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<DoctorModel, DoctorModel, QAfterFilterCondition>
-      doctorNameMatches(String pattern, {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'doctorName',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<DoctorModel, DoctorModel, QAfterFilterCondition>
-      doctorNameIsEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'doctorName',
-        value: '',
-      ));
-    });
-  }
-
-  QueryBuilder<DoctorModel, DoctorModel, QAfterFilterCondition>
-      doctorNameIsNotEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'doctorName',
         value: '',
       ));
     });
@@ -1267,6 +1126,147 @@ extension DoctorModelQueryFilter
       ));
     });
   }
+
+  QueryBuilder<DoctorModel, DoctorModel, QAfterFilterCondition> isActiveEqualTo(
+      bool value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'isActive',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<DoctorModel, DoctorModel, QAfterFilterCondition> nameEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'name',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<DoctorModel, DoctorModel, QAfterFilterCondition> nameGreaterThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'name',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<DoctorModel, DoctorModel, QAfterFilterCondition> nameLessThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'name',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<DoctorModel, DoctorModel, QAfterFilterCondition> nameBetween(
+    String lower,
+    String upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'name',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<DoctorModel, DoctorModel, QAfterFilterCondition> nameStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'name',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<DoctorModel, DoctorModel, QAfterFilterCondition> nameEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'name',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<DoctorModel, DoctorModel, QAfterFilterCondition> nameContains(
+      String value,
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'name',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<DoctorModel, DoctorModel, QAfterFilterCondition> nameMatches(
+      String pattern,
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'name',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<DoctorModel, DoctorModel, QAfterFilterCondition> nameIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'name',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<DoctorModel, DoctorModel, QAfterFilterCondition>
+      nameIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'name',
+        value: '',
+      ));
+    });
+  }
 }
 
 extension DoctorModelQueryObject
@@ -1364,15 +1364,15 @@ extension DoctorModelQuerySortBy
     });
   }
 
-  QueryBuilder<DoctorModel, DoctorModel, QAfterSortBy> sortByDate() {
+  QueryBuilder<DoctorModel, DoctorModel, QAfterSortBy> sortByCreatedAt() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'creationDate', Sort.asc);
+      return query.addSortBy(r'createdAt', Sort.asc);
     });
   }
 
-  QueryBuilder<DoctorModel, DoctorModel, QAfterSortBy> sortByDateDesc() {
+  QueryBuilder<DoctorModel, DoctorModel, QAfterSortBy> sortByCreatedAtDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'creationDate', Sort.desc);
+      return query.addSortBy(r'createdAt', Sort.desc);
     });
   }
 
@@ -1388,18 +1388,6 @@ extension DoctorModelQuerySortBy
     });
   }
 
-  QueryBuilder<DoctorModel, DoctorModel, QAfterSortBy> sortByDoctorName() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'doctorName', Sort.asc);
-    });
-  }
-
-  QueryBuilder<DoctorModel, DoctorModel, QAfterSortBy> sortByDoctorNameDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'doctorName', Sort.desc);
-    });
-  }
-
   QueryBuilder<DoctorModel, DoctorModel, QAfterSortBy> sortByHospital() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'hospital', Sort.asc);
@@ -1409,6 +1397,30 @@ extension DoctorModelQuerySortBy
   QueryBuilder<DoctorModel, DoctorModel, QAfterSortBy> sortByHospitalDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'hospital', Sort.desc);
+    });
+  }
+
+  QueryBuilder<DoctorModel, DoctorModel, QAfterSortBy> sortByIsActive() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'isActive', Sort.asc);
+    });
+  }
+
+  QueryBuilder<DoctorModel, DoctorModel, QAfterSortBy> sortByIsActiveDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'isActive', Sort.desc);
+    });
+  }
+
+  QueryBuilder<DoctorModel, DoctorModel, QAfterSortBy> sortByName() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'name', Sort.asc);
+    });
+  }
+
+  QueryBuilder<DoctorModel, DoctorModel, QAfterSortBy> sortByNameDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'name', Sort.desc);
     });
   }
 }
@@ -1427,15 +1439,15 @@ extension DoctorModelQuerySortThenBy
     });
   }
 
-  QueryBuilder<DoctorModel, DoctorModel, QAfterSortBy> thenByDate() {
+  QueryBuilder<DoctorModel, DoctorModel, QAfterSortBy> thenByCreatedAt() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'creationDate', Sort.asc);
+      return query.addSortBy(r'createdAt', Sort.asc);
     });
   }
 
-  QueryBuilder<DoctorModel, DoctorModel, QAfterSortBy> thenByDateDesc() {
+  QueryBuilder<DoctorModel, DoctorModel, QAfterSortBy> thenByCreatedAtDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'creationDate', Sort.desc);
+      return query.addSortBy(r'createdAt', Sort.desc);
     });
   }
 
@@ -1448,18 +1460,6 @@ extension DoctorModelQuerySortThenBy
   QueryBuilder<DoctorModel, DoctorModel, QAfterSortBy> thenByDesignationDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'designation', Sort.desc);
-    });
-  }
-
-  QueryBuilder<DoctorModel, DoctorModel, QAfterSortBy> thenByDoctorName() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'doctorName', Sort.asc);
-    });
-  }
-
-  QueryBuilder<DoctorModel, DoctorModel, QAfterSortBy> thenByDoctorNameDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'doctorName', Sort.desc);
     });
   }
 
@@ -1486,6 +1486,30 @@ extension DoctorModelQuerySortThenBy
       return query.addSortBy(r'id', Sort.desc);
     });
   }
+
+  QueryBuilder<DoctorModel, DoctorModel, QAfterSortBy> thenByIsActive() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'isActive', Sort.asc);
+    });
+  }
+
+  QueryBuilder<DoctorModel, DoctorModel, QAfterSortBy> thenByIsActiveDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'isActive', Sort.desc);
+    });
+  }
+
+  QueryBuilder<DoctorModel, DoctorModel, QAfterSortBy> thenByName() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'name', Sort.asc);
+    });
+  }
+
+  QueryBuilder<DoctorModel, DoctorModel, QAfterSortBy> thenByNameDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'name', Sort.desc);
+    });
+  }
 }
 
 extension DoctorModelQueryWhereDistinct
@@ -1497,9 +1521,9 @@ extension DoctorModelQueryWhereDistinct
     });
   }
 
-  QueryBuilder<DoctorModel, DoctorModel, QDistinct> distinctByDate() {
+  QueryBuilder<DoctorModel, DoctorModel, QDistinct> distinctByCreatedAt() {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'creationDate');
+      return query.addDistinctBy(r'createdAt');
     });
   }
 
@@ -1510,17 +1534,23 @@ extension DoctorModelQueryWhereDistinct
     });
   }
 
-  QueryBuilder<DoctorModel, DoctorModel, QDistinct> distinctByDoctorName(
-      {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'doctorName', caseSensitive: caseSensitive);
-    });
-  }
-
   QueryBuilder<DoctorModel, DoctorModel, QDistinct> distinctByHospital(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'hospital', caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<DoctorModel, DoctorModel, QDistinct> distinctByIsActive() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'isActive');
+    });
+  }
+
+  QueryBuilder<DoctorModel, DoctorModel, QDistinct> distinctByName(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'name', caseSensitive: caseSensitive);
     });
   }
 }
@@ -1539,9 +1569,9 @@ extension DoctorModelQueryProperty
     });
   }
 
-  QueryBuilder<DoctorModel, DateTime?, QQueryOperations> dateProperty() {
+  QueryBuilder<DoctorModel, DateTime, QQueryOperations> createdAtProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'creationDate');
+      return query.addPropertyName(r'createdAt');
     });
   }
 
@@ -1551,15 +1581,21 @@ extension DoctorModelQueryProperty
     });
   }
 
-  QueryBuilder<DoctorModel, String, QQueryOperations> doctorNameProperty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'doctorName');
-    });
-  }
-
   QueryBuilder<DoctorModel, String, QQueryOperations> hospitalProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'hospital');
+    });
+  }
+
+  QueryBuilder<DoctorModel, bool, QQueryOperations> isActiveProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'isActive');
+    });
+  }
+
+  QueryBuilder<DoctorModel, String, QQueryOperations> nameProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'name');
     });
   }
 }

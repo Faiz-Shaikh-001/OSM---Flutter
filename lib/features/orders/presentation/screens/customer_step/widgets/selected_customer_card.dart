@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:osm/features/customer/data/customer_model.dart';
+import 'package:osm/features/customer/data/models/customer_model.dart';
 
 class SelectedCustomerCard extends StatelessWidget {
   final CustomerModel customer;

@@ -1,176 +1,97 @@
-import 'package:flutter/material.dart';
 import 'package:isar/isar.dart';
-import 'package:osm/features/prescription/data/models/prescription_model.dart';
-import 'package:osm/features/customer/data/customer_model.dart';
-import 'package:osm/features/doctors/data/models/doctor_model.dart';
+import 'package:osm/core/either.dart';
 import 'package:osm/core/services/isar_service.dart';
+import 'package:osm/core/value_objects/id.dart';
+import 'package:osm/features/customer/data/models/customer_model.dart';
+import 'package:osm/features/doctors/data/models/doctor_model.dart';
+import 'package:osm/features/prescription/data/mapper/prescription_mapper.dart';
 
-class PrescriptionRepository {
+import 'package:osm/features/prescription/domain/entities/prescription.dart';
+import 'package:osm/features/prescription/domain/failures/prescription_failure.dart';
+import 'package:osm/features/prescription/domain/repositories/prescription_repository.dart';
+
+import '../models/prescription_model.dart';
+
+class PrescriptionRepositoryImpl implements PrescriptionRepository {
   final IsarService _isarService;
 
-  PrescriptionRepository(this._isarService);
+  PrescriptionRepositoryImpl(this._isarService);
 
-  // Retrieves all prescriptions from the database.
-  Future<List<PrescriptionModel>> getAll() async {
-    try {
-      final isar = await _isarService.db;
-      final prescriptions = await isar.prescriptionModels.where().findAll();
-      // Eagerly load customer and doctor for each prescription
-      for (var p in prescriptions) {
-        await p.customer.load(); // Load the customer link
-        await p.doctor.load(); // Load the doctor link
-      }
-      return prescriptions;
-    } catch (e) {
-      debugPrint('Error getting all prescriptions: $e');
-      rethrow;
-    }
-  }
-
-  // Retrieves a single prescription by its ID.
-  Future<PrescriptionModel?> getById(Id id) async {
-    try {
-      final isar = await _isarService.db;
-      return await isar.prescriptionModels.get(id);
-    } catch (e) {
-      debugPrint('Error getting prescription by ID $id: $e');
-      rethrow;
-    }
-  }
-
-  // Retrieves a prescription and eagerly loads its associated customer, doctor, and orders.
-  Future<PrescriptionModel?> getPrescriptionWithDetails(Id id) async {
-    try {
-      final isar = await _isarService.db;
-      final prescription = await isar.prescriptionModels.get(id);
-      if (prescription != null) {
-        await prescription.customer.load();
-        await prescription.doctor.load();
-        await prescription.orders.load();
-      }
-      return prescription;
-    } catch (e) {
-      debugPrint('Error getting prescription with details by ID $id: $e');
-      rethrow;
-    }
-  }
-
-  // Adds a new prescription to the database and links it to an existing customer and doctor.
-  Future<Id> add(
-    PrescriptionModel prescription, {
-    required CustomerModel customer,
-    required DoctorModel doctor,
-  }) async {
-    try {
-      final isar = await _isarService.db;
-      late Id newId;
-      await isar.writeTxn(() async {
-        prescription.customer.value = customer;
-        prescription.doctor.value = doctor;
-        newId = await isar.prescriptionModels.put(prescription);
-        await customer.prescriptions
-            .save(); // Save the backlink on the customer
-        await doctor.prescriptions.save(); // Save the backlink on the doctor
-      });
-      return newId;
-    } catch (e) {
-      debugPrint('Error adding prescription: $e');
-      rethrow;
-    }
-  }
-
-  // Updates an existing prescription in the database.
-  Future<void> update(PrescriptionModel prescription) async {
-    try {
-      final isar = await _isarService.db;
-      await isar.writeTxn(() async {
-        await isar.prescriptionModels.put(prescription);
-      });
-    } catch (e) {
-      debugPrint('Error updating prescription: $e');
-      rethrow;
-    }
-  }
-
-  // Deletes a prescription by its ID.
-  Future<bool> delete(Id id) async {
-    try {
-      final isar = await _isarService.db;
-      late bool deleted;
-      await isar.writeTxn(() async {
-        deleted = await isar.prescriptionModels.delete(id);
-      });
-      return deleted;
-    } catch (e) {
-      debugPrint('Error deleting prescription: $e');
-      rethrow;
-    }
-  }
-
-  // Retrieves prescriptions for a specific customer.
-  Future<List<PrescriptionModel>> getPrescriptionsForCustomer(
-    Id customerId,
+  // CREATE
+  @override
+  Future<Either<PrescriptionFailure, PrescriptionId>> create(
+    Prescription prescription,
   ) async {
     try {
       final isar = await _isarService.db;
-      final prescriptions = await isar.prescriptionModels
-          .filter()
-          .customer((q) => q.idEqualTo(customerId))
-          .findAll();
-      // Eagerly load customer and doctor for each filtered prescription
-      for (var p in prescriptions) {
-        await p.customer.load();
-        await p.doctor.load();
-      }
-      return prescriptions;
+      final model = PrescriptionMapper.toModel(prescription);
+
+      await isar.writeTxn(() async {
+        await isar.prescriptionModels.put(model);
+      });
+
+      return Right(PrescriptionId(model.id.toString()));
     } catch (e) {
-      debugPrint('Error getting prescriptions for customer $customerId: $e');
-      rethrow;
+      return const Left(PrescriptionPersistenceFailure());
     }
   }
 
-  // Retrieves prescriptions issued by a specific doctor.
-  Future<List<PrescriptionModel>> getPrescriptionsByDoctor(Id doctorId) async {
-    try {
-      final isar = await _isarService.db;
-      final prescriptions = await isar.prescriptionModels
-          .filter()
-          .doctor((q) => q.idEqualTo(doctorId))
-          .findAll();
-      // Eagerly load customer and doctor for each filtered prescription
-      for (var p in prescriptions) {
-        await p.customer.load();
-        await p.doctor.load();
-      }
-      return prescriptions;
-    } catch (e) {
-      debugPrint('Error getting prescriptions by doctor $doctorId: $e');
-      rethrow;
-    }
-  }
-
-  Future<PrescriptionModel?> getLatestPrescriptionForCustomer(
-    Id customerId,
+  // GET BY ID
+  @override
+  Future<Either<PrescriptionFailure, Prescription>> getById(
+    PrescriptionId id,
   ) async {
     try {
       final isar = await _isarService.db;
-      final latest = await isar.prescriptionModels
-          .filter()
-          .customer((q) => q.idEqualTo(customerId))
-          .sortByPrescriptionDateDesc()
-          .findFirst();
-      if (latest != null) {
-        await latest.customer.load();
-        await latest.doctor.load();
-        await latest.orders.load();
+      final model = await isar.prescriptionModels.get(int.parse(id.value));
+
+      if (model == null) {
+        return const Left(PrescriptionNotFoundFailure());
       }
 
-      return latest;
+      return Right(PrescriptionMapper.toDomain(model));
     } catch (e) {
-      debugPrint(
-        'Error getting latest prescription for customer $customerId: $e',
-      );
-      rethrow;
+      return const Left(PrescriptionPersistenceFailure());
+    }
+  }
+
+  // GET BY CUSTOMER
+  @override
+  Future<Either<PrescriptionFailure, List<Prescription>>> getByCustomer(
+    CustomerId customerId,
+  ) async {
+    try {
+      final isar = await _isarService.db;
+      final models = await isar.prescriptionModels
+          .filter()
+          .customer((c) => c.idEqualTo(int.parse(customerId.value)))
+          .findAll();
+
+      final prescriptions = models.map(PrescriptionMapper.toDomain).toList();
+
+      return Right(prescriptions);
+    } catch (e) {
+      return const Left(PrescriptionPersistenceFailure());
+    }
+  }
+
+  // GET BY DOCTOR
+  @override
+  Future<Either<PrescriptionFailure, List<Prescription>>> getByDoctor(
+    DoctorId doctorId,
+  ) async {
+    try {
+      final isar = await _isarService.db;
+      final models = await isar.prescriptionModels
+          .filter()
+          .doctor((d) => d.idEqualTo(int.parse(doctorId.value)))
+          .findAll();
+
+      final prescriptions = models.map(PrescriptionMapper.toDomain).toList();
+
+      return Right(prescriptions);
+    } catch (e) {
+      return const Left(PrescriptionPersistenceFailure());
     }
   }
 }

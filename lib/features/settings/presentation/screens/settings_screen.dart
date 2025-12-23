@@ -8,7 +8,7 @@ import 'accounts_screen.dart';
 import 'package:osm/core/services/isar_service.dart';
 import 'select_store_screen.dart';
 import 'package:osm/core/theme_provider.dart'; // Import the new provider
-import '../../../orders/data/models/store_model.dart';
+import '../../../store/data/model/store_model.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:osm/core/services/isar_service.dart';
 import 'package:osm/features/orders/data/repositories/product_repository.dart';
 import 'package:provider/provider.dart';
-import 'package:osm/features/inventory/data/models/product_model.dart';
+import 'package:osm/features/inventory/data/models/product/product_model.dart';
 import 'package:osm/features/orders/viewmodel/order_viewmodel.dart';
 
 import 'widgets/empty_state_view.dart';

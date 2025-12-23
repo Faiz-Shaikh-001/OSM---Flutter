@@ -1,260 +1,312 @@
+import 'package:flex_color_picker/flex_color_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:osm/core/services/isar_service.dart';
-import 'package:osm/features/customer/data/customer_model.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:osm/core/value_objects/id.dart';
+import 'package:osm/core/value_objects/money.dart';
+import 'package:osm/features/customer/domain/entities/customer.dart';
+import 'package:osm/features/customer/presentation/bloc/customer/customer_bloc.dart';
+import 'package:osm/features/customer/presentation/bloc/customer_details/customer_details_bloc.dart';
+import 'package:osm/features/customer/presentation/screens/add_new_customer_form.dart';
 import 'package:osm/features/customer/services/build_customer_image.dart';
-import 'package:osm/features/orders/data/models/order_model.dart';
-import 'package:osm/features/orders/data/repositories/order_repository.dart';
-import 'package:provider/provider.dart';
 
-class CustomerDetailsScreen extends StatelessWidget {
-  final CustomerModel customer;
+class CustomerDetailsScreen extends StatefulWidget {
+  final CustomerId customerId;
 
-  const CustomerDetailsScreen({super.key, required this.customer});
+  const CustomerDetailsScreen({super.key, required this.customerId});
+
+  @override
+  State<CustomerDetailsScreen> createState() => _CustomerDetailsScreenState();
+}
+
+class _CustomerDetailsScreenState extends State<CustomerDetailsScreen> {
+  @override
+  void initState() {
+    super.initState();
+    context.read<CustomerDetailsBloc>().add(
+      LoadCustomerDetails(widget.customerId),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
+    return BlocListener<CustomerBloc, CustomerState>(
+      listener: (context, state) {
+        if (state is CustomerUpdated) {
+          context.read<CustomerDetailsBloc>().add(
+            LoadCustomerDetails(widget.customerId),
+          );
+        }
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Customer Details'),
+          actions: [
+            BlocBuilder<CustomerDetailsBloc, CustomerDetailsState>(
+              builder: (context, state) {
+                if (state is! CustomerDetailsLoaded) {
+                  return const SizedBox.shrink();
+                }
+                return IconButton(
+                  onPressed: () async {
+                    final updated = await showModalBottomSheet<Customer>(
+                      context: context,
+                      isScrollControlled: true,
+                      builder: (_) => AddNewCustomerForm(
+                        initialCustomer: state.details.customer,
+                      ),
+                    );
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("Customer Detail"),
-        actions: [IconButton(icon: const Icon(Icons.edit), onPressed: () {})],
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // Header - Avatar + Name + Chips
-            Center(
-              child: Column(
-                children: [
-                  CircleAvatar(
-                    radius: 40,
-                    backgroundImage: buildCustomerImage(
-                      customer.profileImageUrl,
-                    ),
-                    onBackgroundImageError: (exception, stackTrace) {
-                      debugPrint('Error loading image: $exception');
-                    },
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    "${customer.firstName} ${customer.lastName}",
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 8),
-                  Wrap(
-                    spacing: 8,
-                    children: [
-                      Chip(label: Text("Age ${customer.age}")),
-                      Chip(label: Text(customer.gender)),
-                    ],
-                  ),
-                ],
-              ),
+                    if (updated != null && context.mounted) {
+                      context.read<CustomerBloc>().add(
+                        UpdateCustomerEvent(updated),
+                      );
+                    }
+                  },
+                  icon: const Icon(Icons.edit),
+                );
+              },
             ),
+          ],
+        ),
+        body: BlocBuilder<CustomerDetailsBloc, CustomerDetailsState>(
+          builder: (context, state) {
+            if (state is CustomerDetailsLoading) {
+              return const Center(child: CircularProgressIndicator());
+            }
 
-            const SizedBox(height: 20),
+            if (state is CustomerDetailsError) {
+              return Center(child: Text(state.message));
+            }
 
-            // Personal Info Card
-            Card(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-              elevation: 3,
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
+            if (state is CustomerDetailsLoaded) {
+              final customer = state.details.customer;
+              final orders = state.details.orders;
+              final prescriptions = state.details.prescriptions;
+
+              final totalSpend = orders.fold<Money>(
+                Money(0),
+                (sum, o) => sum + o.totalAmount,
+              );
+
+              return SingleChildScrollView(
+                padding: const EdgeInsets.all(16),
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    CircleAvatar(
+                      radius: 40,
+                      backgroundImage: buildCustomerImage(
+                        customer.profileImageUrl,
+                      ),
+                      child: customer.profileImageUrl == null
+                          ? const Icon(Icons.person, size: 40)
+                          : null,
+                    ),
+                    const SizedBox(height: 12),
+
                     Text(
-                      "Personal Info",
-                      style: TextStyle(
-                        fontSize: 18,
+                      customer.fullName,
+                      style: const TextStyle(
+                        fontSize: 20,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    SizedBox(height: 10),
-                    ListTile(
-                      leading: Icon(Icons.phone),
-                      title: Text("+91 ${customer.primaryPhoneNumber}"),
-                    ),
-                    ListTile(
-                      leading: Icon(Icons.email),
-                      title: Text(customer.email ?? "No Email"),
-                    ),
-                    ListTile(
-                      leading: Icon(Icons.home),
-                      title: Text(customer.city ?? 'Unknown'),
-                    ),
-                  ],
-                ),
-              ),
-            ),
 
-            const SizedBox(height: 16),
+                    const SizedBox(height: 8),
 
-            // Prescription Card
-            Card(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-              elevation: 3,
-              child: ExpansionTile(
-                leading: const Icon(Icons.visibility),
-                title: const Text("Latest Prescription"),
-                subtitle: Text(
-                  customer.prescriptions.isNotEmpty
-                      ? "Latest: ${customer.prescriptions.last.prescriptionDate.toLocal().toString().split(" ").first}"
-                      : "No prescriptions yet",
-                ),
-                children: customer.prescriptions.isNotEmpty
-                    ? customer.prescriptions.map((p) {
-                        return ListTile(
-                          title: Text(
-                            p.prescriptionDate
-                                .toLocal()
-                                .toString()
-                                .split(" ")
-                                .first,
+                    Wrap(
+                      spacing: 8,
+                      children: [
+                        Chip(label: Text(customer.gender.name.capitalize)),
+                        Chip(
+                          label: Text(customer.customerType.name.capitalize),
+                        ),
+                        if (customer.dateOfBirth != null)
+                          Chip(label: Text('Age ${customer.age}')),
+                      ],
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    _InfoCard(
+                      title: 'Contact',
+                      children: [
+                        ListTile(
+                          leading: const Icon(Icons.phone),
+                          title: Text(customer.primaryPhoneNumber),
+                        ),
+                        if (customer.secondaryPhoneNumber != null)
+                          ListTile(
+                            leading: const Icon(Icons.settings_phone),
+                            title: Text(customer.secondaryPhoneNumber!),
                           ),
-                          subtitle: Text(
-                            "OD: ${p.sphereRight} | OS: ${p.sphereLeft}",
+                        if (customer.email != null)
+                          ListTile(
+                            leading: const Icon(Icons.email),
+                            title: Text(customer.email!),
                           ),
-                        );
-                      }).toList()
-                    : [const ListTile(title: Text("No prescription history"))],
-              ),
-            ),
-
-            const SizedBox(height: 16),
-
-            // Orders Card
-            FutureBuilder(
-              future: context.read<OrderRepository>().getOrdersForCustomer(customer.id),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-                if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                  return Card(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    elevation: 3,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: const [
-                        Padding(
-                          padding: EdgeInsets.all(16.0),
-                          child: Text(
-                            "Orders",
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
+                        if (customer.dateOfBirth != null)
+                          ListTile(
+                            leading: const Icon(Icons.cake),
+                            title: Text(
+                              'DOB: ${customer.dateOfBirth!.toLocal().toString().split(' ').first}',
                             ),
                           ),
-                        ),
-                        ListTile(
-                          leading: Icon(Icons.error, color: Colors.red),
-                          title: Text("No orders yet."),
-                        ),
                       ],
                     ),
-                  );
-                }
 
-                final orders = snapshot.data!;
-                return Column(
-                  children: orders.map((o) {
-                    return ListTile(
-                      leading: Icon(
-                        o.status == "Completed"
-                            ? Icons.check_circle
-                            : Icons.pending_actions,
-                        color: o.status == "Completed"
-                            ? Colors.green
-                            : Colors.orange,
-                      ),
-                      title: Text("Order #${o.id}"),
-                      subtitle: Text(
-                        "₹${o.totalAmount} | ${o.orderDate.toLocal().toString().split(" ").first}",
-                      ),
-                      trailing: Text(
-                        o.status,
-                        style: TextStyle(
-                          color: o.status == "Completed"
-                              ? Colors.green
-                              : Colors.orange,
-                        ),
-                      ),
-                    );
-                  }).toList(),
-                );
-              },
-            ),
-
-            const SizedBox(height: 16),
-            FutureBuilder(
-              future: Future.wait([
-                context.read<OrderRepository>().getOrdersForCustomer(customer.id),
-                context.read<OrderRepository>().getLastVisitDate(customer.id),
-              ]),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-                if (!snapshot.hasData) {
-                  return const Text("No insights available");
-                }
-
-                final orders = snapshot.data![0] as List<OrderModel>;
-                final lastVisit = snapshot.data![1] as DateTime?;
-
-                final totalSpend = orders.fold(
-                  0.0,
-                  (sum, o) => sum + o.totalAmount,
-                );
-                final lastVisitText = lastVisit != null
-                    ? "${DateTime.now().difference(lastVisit).inDays ~/ 30} months"
-                    : "N/A";
-
-                return Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    Column(
+                    _InfoCard(
+                      title: "Address",
                       children: [
-                        Text(
-                          "₹${totalSpend.toStringAsFixed(0)}",
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
+                        if (customer.streetAddress != null)
+                          ListTile(
+                            leading: const Icon(Icons.home),
+                            title: Text(customer.streetAddress!),
                           ),
-                        ),
-                        const Text("Total Spend"),
+                        if (customer.city != null)
+                          ListTile(
+                            leading: const Icon(Icons.location_city),
+                            title: Text("${customer.city!}, ${customer.state!}, ${customer.country!}"),
+                          ),
                       ],
                     ),
-                    Column(
-                      children: [
-                        Text(
-                          lastVisitText,
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
+
+                    if (customer.tags.isNotEmpty)
+                      _InfoCard(
+                        title: 'Tags',
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.all(12),
+                            child: Wrap(
+                              spacing: 8,
+                              runSpacing: 8,
+                              children: customer.tags
+                                  .map(
+                                    (tag) => Chip(
+                                      label: Text(tag),
+                                      backgroundColor: Theme.of(
+                                        context,
+                                      ).colorScheme.secondaryContainer,
+                                    ),
+                                  )
+                                  .toList(),
+                            ),
                           ),
+                        ],
+                      ),
+
+                    if (customer.notes != null && customer.notes!.isNotEmpty)
+                      _InfoCard(
+                        title: 'Notes',
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: Text(
+                              customer.notes!,
+                              style: const TextStyle(fontSize: 14),
+                            ),
+                          ),
+                        ],
+                      ),
+
+                    _InfoCard(
+                      title: 'Prescriptions',
+                      children: prescriptions.isEmpty
+                          ? const [
+                              ListTile(title: Text('No prescriptions yet')),
+                            ]
+                          : prescriptions.map((p) {
+                              return ListTile(
+                                leading: const Icon(Icons.description),
+                                title: Text(
+                                  p.createdAt
+                                      .toLocal()
+                                      .toString()
+                                      .split(' ')
+                                      .first,
+                                ),
+                              );
+                            }).toList(),
+                    ),
+
+                    _InfoCard(
+                      title: 'Orders',
+                      children: orders.isEmpty
+                          ? const [ListTile(title: Text('No orders yet'))]
+                          : orders.map((o) {
+                              return ListTile(
+                                leading: const Icon(Icons.shopping_bag),
+                                title: Text('Order #${o.id}'),
+                                subtitle: Text('₹${o.totalAmount}'),
+                              );
+                            }).toList(),
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        _Metric(label: 'Total Spend', value: '₹$totalSpend'),
+                        _Metric(
+                          label: 'Orders',
+                          value: orders.length.toString(),
                         ),
-                        const Text("Last Visit"),
                       ],
                     ),
                   ],
-                );
-              },
-            ),
+                ),
+              );
+            }
 
-            const SizedBox(height: 20),
-          ],
+            return const SizedBox.shrink();
+          },
         ),
       ),
+    );
+  }
+}
+
+class _InfoCard extends StatelessWidget {
+  final String title;
+  final List<Widget> children;
+
+  const _InfoCard({required this.title, required this.children});
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      margin: const EdgeInsets.symmetric(vertical: 8),
+      child: Column(
+        children: [
+          ListTile(
+            title: Text(
+              title,
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+          ),
+          ...children,
+        ],
+      ),
+    );
+  }
+}
+
+class _Metric extends StatelessWidget {
+  final String label;
+  final String value;
+
+  const _Metric({required this.label, required this.value});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Text(
+          value,
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+        Text(label),
+      ],
     );
   }
 }

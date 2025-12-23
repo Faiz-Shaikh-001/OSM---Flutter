@@ -4,7 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 // Adjust paths as needed
 import 'package:osm/core/services/isar_service.dart';
-import '../../../orders/data/models/store_model.dart';
+import '../../../store/data/model/store_model.dart';
 import 'manage_stores_screen.dart';
 
 const String selectedStoreIdKey = 'selected_store_id';

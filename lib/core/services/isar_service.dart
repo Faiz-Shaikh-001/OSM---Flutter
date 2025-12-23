@@ -1,20 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:isar/isar.dart';
-import 'package:osm/features/dashboard/presentation/data/models/recent_activities.dart';
+import 'package:osm/features/dashboard/data/models/activity_model.dart';
+import 'package:osm/features/inventory/data/models/accessory/accessory_model.dart';
+import 'package:osm/features/inventory/data/models/frame/frame_model.dart';
+import 'package:osm/features/store/data/model/active_store_model.dart';
+import 'package:osm/features/store/data/model/store_location_model.dart';
 import 'package:path_provider/path_provider.dart';
 
-import 'package:osm/features/customer/data/customer_model.dart';
+import 'package:osm/features/customer/data/models/customer_model.dart';
 import 'package:osm/features/doctors/data/models/doctor_model.dart';
-import 'package:osm/features/inventory/data/models/frame_model.dart';
-import 'package:osm/features/inventory/data/models/inventory_model.dart';
-import 'package:osm/features/inventory/data/models/lens_model.dart';
-import 'package:osm/features/orders/data/models/order_item_model.dart';
-import 'package:osm/features/orders/data/models/order_model.dart';
-import 'package:osm/features/orders/data/models/payment_model.dart';
+import 'package:osm/features/inventory/data/models/lens/lens_model.dart';
+import 'package:osm/features/orders/data/models/order_item/order_item_model.dart';
+import 'package:osm/features/orders/data/models/order/order_model.dart';
+import 'package:osm/features/orders/data/models/payment/payment_model.dart';
 import 'package:osm/features/prescription/data/models/prescription_model.dart';
-import 'package:osm/features/inventory/data/models/store_location_model.dart';
-// --- FIX: Import the Store model ---
-import 'package:osm/features/orders/data/models/store_model.dart';
 
 class IsarService {
   late Future<Isar> db;
@@ -38,17 +37,17 @@ class IsarService {
     final dir = await getApplicationDocumentsDirectory();
     final isar = await Isar.open(
       [
-        StoreSchema,
         CustomerModelSchema,
         DoctorModelSchema,
         FrameModelSchema,
         LensModelSchema,
+        AccessoryModelSchema,
         PrescriptionModelSchema,
         OrderModelSchema,
         OrderItemModelSchema,
         PaymentModelSchema,
         StoreLocationModelSchema,
-        InventoryModelSchema,
+        ActiveStoreModelSchema,
         ActivityModelSchema,
       ],
       directory: dir.path,
@@ -56,12 +55,6 @@ class IsarService {
     );
     debugPrint('Isar database opened successfully at: ${dir.path}');
     return isar;
-  }
-
-  // --- FIX: Add a getter for the new Store collection ---
-  Future<IsarCollection<Store>> getStores() async {
-    final isar = await db;
-    return isar.stores;
   }
 
   // Methods here to get specific collections
@@ -99,11 +92,6 @@ class IsarService {
   Future<IsarCollection<StoreLocationModel>> getStoreLocations() async {
     final isar = await db;
     return isar.storeLocationModels;
-  }
-
-  Future<IsarCollection<InventoryModel>> getInventory() async {
-    final isar = await db;
-    return isar.inventoryModels;
   }
 
   Future<IsarCollection<FrameModel>> getFrames() async {

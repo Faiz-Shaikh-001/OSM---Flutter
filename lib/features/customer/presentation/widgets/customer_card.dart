@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:osm/features/customer/data/customer_model.dart';
-import 'package:osm/features/customer/data/customer_repository.dart';
-import 'package:osm/features/customer/presentation/screens/customer_details_screen.dart';
+import 'package:osm/core/value_objects/id.dart';
+import 'package:osm/features/customer/domain/entities/customer.dart';
+import 'package:osm/features/customer/presentation/bloc/customer/customer_bloc.dart';
+import 'package:osm/features/customer/presentation/screens/customer_details_page.dart';
 import 'package:osm/features/customer/services/build_customer_image.dart';
-import 'package:osm/features/customer/viewmodel/customer_viewmodel.dart';
 import 'package:provider/provider.dart';
 
 class CustomerCard extends StatelessWidget {
-  final CustomerModel customer;
+  final Customer customer;
 
   const CustomerCard({super.key, required this.customer});
 
@@ -17,34 +17,57 @@ class CustomerCard extends StatelessWidget {
       margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
       child: ListTile(
         leading: CircleAvatar(
-          backgroundImage: buildCustomerImage(customer.profileImageUrl),
-          onBackgroundImageError: (exception, stackTrace) {
-            debugPrint('Error loading image: $exception');
-          },
+          backgroundImage: customer.profileImageUrl != null
+              ? buildCustomerImage(customer.profileImageUrl!)
+              : null,
+          child: customer.profileImageUrl == null
+              ? const Icon(Icons.person)
+              : null,
         ),
-        title: Text("${customer.firstName} ${customer.lastName}"),
+        title: Text(customer.fullName),
         subtitle: Text(
-          "City: ${customer.city} | Phone: ${customer.primaryPhoneNumber}",
+          "City: ${customer.city ?? '-'} | Phone: ${customer.primaryPhoneNumber}",
         ),
         trailing: IconButton(
-          onPressed: () async {
-            await context.read<CustomerViewModel>().deleteCustomer(customer.id);
-          },
           icon: const Icon(Icons.delete, color: Colors.red),
+          onPressed: () async {
+            // Moving logic outside
+            _confirmDelete(context);
+          },
         ),
         onTap: () async {
-          final repo = context.read<CustomerRepository>();
-          final fullCustomer = await repo.getCustomerWithRelations(customer.id);
-
-          if (fullCustomer != null && context.mounted) {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => CustomerDetailsScreen(customer: fullCustomer),
-              ),
-            );
-          }
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => CustomerDetailsPage(customerId: CustomerId(customer.id!)),
+            ),
+          );
         },
+      ),
+    );
+  }
+
+  void _confirmDelete(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('Delete Customer'),
+        content: const Text('Are you sure you want to delete this customer?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              context.read<CustomerBloc>().add(
+                DeleteCustomerEvent(customer),
+              );
+              Navigator.pop(context);
+            },
+            child: const Text('Delete', style: TextStyle(color: Colors.red)),
+          ),
+        ],
       ),
     );
   }

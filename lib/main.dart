@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:osm/core/providers/repositories_providers.dart';
 import 'package:osm/core/providers/services_providers.dart';
-import 'package:osm/core/providers/viewmodel_providers.dart';
 import 'package:osm/core/theme_provider.dart';
-import 'package:osm/features/dashboard/presentation/data/models/activity_repository.dart';
-import 'package:osm/features/dashboard/presentation/screens/dashboard_screen_test.dart';
+import 'package:osm/features/dashboard/presentation/screens/dashboard_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -12,7 +9,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:osm/core/services/isar_service.dart';
 
 // Import all your repository files
-import 'package:osm/features/orders/data/repositories/order_repository.dart';
 import 'package:osm/features/inventory/data/repositories/inventory_repository.dart';
 
 late SharedPreferences sharedPreferences;
@@ -28,16 +24,10 @@ void main() async {
     MultiProvider(
       providers: [
         ...servicesProvider,
-        ...repositoryProviders,
         ChangeNotifierProvider<InventoryRepository>(
           create: (context) =>
               InventoryRepository(context.read<IsarService>())..init(),
         ),
-        ChangeNotifierProvider(
-          create: (context) =>
-              OrderRepository(context.read<IsarService>(), context.read<ActivityRepository>())..init(),
-        ),
-        ...viewModelProviders,
         
         ChangeNotifierProvider<ThemeProvider>(
           create: (context) => ThemeProvider(),
@@ -60,7 +50,7 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: const DashboardScreenTest(),
+      home: const DashboardScreen(),
     );
   }
 }

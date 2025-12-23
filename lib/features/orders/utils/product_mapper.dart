@@ -1,8 +1,8 @@
-import 'package:osm/features/inventory/data/models/inventory_model.dart';
-import 'package:osm/features/inventory/data/models/frame_model.dart';
-import 'package:osm/features/inventory/data/models/lens_model.dart';
+import 'package:osm/features/inventory/data/models/inventory/inventory_model.dart';
+import 'package:osm/features/inventory/data/models/frame/frame_model_trial.dart';
+import 'package:osm/features/inventory/data/models/lens/lens_model.dart';
 import 'package:osm/core/utils/product_type.dart';
-import 'package:osm/features/inventory/data/models/product_model.dart';
+import 'package:osm/features/inventory/data/models/product/product_model.dart';
 
 class ProductMapper {
   /// Converts a [FrameVariant] into a [Product]

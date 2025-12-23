@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:isar/isar.dart';
 // Adjust the path to your IsarService file if it's different
 import 'package:osm/core/services/isar_service.dart'; 
-import '../../../orders/data/models/store_model.dart';
+import '../../../store/data/model/store_model.dart';
 import 'add_edit_store_screen.dart';
 
 

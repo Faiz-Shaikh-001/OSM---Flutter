@@ -2,10 +2,8 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 
-ImageProvider<Object>? buildCustomerImage(String imagePath) {
-  if (imagePath.isEmpty) {
-    imagePath = "https://placehold.co/100x100?text=No+Image";
-  }
+ImageProvider<Object>? buildCustomerImage(String? imagePath) {
+  if (imagePath == null) return null;
   if (imagePath.startsWith('http')) {
     return NetworkImage(imagePath);
   } else if (imagePath.isNotEmpty) {

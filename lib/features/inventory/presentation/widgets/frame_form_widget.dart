@@ -1,13 +1,13 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:osm/features/inventory/data/models/frame_enums.dart';
+import 'package:osm/features/inventory/data/enums/frame_type_model.dart';
 import 'package:osm/core/services/color_api_service.dart';
 import 'package:osm/core/services/save_image_to_app_directory.dart';
 import 'package:osm/core/widgets/build_text_field_widget.dart';
 import 'package:osm/core/widgets/image_selector.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
-import '../../data/models/frame_model.dart';
+import '../../data/models/frame/frame_model_trial.dart';
 import '../../../../core/widgets/custom_button.dart';
 // Remove MultiColorPicker import if no longer used after refactor
 

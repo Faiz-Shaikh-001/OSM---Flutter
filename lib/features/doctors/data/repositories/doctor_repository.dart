@@ -1,91 +1,139 @@
-import 'package:flutter/material.dart';
 import 'package:isar/isar.dart';
-import 'package:osm/features/doctors/data/models/doctor_model.dart';
-import 'package:osm/core/services/isar_service.dart';
+import 'package:osm/core/either.dart';
+import 'package:osm/core/value_objects/id.dart';
+import 'package:osm/features/doctors/data/mapper/doctor_mapper.dart';
 
-class DoctorRepository {
-  final IsarService _isarService;
+import 'package:osm/features/doctors/domain/entities/doctor.dart';
+import 'package:osm/features/doctors/domain/failures/doctor_failure.dart';
+import 'package:osm/features/doctors/domain/success/doctor_success.dart';
+import 'package:osm/features/doctors/domain/repositories/doctor_repository.dart';
+import 'package:osm/features/store/data/model/store_location_model.dart';
 
-  DoctorRepository(this._isarService);
+import '../models/doctor_model.dart';
 
-  // Retrieves all doctors from the database.
-  Future<List<DoctorModel>> getAll() async {
+class DoctorRepositoryImpl implements DoctorRepository {
+  final Isar isar;
+
+  DoctorRepositoryImpl(this.isar);
+
+  // ADD
+  @override
+  Future<Either<DoctorFailure, DoctorId>> add(Doctor doctor) async {
     try {
-      final isar = await _isarService.db;
-      return await isar.doctorModels.where().findAll();
+      final model = DoctorMapper.toModel(doctor);
+
+      await isar.writeTxn(() async {
+        await isar.doctorModels.put(model);
+      });
+
+      return Right(DoctorId(model.id.toString()));
     } catch (e) {
-      debugPrint('Error getting all doctors: $e');
-      rethrow;
+      return const Left(DoctorPersistenceFailure());
     }
   }
 
-  // Retrieves a single doctor by their ID.
-  Future<DoctorModel?> getById(Id id) async {
+  // GET BY ID
+  @override
+  Future<Either<DoctorFailure, Doctor>> getById(DoctorId id) async {
     try {
-      final isar = await _isarService.db;
-      return await isar.doctorModels.get(id);
-    } catch (e) {
-      debugPrint('Error getting doctor by ID $id: $e');
-      rethrow;
-    }
-  }
+      final model = await isar.doctorModels.get(int.parse(id.value));
 
-  // Retrieves a doctor and eagerly loads their associated prescriptions.
-  Future<DoctorModel?> getDoctorWithRelations(Id id) async {
-    try {
-      final isar = await _isarService.db;
-      final doctor = await isar.doctorModels.get(id);
-      if (doctor != null) {
-        await doctor.prescriptions.load();
-        await doctor.storeLocation.load(); // Load linked store location
+      if (model == null) {
+        return const Left(DoctorNotFoundFailure());
       }
-      return doctor;
+
+      return Right(DoctorMapper.toEntity(model));
     } catch (e) {
-      debugPrint('Error getting doctor with relations by ID $id: $e');
-      rethrow;
+      return const Left(DoctorPersistenceFailure());
     }
   }
 
-  // Adds a new doctor to the database.
-  Future<Id> add(DoctorModel doctor) async {
+  // GET ALL
+  @override
+  Future<Either<DoctorFailure, List<Doctor>>> getAll() async {
     try {
-      final isar = await _isarService.db;
-      late Id newId;
-      await isar.writeTxn(() async {
-        newId = await isar.doctorModels.put(doctor);
-      });
-      return newId;
+      final models = await isar.doctorModels.where().findAll();
+
+      final doctors = models.map(DoctorMapper.toEntity).toList();
+
+      return Right(doctors);
     } catch (e) {
-      debugPrint('Error adding doctor: $e');
-      rethrow;
+      return const Left(DoctorPersistenceFailure());
     }
   }
 
-  // Updates an existing doctor in the database.
-  Future<void> update(DoctorModel doctor) async {
+  // GET BY STORE LOCATION
+  @override
+  Future<Either<DoctorFailure, List<Doctor>>> getByStoreLocation(
+    StoreLocationId storeLocationId,
+  ) async {
     try {
-      final isar = await _isarService.db;
-      await isar.writeTxn(() async {
-        await isar.doctorModels.put(doctor);
-      });
+      final models = await isar.doctorModels
+          .filter()
+          .storeLocation((s) => s.idEqualTo(int.parse(storeLocationId.value)))
+          .findAll();
+
+      final doctors = models.map(DoctorMapper.toEntity).toList();
+
+      return Right(doctors);
     } catch (e) {
-      debugPrint('Error updating doctor: $e');
-      rethrow;
+      return const Left(DoctorPersistenceFailure());
     }
   }
 
-  // Deletes a doctor by their ID.
-  Future<bool> delete(Id id) async {
+  // UPDATE
+  @override
+  Future<Either<DoctorFailure, DoctorSuccess>> update(Doctor doctor) async {
     try {
-      final isar = await _isarService.db;
-      late bool deleted;
+      final id = int.parse(doctor.id.value);
+
+      final existing = await isar.doctorModels.get(id);
+
+      if (existing == null) {
+        return const Left(DoctorNotFoundFailure());
+      }
+
+      final updated = DoctorMapper.toModel(doctor)..id = id;
+
       await isar.writeTxn(() async {
-        deleted = await isar.doctorModels.delete(id);
+        await isar.doctorModels.put(updated);
       });
-      return deleted;
+
+      return const Right(DoctorUpdatedSuccess());
     } catch (e) {
-      debugPrint('Error deleting doctor: $e');
-      rethrow;
+      return const Left(DoctorPersistenceFailure());
+    }
+  }
+
+  // DEACTIVATE
+  @override
+  Future<Either<DoctorFailure, DoctorSuccess>> deactivate(DoctorId id) async {
+    try {
+      final parsedId = int.parse(id.value);
+
+      final existing = await isar.doctorModels.get(parsedId);
+
+      if (existing == null) {
+        return const Left(DoctorNotFoundFailure());
+      }
+
+      final updated = DoctorModel(
+        createdAt: existing.createdAt,
+        name: existing.name,
+        designation: existing.designation,
+        hospital: existing.hospital,
+        city: existing.city,
+        isActive: false,
+        storeLocation: existing.storeLocation,
+      )..id = existing.id;
+
+      await isar.writeTxn(() async {
+        await isar.doctorModels.put(updated);
+      });
+
+      return const Right(DoctorDeactivatedSuccess());
+    } catch (e) {
+      return const Left(DoctorPersistenceFailure());
     }
   }
 }
