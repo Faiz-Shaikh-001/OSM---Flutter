@@ -1,6 +1,7 @@
 import 'package:osm/core/either.dart';
 import 'package:osm/core/services/isar_service.dart';
 import 'package:osm/core/value_objects/id.dart';
+import 'package:osm/features/customer/data/models/customer_model.dart';
 import 'package:osm/features/customer/data/repositories/customer_local_repository.dart';
 import 'package:osm/features/doctors/data/mapper/doctor_mapper.dart';
 import 'package:osm/features/doctors/data/repositories/doctor_repository.dart';
@@ -72,6 +73,8 @@ class PrescriptionRepositoryImpl implements PrescriptionRepository {
 
       await isar.writeTxn(() async {
         await _localRepository.insert(model, customerModel, isar: isar);
+        customerModel.updatedAt = DateTime.now();
+        await isar.customerModels.put(customerModel);
       });
 
       return Right(

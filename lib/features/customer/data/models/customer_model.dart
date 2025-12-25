@@ -12,7 +12,7 @@ class CustomerModel {
 
   // Customer Metadata
   final DateTime createdAt;
-  final DateTime? updatedAt;
+  DateTime? updatedAt;
   final bool isActive;
 
   // Identity
