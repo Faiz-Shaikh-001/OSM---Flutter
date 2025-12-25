@@ -86,7 +86,6 @@ class _CustomerDetailsScreenState extends State<CustomerDetailsScreen> {
             if (state is CustomerDetailsLoaded) {
               final customer = state.details.customer;
               final orders = state.details.orders;
-              final prescriptions = state.details.prescriptions;
 
               final totalSpend = orders.fold<Money>(
                 Money(0),
