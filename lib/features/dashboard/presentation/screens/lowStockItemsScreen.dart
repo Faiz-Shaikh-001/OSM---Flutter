@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:osm/features/inventory/data/repositories/inventory_repository.dart';
 import 'package:provider/provider.dart';
 
 class LowStockItemsScreen extends StatelessWidget {

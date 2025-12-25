@@ -17,60 +17,76 @@ const PrescriptionModelSchema = CollectionSchema(
   name: r'PrescriptionModel',
   id: 5238557809895904838,
   properties: {
-    r'addLeft': PropertySchema(
-      id: 0,
-      name: r'addLeft',
-      type: IsarType.double,
-    ),
-    r'addRight': PropertySchema(
-      id: 1,
-      name: r'addRight',
-      type: IsarType.double,
-    ),
-    r'axisLeft': PropertySchema(
-      id: 2,
-      name: r'axisLeft',
-      type: IsarType.long,
-    ),
-    r'axisRight': PropertySchema(
-      id: 3,
-      name: r'axisRight',
-      type: IsarType.long,
-    ),
     r'createdAt': PropertySchema(
-      id: 4,
+      id: 0,
       name: r'createdAt',
       type: IsarType.dateTime,
     ),
-    r'cylinderLeft': PropertySchema(
-      id: 5,
-      name: r'cylinderLeft',
+    r'leftAdd': PropertySchema(
+      id: 1,
+      name: r'leftAdd',
       type: IsarType.double,
     ),
-    r'cylinderRight': PropertySchema(
-      id: 6,
-      name: r'cylinderRight',
+    r'leftAxis': PropertySchema(
+      id: 2,
+      name: r'leftAxis',
+      type: IsarType.long,
+    ),
+    r'leftCylinder': PropertySchema(
+      id: 3,
+      name: r'leftCylinder',
+      type: IsarType.double,
+    ),
+    r'leftSphere': PropertySchema(
+      id: 4,
+      name: r'leftSphere',
       type: IsarType.double,
     ),
     r'notes': PropertySchema(
-      id: 7,
+      id: 5,
       name: r'notes',
       type: IsarType.string,
     ),
-    r'pd': PropertySchema(
+    r'pdLeft': PropertySchema(
+      id: 6,
+      name: r'pdLeft',
+      type: IsarType.double,
+    ),
+    r'pdRight': PropertySchema(
+      id: 7,
+      name: r'pdRight',
+      type: IsarType.double,
+    ),
+    r'prescriptionDate': PropertySchema(
       id: 8,
-      name: r'pd',
-      type: IsarType.double,
+      name: r'prescriptionDate',
+      type: IsarType.dateTime,
     ),
-    r'sphereLeft': PropertySchema(
+    r'rightAdd': PropertySchema(
       id: 9,
-      name: r'sphereLeft',
+      name: r'rightAdd',
       type: IsarType.double,
     ),
-    r'sphereRight': PropertySchema(
+    r'rightAxis': PropertySchema(
       id: 10,
-      name: r'sphereRight',
+      name: r'rightAxis',
+      type: IsarType.long,
+    ),
+    r'rightCylinder': PropertySchema(
+      id: 11,
+      name: r'rightCylinder',
       type: IsarType.double,
+    ),
+    r'rightSphere': PropertySchema(
+      id: 12,
+      name: r'rightSphere',
+      type: IsarType.double,
+    ),
+    r'source': PropertySchema(
+      id: 13,
+      name: r'source',
+      type: IsarType.string,
+      enumMap: _PrescriptionModelsourceEnumValueMap,
     )
   },
   estimateSize: _prescriptionModelEstimateSize,
@@ -78,7 +94,21 @@ const PrescriptionModelSchema = CollectionSchema(
   deserialize: _prescriptionModelDeserialize,
   deserializeProp: _prescriptionModelDeserializeProp,
   idName: r'id',
-  indexes: {},
+  indexes: {
+    r'createdAt': IndexSchema(
+      id: -3433535483987302584,
+      name: r'createdAt',
+      unique: false,
+      replace: false,
+      properties: [
+        IndexPropertySchema(
+          name: r'createdAt',
+          type: IndexType.value,
+          caseSensitive: false,
+        )
+      ],
+    )
+  },
   links: {
     r'customer': LinkSchema(
       id: 4337710164278096703,
@@ -112,6 +142,7 @@ int _prescriptionModelEstimateSize(
       bytesCount += 3 + value.length * 3;
     }
   }
+  bytesCount += 3 + object.source.name.length * 3;
   return bytesCount;
 }
 
@@ -121,17 +152,20 @@ void _prescriptionModelSerialize(
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
 ) {
-  writer.writeDouble(offsets[0], object.addLeft);
-  writer.writeDouble(offsets[1], object.addRight);
-  writer.writeLong(offsets[2], object.axisLeft);
-  writer.writeLong(offsets[3], object.axisRight);
-  writer.writeDateTime(offsets[4], object.createdAt);
-  writer.writeDouble(offsets[5], object.cylinderLeft);
-  writer.writeDouble(offsets[6], object.cylinderRight);
-  writer.writeString(offsets[7], object.notes);
-  writer.writeDouble(offsets[8], object.pd);
-  writer.writeDouble(offsets[9], object.sphereLeft);
-  writer.writeDouble(offsets[10], object.sphereRight);
+  writer.writeDateTime(offsets[0], object.createdAt);
+  writer.writeDouble(offsets[1], object.leftAdd);
+  writer.writeLong(offsets[2], object.leftAxis);
+  writer.writeDouble(offsets[3], object.leftCylinder);
+  writer.writeDouble(offsets[4], object.leftSphere);
+  writer.writeString(offsets[5], object.notes);
+  writer.writeDouble(offsets[6], object.pdLeft);
+  writer.writeDouble(offsets[7], object.pdRight);
+  writer.writeDateTime(offsets[8], object.prescriptionDate);
+  writer.writeDouble(offsets[9], object.rightAdd);
+  writer.writeLong(offsets[10], object.rightAxis);
+  writer.writeDouble(offsets[11], object.rightCylinder);
+  writer.writeDouble(offsets[12], object.rightSphere);
+  writer.writeString(offsets[13], object.source.name);
 }
 
 PrescriptionModel _prescriptionModelDeserialize(
@@ -141,19 +175,24 @@ PrescriptionModel _prescriptionModelDeserialize(
   Map<Type, List<int>> allOffsets,
 ) {
   final object = PrescriptionModel(
-    addLeft: reader.readDoubleOrNull(offsets[0]),
-    addRight: reader.readDoubleOrNull(offsets[1]),
-    axisLeft: reader.readLong(offsets[2]),
-    axisRight: reader.readLong(offsets[3]),
-    createdAt: reader.readDateTime(offsets[4]),
-    cylinderLeft: reader.readDouble(offsets[5]),
-    cylinderRight: reader.readDouble(offsets[6]),
-    notes: reader.readStringOrNull(offsets[7]),
-    pd: reader.readDoubleOrNull(offsets[8]),
-    sphereLeft: reader.readDouble(offsets[9]),
-    sphereRight: reader.readDouble(offsets[10]),
+    createdAt: reader.readDateTime(offsets[0]),
+    notes: reader.readStringOrNull(offsets[5]),
   );
   object.id = id;
+  object.leftAdd = reader.readDoubleOrNull(offsets[1]);
+  object.leftAxis = reader.readLongOrNull(offsets[2]);
+  object.leftCylinder = reader.readDoubleOrNull(offsets[3]);
+  object.leftSphere = reader.readDouble(offsets[4]);
+  object.pdLeft = reader.readDoubleOrNull(offsets[6]);
+  object.pdRight = reader.readDoubleOrNull(offsets[7]);
+  object.prescriptionDate = reader.readDateTime(offsets[8]);
+  object.rightAdd = reader.readDoubleOrNull(offsets[9]);
+  object.rightAxis = reader.readLongOrNull(offsets[10]);
+  object.rightCylinder = reader.readDoubleOrNull(offsets[11]);
+  object.rightSphere = reader.readDouble(offsets[12]);
+  object.source = _PrescriptionModelsourceValueEnumMap[
+          reader.readStringOrNull(offsets[13])] ??
+      PrescriptionSource.internal;
   return object;
 }
 
@@ -165,31 +204,48 @@ P _prescriptionModelDeserializeProp<P>(
 ) {
   switch (propertyId) {
     case 0:
-      return (reader.readDoubleOrNull(offset)) as P;
+      return (reader.readDateTime(offset)) as P;
     case 1:
       return (reader.readDoubleOrNull(offset)) as P;
     case 2:
-      return (reader.readLong(offset)) as P;
+      return (reader.readLongOrNull(offset)) as P;
     case 3:
-      return (reader.readLong(offset)) as P;
-    case 4:
-      return (reader.readDateTime(offset)) as P;
-    case 5:
-      return (reader.readDouble(offset)) as P;
-    case 6:
-      return (reader.readDouble(offset)) as P;
-    case 7:
-      return (reader.readStringOrNull(offset)) as P;
-    case 8:
       return (reader.readDoubleOrNull(offset)) as P;
+    case 4:
+      return (reader.readDouble(offset)) as P;
+    case 5:
+      return (reader.readStringOrNull(offset)) as P;
+    case 6:
+      return (reader.readDoubleOrNull(offset)) as P;
+    case 7:
+      return (reader.readDoubleOrNull(offset)) as P;
+    case 8:
+      return (reader.readDateTime(offset)) as P;
     case 9:
-      return (reader.readDouble(offset)) as P;
+      return (reader.readDoubleOrNull(offset)) as P;
     case 10:
+      return (reader.readLongOrNull(offset)) as P;
+    case 11:
+      return (reader.readDoubleOrNull(offset)) as P;
+    case 12:
       return (reader.readDouble(offset)) as P;
+    case 13:
+      return (_PrescriptionModelsourceValueEnumMap[
+              reader.readStringOrNull(offset)] ??
+          PrescriptionSource.internal) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
   }
 }
+
+const _PrescriptionModelsourceEnumValueMap = {
+  r'internal': r'internal',
+  r'external': r'external',
+};
+const _PrescriptionModelsourceValueEnumMap = {
+  r'internal': PrescriptionSource.internal,
+  r'external': PrescriptionSource.external,
+};
 
 Id _prescriptionModelGetId(PrescriptionModel object) {
   return object.id;
@@ -213,6 +269,15 @@ extension PrescriptionModelQueryWhereSort
   QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterWhere> anyId() {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(const IdWhereClause.any());
+    });
+  }
+
+  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterWhere>
+      anyCreatedAt() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(
+        const IndexWhereClause.any(indexName: r'createdAt'),
+      );
     });
   }
 }
@@ -286,290 +351,103 @@ extension PrescriptionModelQueryWhere
       ));
     });
   }
+
+  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterWhereClause>
+      createdAtEqualTo(DateTime createdAt) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.equalTo(
+        indexName: r'createdAt',
+        value: [createdAt],
+      ));
+    });
+  }
+
+  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterWhereClause>
+      createdAtNotEqualTo(DateTime createdAt) {
+    return QueryBuilder.apply(this, (query) {
+      if (query.whereSort == Sort.asc) {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'createdAt',
+              lower: [],
+              upper: [createdAt],
+              includeUpper: false,
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'createdAt',
+              lower: [createdAt],
+              includeLower: false,
+              upper: [],
+            ));
+      } else {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'createdAt',
+              lower: [createdAt],
+              includeLower: false,
+              upper: [],
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'createdAt',
+              lower: [],
+              upper: [createdAt],
+              includeUpper: false,
+            ));
+      }
+    });
+  }
+
+  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterWhereClause>
+      createdAtGreaterThan(
+    DateTime createdAt, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.between(
+        indexName: r'createdAt',
+        lower: [createdAt],
+        includeLower: include,
+        upper: [],
+      ));
+    });
+  }
+
+  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterWhereClause>
+      createdAtLessThan(
+    DateTime createdAt, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.between(
+        indexName: r'createdAt',
+        lower: [],
+        upper: [createdAt],
+        includeUpper: include,
+      ));
+    });
+  }
+
+  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterWhereClause>
+      createdAtBetween(
+    DateTime lowerCreatedAt,
+    DateTime upperCreatedAt, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.between(
+        indexName: r'createdAt',
+        lower: [lowerCreatedAt],
+        includeLower: includeLower,
+        upper: [upperCreatedAt],
+        includeUpper: includeUpper,
+      ));
+    });
+  }
 }
 
 extension PrescriptionModelQueryFilter
     on QueryBuilder<PrescriptionModel, PrescriptionModel, QFilterCondition> {
-  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterFilterCondition>
-      addLeftIsNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'addLeft',
-      ));
-    });
-  }
-
-  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterFilterCondition>
-      addLeftIsNotNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'addLeft',
-      ));
-    });
-  }
-
-  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterFilterCondition>
-      addLeftEqualTo(
-    double? value, {
-    double epsilon = Query.epsilon,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'addLeft',
-        value: value,
-        epsilon: epsilon,
-      ));
-    });
-  }
-
-  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterFilterCondition>
-      addLeftGreaterThan(
-    double? value, {
-    bool include = false,
-    double epsilon = Query.epsilon,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'addLeft',
-        value: value,
-        epsilon: epsilon,
-      ));
-    });
-  }
-
-  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterFilterCondition>
-      addLeftLessThan(
-    double? value, {
-    bool include = false,
-    double epsilon = Query.epsilon,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'addLeft',
-        value: value,
-        epsilon: epsilon,
-      ));
-    });
-  }
-
-  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterFilterCondition>
-      addLeftBetween(
-    double? lower,
-    double? upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-    double epsilon = Query.epsilon,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'addLeft',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        epsilon: epsilon,
-      ));
-    });
-  }
-
-  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterFilterCondition>
-      addRightIsNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'addRight',
-      ));
-    });
-  }
-
-  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterFilterCondition>
-      addRightIsNotNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'addRight',
-      ));
-    });
-  }
-
-  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterFilterCondition>
-      addRightEqualTo(
-    double? value, {
-    double epsilon = Query.epsilon,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'addRight',
-        value: value,
-        epsilon: epsilon,
-      ));
-    });
-  }
-
-  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterFilterCondition>
-      addRightGreaterThan(
-    double? value, {
-    bool include = false,
-    double epsilon = Query.epsilon,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'addRight',
-        value: value,
-        epsilon: epsilon,
-      ));
-    });
-  }
-
-  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterFilterCondition>
-      addRightLessThan(
-    double? value, {
-    bool include = false,
-    double epsilon = Query.epsilon,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'addRight',
-        value: value,
-        epsilon: epsilon,
-      ));
-    });
-  }
-
-  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterFilterCondition>
-      addRightBetween(
-    double? lower,
-    double? upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-    double epsilon = Query.epsilon,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'addRight',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        epsilon: epsilon,
-      ));
-    });
-  }
-
-  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterFilterCondition>
-      axisLeftEqualTo(int value) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'axisLeft',
-        value: value,
-      ));
-    });
-  }
-
-  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterFilterCondition>
-      axisLeftGreaterThan(
-    int value, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'axisLeft',
-        value: value,
-      ));
-    });
-  }
-
-  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterFilterCondition>
-      axisLeftLessThan(
-    int value, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'axisLeft',
-        value: value,
-      ));
-    });
-  }
-
-  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterFilterCondition>
-      axisLeftBetween(
-    int lower,
-    int upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'axisLeft',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-      ));
-    });
-  }
-
-  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterFilterCondition>
-      axisRightEqualTo(int value) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'axisRight',
-        value: value,
-      ));
-    });
-  }
-
-  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterFilterCondition>
-      axisRightGreaterThan(
-    int value, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'axisRight',
-        value: value,
-      ));
-    });
-  }
-
-  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterFilterCondition>
-      axisRightLessThan(
-    int value, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'axisRight',
-        value: value,
-      ));
-    });
-  }
-
-  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterFilterCondition>
-      axisRightBetween(
-    int lower,
-    int upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'axisRight',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-      ));
-    });
-  }
-
   QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterFilterCondition>
       createdAtEqualTo(DateTime value) {
     return QueryBuilder.apply(this, (query) {
@@ -627,138 +505,6 @@ extension PrescriptionModelQueryFilter
   }
 
   QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterFilterCondition>
-      cylinderLeftEqualTo(
-    double value, {
-    double epsilon = Query.epsilon,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'cylinderLeft',
-        value: value,
-        epsilon: epsilon,
-      ));
-    });
-  }
-
-  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterFilterCondition>
-      cylinderLeftGreaterThan(
-    double value, {
-    bool include = false,
-    double epsilon = Query.epsilon,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'cylinderLeft',
-        value: value,
-        epsilon: epsilon,
-      ));
-    });
-  }
-
-  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterFilterCondition>
-      cylinderLeftLessThan(
-    double value, {
-    bool include = false,
-    double epsilon = Query.epsilon,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'cylinderLeft',
-        value: value,
-        epsilon: epsilon,
-      ));
-    });
-  }
-
-  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterFilterCondition>
-      cylinderLeftBetween(
-    double lower,
-    double upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-    double epsilon = Query.epsilon,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'cylinderLeft',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        epsilon: epsilon,
-      ));
-    });
-  }
-
-  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterFilterCondition>
-      cylinderRightEqualTo(
-    double value, {
-    double epsilon = Query.epsilon,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'cylinderRight',
-        value: value,
-        epsilon: epsilon,
-      ));
-    });
-  }
-
-  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterFilterCondition>
-      cylinderRightGreaterThan(
-    double value, {
-    bool include = false,
-    double epsilon = Query.epsilon,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'cylinderRight',
-        value: value,
-        epsilon: epsilon,
-      ));
-    });
-  }
-
-  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterFilterCondition>
-      cylinderRightLessThan(
-    double value, {
-    bool include = false,
-    double epsilon = Query.epsilon,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'cylinderRight',
-        value: value,
-        epsilon: epsilon,
-      ));
-    });
-  }
-
-  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterFilterCondition>
-      cylinderRightBetween(
-    double lower,
-    double upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-    double epsilon = Query.epsilon,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'cylinderRight',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        epsilon: epsilon,
-      ));
-    });
-  }
-
-  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterFilterCondition>
       idEqualTo(Id value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
@@ -810,6 +556,314 @@ extension PrescriptionModelQueryFilter
         includeLower: includeLower,
         upper: upper,
         includeUpper: includeUpper,
+      ));
+    });
+  }
+
+  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterFilterCondition>
+      leftAddIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'leftAdd',
+      ));
+    });
+  }
+
+  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterFilterCondition>
+      leftAddIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'leftAdd',
+      ));
+    });
+  }
+
+  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterFilterCondition>
+      leftAddEqualTo(
+    double? value, {
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'leftAdd',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterFilterCondition>
+      leftAddGreaterThan(
+    double? value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'leftAdd',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterFilterCondition>
+      leftAddLessThan(
+    double? value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'leftAdd',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterFilterCondition>
+      leftAddBetween(
+    double? lower,
+    double? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'leftAdd',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterFilterCondition>
+      leftAxisIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'leftAxis',
+      ));
+    });
+  }
+
+  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterFilterCondition>
+      leftAxisIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'leftAxis',
+      ));
+    });
+  }
+
+  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterFilterCondition>
+      leftAxisEqualTo(int? value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'leftAxis',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterFilterCondition>
+      leftAxisGreaterThan(
+    int? value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'leftAxis',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterFilterCondition>
+      leftAxisLessThan(
+    int? value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'leftAxis',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterFilterCondition>
+      leftAxisBetween(
+    int? lower,
+    int? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'leftAxis',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
+
+  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterFilterCondition>
+      leftCylinderIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'leftCylinder',
+      ));
+    });
+  }
+
+  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterFilterCondition>
+      leftCylinderIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'leftCylinder',
+      ));
+    });
+  }
+
+  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterFilterCondition>
+      leftCylinderEqualTo(
+    double? value, {
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'leftCylinder',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterFilterCondition>
+      leftCylinderGreaterThan(
+    double? value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'leftCylinder',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterFilterCondition>
+      leftCylinderLessThan(
+    double? value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'leftCylinder',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterFilterCondition>
+      leftCylinderBetween(
+    double? lower,
+    double? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'leftCylinder',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterFilterCondition>
+      leftSphereEqualTo(
+    double value, {
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'leftSphere',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterFilterCondition>
+      leftSphereGreaterThan(
+    double value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'leftSphere',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterFilterCondition>
+      leftSphereLessThan(
+    double value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'leftSphere',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterFilterCondition>
+      leftSphereBetween(
+    double lower,
+    double upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'leftSphere',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        epsilon: epsilon,
       ));
     });
   }
@@ -969,31 +1023,31 @@ extension PrescriptionModelQueryFilter
   }
 
   QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterFilterCondition>
-      pdIsNull() {
+      pdLeftIsNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'pd',
+        property: r'pdLeft',
       ));
     });
   }
 
   QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterFilterCondition>
-      pdIsNotNull() {
+      pdLeftIsNotNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'pd',
+        property: r'pdLeft',
       ));
     });
   }
 
   QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterFilterCondition>
-      pdEqualTo(
+      pdLeftEqualTo(
     double? value, {
     double epsilon = Query.epsilon,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'pd',
+        property: r'pdLeft',
         value: value,
         epsilon: epsilon,
       ));
@@ -1001,7 +1055,7 @@ extension PrescriptionModelQueryFilter
   }
 
   QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterFilterCondition>
-      pdGreaterThan(
+      pdLeftGreaterThan(
     double? value, {
     bool include = false,
     double epsilon = Query.epsilon,
@@ -1009,7 +1063,7 @@ extension PrescriptionModelQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
         include: include,
-        property: r'pd',
+        property: r'pdLeft',
         value: value,
         epsilon: epsilon,
       ));
@@ -1017,7 +1071,7 @@ extension PrescriptionModelQueryFilter
   }
 
   QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterFilterCondition>
-      pdLessThan(
+      pdLeftLessThan(
     double? value, {
     bool include = false,
     double epsilon = Query.epsilon,
@@ -1025,7 +1079,7 @@ extension PrescriptionModelQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.lessThan(
         include: include,
-        property: r'pd',
+        property: r'pdLeft',
         value: value,
         epsilon: epsilon,
       ));
@@ -1033,7 +1087,7 @@ extension PrescriptionModelQueryFilter
   }
 
   QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterFilterCondition>
-      pdBetween(
+      pdLeftBetween(
     double? lower,
     double? upper, {
     bool includeLower = true,
@@ -1042,7 +1096,7 @@ extension PrescriptionModelQueryFilter
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.between(
-        property: r'pd',
+        property: r'pdLeft',
         lower: lower,
         includeLower: includeLower,
         upper: upper,
@@ -1053,13 +1107,31 @@ extension PrescriptionModelQueryFilter
   }
 
   QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterFilterCondition>
-      sphereLeftEqualTo(
-    double value, {
+      pdRightIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'pdRight',
+      ));
+    });
+  }
+
+  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterFilterCondition>
+      pdRightIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'pdRight',
+      ));
+    });
+  }
+
+  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterFilterCondition>
+      pdRightEqualTo(
+    double? value, {
     double epsilon = Query.epsilon,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'sphereLeft',
+        property: r'pdRight',
         value: value,
         epsilon: epsilon,
       ));
@@ -1067,7 +1139,371 @@ extension PrescriptionModelQueryFilter
   }
 
   QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterFilterCondition>
-      sphereLeftGreaterThan(
+      pdRightGreaterThan(
+    double? value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'pdRight',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterFilterCondition>
+      pdRightLessThan(
+    double? value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'pdRight',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterFilterCondition>
+      pdRightBetween(
+    double? lower,
+    double? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'pdRight',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterFilterCondition>
+      prescriptionDateEqualTo(DateTime value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'prescriptionDate',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterFilterCondition>
+      prescriptionDateGreaterThan(
+    DateTime value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'prescriptionDate',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterFilterCondition>
+      prescriptionDateLessThan(
+    DateTime value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'prescriptionDate',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterFilterCondition>
+      prescriptionDateBetween(
+    DateTime lower,
+    DateTime upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'prescriptionDate',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
+
+  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterFilterCondition>
+      rightAddIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'rightAdd',
+      ));
+    });
+  }
+
+  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterFilterCondition>
+      rightAddIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'rightAdd',
+      ));
+    });
+  }
+
+  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterFilterCondition>
+      rightAddEqualTo(
+    double? value, {
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'rightAdd',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterFilterCondition>
+      rightAddGreaterThan(
+    double? value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'rightAdd',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterFilterCondition>
+      rightAddLessThan(
+    double? value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'rightAdd',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterFilterCondition>
+      rightAddBetween(
+    double? lower,
+    double? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'rightAdd',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterFilterCondition>
+      rightAxisIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'rightAxis',
+      ));
+    });
+  }
+
+  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterFilterCondition>
+      rightAxisIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'rightAxis',
+      ));
+    });
+  }
+
+  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterFilterCondition>
+      rightAxisEqualTo(int? value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'rightAxis',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterFilterCondition>
+      rightAxisGreaterThan(
+    int? value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'rightAxis',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterFilterCondition>
+      rightAxisLessThan(
+    int? value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'rightAxis',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterFilterCondition>
+      rightAxisBetween(
+    int? lower,
+    int? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'rightAxis',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
+
+  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterFilterCondition>
+      rightCylinderIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'rightCylinder',
+      ));
+    });
+  }
+
+  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterFilterCondition>
+      rightCylinderIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'rightCylinder',
+      ));
+    });
+  }
+
+  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterFilterCondition>
+      rightCylinderEqualTo(
+    double? value, {
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'rightCylinder',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterFilterCondition>
+      rightCylinderGreaterThan(
+    double? value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'rightCylinder',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterFilterCondition>
+      rightCylinderLessThan(
+    double? value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'rightCylinder',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterFilterCondition>
+      rightCylinderBetween(
+    double? lower,
+    double? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'rightCylinder',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterFilterCondition>
+      rightSphereEqualTo(
+    double value, {
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'rightSphere',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterFilterCondition>
+      rightSphereGreaterThan(
     double value, {
     bool include = false,
     double epsilon = Query.epsilon,
@@ -1075,7 +1511,7 @@ extension PrescriptionModelQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
         include: include,
-        property: r'sphereLeft',
+        property: r'rightSphere',
         value: value,
         epsilon: epsilon,
       ));
@@ -1083,7 +1519,7 @@ extension PrescriptionModelQueryFilter
   }
 
   QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterFilterCondition>
-      sphereLeftLessThan(
+      rightSphereLessThan(
     double value, {
     bool include = false,
     double epsilon = Query.epsilon,
@@ -1091,7 +1527,7 @@ extension PrescriptionModelQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.lessThan(
         include: include,
-        property: r'sphereLeft',
+        property: r'rightSphere',
         value: value,
         epsilon: epsilon,
       ));
@@ -1099,7 +1535,7 @@ extension PrescriptionModelQueryFilter
   }
 
   QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterFilterCondition>
-      sphereLeftBetween(
+      rightSphereBetween(
     double lower,
     double upper, {
     bool includeLower = true,
@@ -1108,7 +1544,7 @@ extension PrescriptionModelQueryFilter
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.between(
-        property: r'sphereLeft',
+        property: r'rightSphere',
         lower: lower,
         includeLower: includeLower,
         upper: upper,
@@ -1119,67 +1555,137 @@ extension PrescriptionModelQueryFilter
   }
 
   QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterFilterCondition>
-      sphereRightEqualTo(
-    double value, {
-    double epsilon = Query.epsilon,
+      sourceEqualTo(
+    PrescriptionSource value, {
+    bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'sphereRight',
+        property: r'source',
         value: value,
-        epsilon: epsilon,
+        caseSensitive: caseSensitive,
       ));
     });
   }
 
   QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterFilterCondition>
-      sphereRightGreaterThan(
-    double value, {
+      sourceGreaterThan(
+    PrescriptionSource value, {
     bool include = false,
-    double epsilon = Query.epsilon,
+    bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
         include: include,
-        property: r'sphereRight',
+        property: r'source',
         value: value,
-        epsilon: epsilon,
+        caseSensitive: caseSensitive,
       ));
     });
   }
 
   QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterFilterCondition>
-      sphereRightLessThan(
-    double value, {
+      sourceLessThan(
+    PrescriptionSource value, {
     bool include = false,
-    double epsilon = Query.epsilon,
+    bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.lessThan(
         include: include,
-        property: r'sphereRight',
+        property: r'source',
         value: value,
-        epsilon: epsilon,
+        caseSensitive: caseSensitive,
       ));
     });
   }
 
   QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterFilterCondition>
-      sphereRightBetween(
-    double lower,
-    double upper, {
+      sourceBetween(
+    PrescriptionSource lower,
+    PrescriptionSource upper, {
     bool includeLower = true,
     bool includeUpper = true,
-    double epsilon = Query.epsilon,
+    bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.between(
-        property: r'sphereRight',
+        property: r'source',
         lower: lower,
         includeLower: includeLower,
         upper: upper,
         includeUpper: includeUpper,
-        epsilon: epsilon,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterFilterCondition>
+      sourceStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'source',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterFilterCondition>
+      sourceEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'source',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterFilterCondition>
+      sourceContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'source',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterFilterCondition>
+      sourceMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'source',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterFilterCondition>
+      sourceIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'source',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterFilterCondition>
+      sourceIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'source',
+        value: '',
       ));
     });
   }
@@ -1222,62 +1728,6 @@ extension PrescriptionModelQueryLinks
 extension PrescriptionModelQuerySortBy
     on QueryBuilder<PrescriptionModel, PrescriptionModel, QSortBy> {
   QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterSortBy>
-      sortByAddLeft() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'addLeft', Sort.asc);
-    });
-  }
-
-  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterSortBy>
-      sortByAddLeftDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'addLeft', Sort.desc);
-    });
-  }
-
-  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterSortBy>
-      sortByAddRight() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'addRight', Sort.asc);
-    });
-  }
-
-  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterSortBy>
-      sortByAddRightDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'addRight', Sort.desc);
-    });
-  }
-
-  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterSortBy>
-      sortByAxisLeft() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'axisLeft', Sort.asc);
-    });
-  }
-
-  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterSortBy>
-      sortByAxisLeftDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'axisLeft', Sort.desc);
-    });
-  }
-
-  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterSortBy>
-      sortByAxisRight() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'axisRight', Sort.asc);
-    });
-  }
-
-  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterSortBy>
-      sortByAxisRightDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'axisRight', Sort.desc);
-    });
-  }
-
-  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterSortBy>
       sortByCreatedAt() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'createdAt', Sort.asc);
@@ -1292,30 +1742,58 @@ extension PrescriptionModelQuerySortBy
   }
 
   QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterSortBy>
-      sortByCylinderLeft() {
+      sortByLeftAdd() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'cylinderLeft', Sort.asc);
+      return query.addSortBy(r'leftAdd', Sort.asc);
     });
   }
 
   QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterSortBy>
-      sortByCylinderLeftDesc() {
+      sortByLeftAddDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'cylinderLeft', Sort.desc);
+      return query.addSortBy(r'leftAdd', Sort.desc);
     });
   }
 
   QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterSortBy>
-      sortByCylinderRight() {
+      sortByLeftAxis() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'cylinderRight', Sort.asc);
+      return query.addSortBy(r'leftAxis', Sort.asc);
     });
   }
 
   QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterSortBy>
-      sortByCylinderRightDesc() {
+      sortByLeftAxisDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'cylinderRight', Sort.desc);
+      return query.addSortBy(r'leftAxis', Sort.desc);
+    });
+  }
+
+  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterSortBy>
+      sortByLeftCylinder() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'leftCylinder', Sort.asc);
+    });
+  }
+
+  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterSortBy>
+      sortByLeftCylinderDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'leftCylinder', Sort.desc);
+    });
+  }
+
+  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterSortBy>
+      sortByLeftSphere() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'leftSphere', Sort.asc);
+    });
+  }
+
+  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterSortBy>
+      sortByLeftSphereDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'leftSphere', Sort.desc);
     });
   }
 
@@ -1333,106 +1811,121 @@ extension PrescriptionModelQuerySortBy
     });
   }
 
-  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterSortBy> sortByPd() {
+  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterSortBy>
+      sortByPdLeft() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'pd', Sort.asc);
+      return query.addSortBy(r'pdLeft', Sort.asc);
     });
   }
 
   QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterSortBy>
-      sortByPdDesc() {
+      sortByPdLeftDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'pd', Sort.desc);
+      return query.addSortBy(r'pdLeft', Sort.desc);
     });
   }
 
   QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterSortBy>
-      sortBySphereLeft() {
+      sortByPdRight() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'sphereLeft', Sort.asc);
+      return query.addSortBy(r'pdRight', Sort.asc);
     });
   }
 
   QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterSortBy>
-      sortBySphereLeftDesc() {
+      sortByPdRightDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'sphereLeft', Sort.desc);
+      return query.addSortBy(r'pdRight', Sort.desc);
     });
   }
 
   QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterSortBy>
-      sortBySphereRight() {
+      sortByPrescriptionDate() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'sphereRight', Sort.asc);
+      return query.addSortBy(r'prescriptionDate', Sort.asc);
     });
   }
 
   QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterSortBy>
-      sortBySphereRightDesc() {
+      sortByPrescriptionDateDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'sphereRight', Sort.desc);
+      return query.addSortBy(r'prescriptionDate', Sort.desc);
+    });
+  }
+
+  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterSortBy>
+      sortByRightAdd() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'rightAdd', Sort.asc);
+    });
+  }
+
+  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterSortBy>
+      sortByRightAddDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'rightAdd', Sort.desc);
+    });
+  }
+
+  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterSortBy>
+      sortByRightAxis() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'rightAxis', Sort.asc);
+    });
+  }
+
+  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterSortBy>
+      sortByRightAxisDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'rightAxis', Sort.desc);
+    });
+  }
+
+  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterSortBy>
+      sortByRightCylinder() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'rightCylinder', Sort.asc);
+    });
+  }
+
+  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterSortBy>
+      sortByRightCylinderDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'rightCylinder', Sort.desc);
+    });
+  }
+
+  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterSortBy>
+      sortByRightSphere() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'rightSphere', Sort.asc);
+    });
+  }
+
+  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterSortBy>
+      sortByRightSphereDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'rightSphere', Sort.desc);
+    });
+  }
+
+  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterSortBy>
+      sortBySource() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'source', Sort.asc);
+    });
+  }
+
+  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterSortBy>
+      sortBySourceDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'source', Sort.desc);
     });
   }
 }
 
 extension PrescriptionModelQuerySortThenBy
     on QueryBuilder<PrescriptionModel, PrescriptionModel, QSortThenBy> {
-  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterSortBy>
-      thenByAddLeft() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'addLeft', Sort.asc);
-    });
-  }
-
-  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterSortBy>
-      thenByAddLeftDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'addLeft', Sort.desc);
-    });
-  }
-
-  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterSortBy>
-      thenByAddRight() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'addRight', Sort.asc);
-    });
-  }
-
-  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterSortBy>
-      thenByAddRightDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'addRight', Sort.desc);
-    });
-  }
-
-  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterSortBy>
-      thenByAxisLeft() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'axisLeft', Sort.asc);
-    });
-  }
-
-  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterSortBy>
-      thenByAxisLeftDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'axisLeft', Sort.desc);
-    });
-  }
-
-  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterSortBy>
-      thenByAxisRight() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'axisRight', Sort.asc);
-    });
-  }
-
-  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterSortBy>
-      thenByAxisRightDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'axisRight', Sort.desc);
-    });
-  }
-
   QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterSortBy>
       thenByCreatedAt() {
     return QueryBuilder.apply(this, (query) {
@@ -1444,34 +1937,6 @@ extension PrescriptionModelQuerySortThenBy
       thenByCreatedAtDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'createdAt', Sort.desc);
-    });
-  }
-
-  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterSortBy>
-      thenByCylinderLeft() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'cylinderLeft', Sort.asc);
-    });
-  }
-
-  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterSortBy>
-      thenByCylinderLeftDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'cylinderLeft', Sort.desc);
-    });
-  }
-
-  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterSortBy>
-      thenByCylinderRight() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'cylinderRight', Sort.asc);
-    });
-  }
-
-  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterSortBy>
-      thenByCylinderRightDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'cylinderRight', Sort.desc);
     });
   }
 
@@ -1489,6 +1954,62 @@ extension PrescriptionModelQuerySortThenBy
   }
 
   QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterSortBy>
+      thenByLeftAdd() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'leftAdd', Sort.asc);
+    });
+  }
+
+  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterSortBy>
+      thenByLeftAddDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'leftAdd', Sort.desc);
+    });
+  }
+
+  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterSortBy>
+      thenByLeftAxis() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'leftAxis', Sort.asc);
+    });
+  }
+
+  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterSortBy>
+      thenByLeftAxisDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'leftAxis', Sort.desc);
+    });
+  }
+
+  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterSortBy>
+      thenByLeftCylinder() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'leftCylinder', Sort.asc);
+    });
+  }
+
+  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterSortBy>
+      thenByLeftCylinderDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'leftCylinder', Sort.desc);
+    });
+  }
+
+  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterSortBy>
+      thenByLeftSphere() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'leftSphere', Sort.asc);
+    });
+  }
+
+  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterSortBy>
+      thenByLeftSphereDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'leftSphere', Sort.desc);
+    });
+  }
+
+  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterSortBy>
       thenByNotes() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'notes', Sort.asc);
@@ -1502,78 +2023,121 @@ extension PrescriptionModelQuerySortThenBy
     });
   }
 
-  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterSortBy> thenByPd() {
+  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterSortBy>
+      thenByPdLeft() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'pd', Sort.asc);
+      return query.addSortBy(r'pdLeft', Sort.asc);
     });
   }
 
   QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterSortBy>
-      thenByPdDesc() {
+      thenByPdLeftDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'pd', Sort.desc);
+      return query.addSortBy(r'pdLeft', Sort.desc);
     });
   }
 
   QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterSortBy>
-      thenBySphereLeft() {
+      thenByPdRight() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'sphereLeft', Sort.asc);
+      return query.addSortBy(r'pdRight', Sort.asc);
     });
   }
 
   QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterSortBy>
-      thenBySphereLeftDesc() {
+      thenByPdRightDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'sphereLeft', Sort.desc);
+      return query.addSortBy(r'pdRight', Sort.desc);
     });
   }
 
   QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterSortBy>
-      thenBySphereRight() {
+      thenByPrescriptionDate() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'sphereRight', Sort.asc);
+      return query.addSortBy(r'prescriptionDate', Sort.asc);
     });
   }
 
   QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterSortBy>
-      thenBySphereRightDesc() {
+      thenByPrescriptionDateDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'sphereRight', Sort.desc);
+      return query.addSortBy(r'prescriptionDate', Sort.desc);
+    });
+  }
+
+  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterSortBy>
+      thenByRightAdd() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'rightAdd', Sort.asc);
+    });
+  }
+
+  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterSortBy>
+      thenByRightAddDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'rightAdd', Sort.desc);
+    });
+  }
+
+  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterSortBy>
+      thenByRightAxis() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'rightAxis', Sort.asc);
+    });
+  }
+
+  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterSortBy>
+      thenByRightAxisDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'rightAxis', Sort.desc);
+    });
+  }
+
+  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterSortBy>
+      thenByRightCylinder() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'rightCylinder', Sort.asc);
+    });
+  }
+
+  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterSortBy>
+      thenByRightCylinderDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'rightCylinder', Sort.desc);
+    });
+  }
+
+  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterSortBy>
+      thenByRightSphere() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'rightSphere', Sort.asc);
+    });
+  }
+
+  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterSortBy>
+      thenByRightSphereDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'rightSphere', Sort.desc);
+    });
+  }
+
+  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterSortBy>
+      thenBySource() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'source', Sort.asc);
+    });
+  }
+
+  QueryBuilder<PrescriptionModel, PrescriptionModel, QAfterSortBy>
+      thenBySourceDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'source', Sort.desc);
     });
   }
 }
 
 extension PrescriptionModelQueryWhereDistinct
     on QueryBuilder<PrescriptionModel, PrescriptionModel, QDistinct> {
-  QueryBuilder<PrescriptionModel, PrescriptionModel, QDistinct>
-      distinctByAddLeft() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'addLeft');
-    });
-  }
-
-  QueryBuilder<PrescriptionModel, PrescriptionModel, QDistinct>
-      distinctByAddRight() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'addRight');
-    });
-  }
-
-  QueryBuilder<PrescriptionModel, PrescriptionModel, QDistinct>
-      distinctByAxisLeft() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'axisLeft');
-    });
-  }
-
-  QueryBuilder<PrescriptionModel, PrescriptionModel, QDistinct>
-      distinctByAxisRight() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'axisRight');
-    });
-  }
-
   QueryBuilder<PrescriptionModel, PrescriptionModel, QDistinct>
       distinctByCreatedAt() {
     return QueryBuilder.apply(this, (query) {
@@ -1582,16 +2146,30 @@ extension PrescriptionModelQueryWhereDistinct
   }
 
   QueryBuilder<PrescriptionModel, PrescriptionModel, QDistinct>
-      distinctByCylinderLeft() {
+      distinctByLeftAdd() {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'cylinderLeft');
+      return query.addDistinctBy(r'leftAdd');
     });
   }
 
   QueryBuilder<PrescriptionModel, PrescriptionModel, QDistinct>
-      distinctByCylinderRight() {
+      distinctByLeftAxis() {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'cylinderRight');
+      return query.addDistinctBy(r'leftAxis');
+    });
+  }
+
+  QueryBuilder<PrescriptionModel, PrescriptionModel, QDistinct>
+      distinctByLeftCylinder() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'leftCylinder');
+    });
+  }
+
+  QueryBuilder<PrescriptionModel, PrescriptionModel, QDistinct>
+      distinctByLeftSphere() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'leftSphere');
     });
   }
 
@@ -1602,23 +2180,59 @@ extension PrescriptionModelQueryWhereDistinct
     });
   }
 
-  QueryBuilder<PrescriptionModel, PrescriptionModel, QDistinct> distinctByPd() {
+  QueryBuilder<PrescriptionModel, PrescriptionModel, QDistinct>
+      distinctByPdLeft() {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'pd');
+      return query.addDistinctBy(r'pdLeft');
     });
   }
 
   QueryBuilder<PrescriptionModel, PrescriptionModel, QDistinct>
-      distinctBySphereLeft() {
+      distinctByPdRight() {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'sphereLeft');
+      return query.addDistinctBy(r'pdRight');
     });
   }
 
   QueryBuilder<PrescriptionModel, PrescriptionModel, QDistinct>
-      distinctBySphereRight() {
+      distinctByPrescriptionDate() {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'sphereRight');
+      return query.addDistinctBy(r'prescriptionDate');
+    });
+  }
+
+  QueryBuilder<PrescriptionModel, PrescriptionModel, QDistinct>
+      distinctByRightAdd() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'rightAdd');
+    });
+  }
+
+  QueryBuilder<PrescriptionModel, PrescriptionModel, QDistinct>
+      distinctByRightAxis() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'rightAxis');
+    });
+  }
+
+  QueryBuilder<PrescriptionModel, PrescriptionModel, QDistinct>
+      distinctByRightCylinder() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'rightCylinder');
+    });
+  }
+
+  QueryBuilder<PrescriptionModel, PrescriptionModel, QDistinct>
+      distinctByRightSphere() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'rightSphere');
+    });
+  }
+
+  QueryBuilder<PrescriptionModel, PrescriptionModel, QDistinct>
+      distinctBySource({bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'source', caseSensitive: caseSensitive);
     });
   }
 }
@@ -1631,31 +2245,6 @@ extension PrescriptionModelQueryProperty
     });
   }
 
-  QueryBuilder<PrescriptionModel, double?, QQueryOperations> addLeftProperty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'addLeft');
-    });
-  }
-
-  QueryBuilder<PrescriptionModel, double?, QQueryOperations>
-      addRightProperty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'addRight');
-    });
-  }
-
-  QueryBuilder<PrescriptionModel, int, QQueryOperations> axisLeftProperty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'axisLeft');
-    });
-  }
-
-  QueryBuilder<PrescriptionModel, int, QQueryOperations> axisRightProperty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'axisRight');
-    });
-  }
-
   QueryBuilder<PrescriptionModel, DateTime, QQueryOperations>
       createdAtProperty() {
     return QueryBuilder.apply(this, (query) {
@@ -1663,17 +2252,29 @@ extension PrescriptionModelQueryProperty
     });
   }
 
-  QueryBuilder<PrescriptionModel, double, QQueryOperations>
-      cylinderLeftProperty() {
+  QueryBuilder<PrescriptionModel, double?, QQueryOperations> leftAddProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'cylinderLeft');
+      return query.addPropertyName(r'leftAdd');
+    });
+  }
+
+  QueryBuilder<PrescriptionModel, int?, QQueryOperations> leftAxisProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'leftAxis');
+    });
+  }
+
+  QueryBuilder<PrescriptionModel, double?, QQueryOperations>
+      leftCylinderProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'leftCylinder');
     });
   }
 
   QueryBuilder<PrescriptionModel, double, QQueryOperations>
-      cylinderRightProperty() {
+      leftSphereProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'cylinderRight');
+      return query.addPropertyName(r'leftSphere');
     });
   }
 
@@ -1683,23 +2284,56 @@ extension PrescriptionModelQueryProperty
     });
   }
 
-  QueryBuilder<PrescriptionModel, double?, QQueryOperations> pdProperty() {
+  QueryBuilder<PrescriptionModel, double?, QQueryOperations> pdLeftProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'pd');
+      return query.addPropertyName(r'pdLeft');
+    });
+  }
+
+  QueryBuilder<PrescriptionModel, double?, QQueryOperations> pdRightProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'pdRight');
+    });
+  }
+
+  QueryBuilder<PrescriptionModel, DateTime, QQueryOperations>
+      prescriptionDateProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'prescriptionDate');
+    });
+  }
+
+  QueryBuilder<PrescriptionModel, double?, QQueryOperations>
+      rightAddProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'rightAdd');
+    });
+  }
+
+  QueryBuilder<PrescriptionModel, int?, QQueryOperations> rightAxisProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'rightAxis');
+    });
+  }
+
+  QueryBuilder<PrescriptionModel, double?, QQueryOperations>
+      rightCylinderProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'rightCylinder');
     });
   }
 
   QueryBuilder<PrescriptionModel, double, QQueryOperations>
-      sphereLeftProperty() {
+      rightSphereProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'sphereLeft');
+      return query.addPropertyName(r'rightSphere');
     });
   }
 
-  QueryBuilder<PrescriptionModel, double, QQueryOperations>
-      sphereRightProperty() {
+  QueryBuilder<PrescriptionModel, PrescriptionSource, QQueryOperations>
+      sourceProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'sphereRight');
+      return query.addPropertyName(r'source');
     });
   }
 }

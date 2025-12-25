@@ -1,42 +1,40 @@
 import 'package:osm/core/value_objects/id.dart';
+import 'package:osm/features/prescription/domain/entities/prescription_source.dart';
+import 'package:osm/features/prescription/domain/failures/prescription_failure.dart';
+import 'package:osm/features/prescription/domain/value_objects/eye_power.dart';
+import 'package:osm/features/prescription/domain/value_objects/pupillary_distance.dart';
 
 class Prescription {
-  final PrescriptionId id;
+  final PrescriptionId? id;
   final DateTime createdAt;
+  final DateTime prescriptionDate;
 
-  // Right eye
-  final double sphereRight;
-  final double cylinderRight;
-  final int axisRight;
-  final double? addRight;
+  final EyePower rightEye;
+  final EyePower leftEye;
 
-  // Left eye
-  final double sphereLeft;
-  final double cylinderLeft;
-  final int axisLeft;
-  final double? addLeft;
-
-  final double? pd;
+  final PupillaryDistance? pd;
   final String? notes;
 
-  final CustomerId customerId;
-  final DoctorId doctorId;
+  final PrescriptionSource source;
+  final DoctorId? doctorId;
 
   Prescription({
-    required this.id,
+    required this.prescriptionDate,
+    required this.source,
+    this.id,
     required this.createdAt,
-    required this.sphereRight,
-    required this.cylinderRight,
-    required this.axisRight,
-    this.addRight,
-    required this.sphereLeft,
-    required this.cylinderLeft,
-    required this.axisLeft,
-    this.addLeft,
+    required this.rightEye,
+    required this.leftEye,
     this.pd,
     this.notes,
-    required this.customerId,
-    required this.doctorId,
-  });
-}
+    this.doctorId,
+  }) {
+    _validate();
+  }
 
+  void _validate() {
+    if (source == PrescriptionSource.external && doctorId == null) {
+      throw PrescriptionValidationFailure("Doctor is required for external prescriptions.");
+    }
+  }
+}

@@ -14,10 +14,14 @@ import 'package:osm/features/customer/presentation/bloc/customer/customer_bloc.d
 import 'package:osm/features/customer/presentation/screens/customer_list_screen.dart';
 import 'package:osm/features/dashboard/data/repositories/activity_local_repository.dart';
 import 'package:osm/features/dashboard/data/repositories/activity_repository_impl.dart';
+import 'package:osm/features/doctors/data/repositories/doctor_repository.dart';
 import 'package:osm/features/orders/data/repositories/order_local_repository.dart';
 import 'package:osm/features/orders/data/repositories/order_repository_impl.dart';
 import 'package:osm/features/orders/data/repositories/payment_local_repository.dart';
-import 'package:osm/features/prescription/data/repositories/prescription_repository.dart';
+import 'package:osm/features/prescription/data/repositories/prescription_local_repository.dart';
+import 'package:osm/features/prescription/data/repositories/prescription_repository_impl.dart';
+import 'package:osm/features/prescription/domain/usecases/add_prescription.dart';
+import 'package:osm/features/prescription/domain/usecases/get_prescription_history.dart';
 import 'package:provider/provider.dart';
 
 Future<void> main() async {
@@ -53,6 +57,10 @@ Future<void> main() async {
               PaymentLocalRepository(context.read<IsarService>()),
         ),
 
+        Provider<PrescriptionLocalRepository>(
+          create: (context) => PrescriptionLocalRepository(),
+        ),
+
         // RepositoryImpl
         Provider(
           create: (context) => ActivityRepositoryImpl(
@@ -68,9 +76,30 @@ Future<void> main() async {
           ),
         ),
 
-        Provider<PrescriptionRepositoryImpl>(
+        Provider<DoctorRepositoryImpl>(
           create: (context) =>
-              PrescriptionRepositoryImpl(context.read<IsarService>()),
+              DoctorRepositoryImpl(context.read<IsarService>()),
+        ),
+
+        Provider<PrescriptionRepositoryImpl>(
+          create: (context) => PrescriptionRepositoryImpl(
+            context.read<IsarService>(),
+            context.read<PrescriptionLocalRepository>(),
+            context.read<CustomerLocalRepository>(),
+            context.read<DoctorRepositoryImpl>(),
+          ),
+        ),
+
+        Provider<GetPrescriptionHistory>(
+          create: (context) => GetPrescriptionHistory(
+            context.read<PrescriptionRepositoryImpl>(),
+          ),
+        ),
+
+        Provider<AddPrescription>(
+          create: (context) => AddPrescription(
+            context.read<PrescriptionRepositoryImpl>(),
+          ),
         ),
 
         Provider(
