@@ -8,6 +8,11 @@ import 'package:osm/features/customer/presentation/bloc/customer/customer_bloc.d
 import 'package:osm/features/customer/presentation/bloc/customer_details/customer_details_bloc.dart';
 import 'package:osm/features/customer/presentation/screens/add_new_customer_form.dart';
 import 'package:osm/features/customer/services/build_customer_image.dart';
+import 'package:osm/features/prescription/domain/usecases/add_prescription.dart';
+import 'package:osm/features/prescription/presentation/bloc/add_prescription/bloc/add_prescription_bloc.dart';
+import 'package:osm/features/prescription/presentation/bloc/prescription_timeline/bloc/prescription_timeline_bloc.dart';
+import 'package:osm/features/prescription/presentation/screens/add_prescription_screen.dart';
+import 'package:osm/features/prescription/presentation/widgets/prescription_timeline_section.dart';
 
 class CustomerDetailsScreen extends StatefulWidget {
   final CustomerId customerId;
@@ -165,7 +170,9 @@ class _CustomerDetailsScreenState extends State<CustomerDetailsScreen> {
                         if (customer.city != null)
                           ListTile(
                             leading: const Icon(Icons.location_city),
-                            title: Text("${customer.city!}, ${customer.state!}, ${customer.country!}"),
+                            title: Text(
+                              "${customer.city!}, ${customer.state!}, ${customer.country!}",
+                            ),
                           ),
                       ],
                     ),
@@ -208,24 +215,8 @@ class _CustomerDetailsScreenState extends State<CustomerDetailsScreen> {
                         ],
                       ),
 
-                    _InfoCard(
-                      title: 'Prescriptions',
-                      children: prescriptions.isEmpty
-                          ? const [
-                              ListTile(title: Text('No prescriptions yet')),
-                            ]
-                          : prescriptions.map((p) {
-                              return ListTile(
-                                leading: const Icon(Icons.description),
-                                title: Text(
-                                  p.createdAt
-                                      .toLocal()
-                                      .toString()
-                                      .split(' ')
-                                      .first,
-                                ),
-                              );
-                            }).toList(),
+                    PrescriptionTimelineSection(
+                      customerId: CustomerId(customer.id!),
                     ),
 
                     _InfoCard(
@@ -260,6 +251,29 @@ class _CustomerDetailsScreenState extends State<CustomerDetailsScreen> {
 
             return const SizedBox.shrink();
           },
+        ),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () async {
+            await Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => BlocProvider(
+                  create: (context) => AddPrescriptionBloc(
+                    addPrescription: context.read<AddPrescription>(),
+                  ),
+                  child: AddPrescriptionScreen(customerId: widget.customerId),
+                ),
+              ),
+            );
+
+            if (context.mounted) {
+              context.read<PrescriptionTimelineBloc>().add(
+                LoadPrescriptionTimeline(widget.customerId),
+              );
+            }
+          },
+          tooltip: 'Add Prescription',
+          child: const Icon(Icons.medical_information),
         ),
       ),
     );

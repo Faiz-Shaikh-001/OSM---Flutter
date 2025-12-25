@@ -1,5 +1,6 @@
 import 'package:isar/isar.dart';
 import 'package:osm/core/either.dart';
+import 'package:osm/core/services/isar_service.dart';
 import 'package:osm/core/value_objects/id.dart';
 import 'package:osm/features/doctors/data/mapper/doctor_mapper.dart';
 
@@ -12,16 +13,16 @@ import 'package:osm/features/store/data/model/store_location_model.dart';
 import '../models/doctor_model.dart';
 
 class DoctorRepositoryImpl implements DoctorRepository {
-  final Isar isar;
+  final IsarService _isarService;
 
-  DoctorRepositoryImpl(this.isar);
+  DoctorRepositoryImpl(this._isarService);
 
   // ADD
   @override
   Future<Either<DoctorFailure, DoctorId>> add(Doctor doctor) async {
     try {
       final model = DoctorMapper.toModel(doctor);
-
+      final isar = await _isarService.db;
       await isar.writeTxn(() async {
         await isar.doctorModels.put(model);
       });
@@ -36,6 +37,7 @@ class DoctorRepositoryImpl implements DoctorRepository {
   @override
   Future<Either<DoctorFailure, Doctor>> getById(DoctorId id) async {
     try {
+      final isar = await _isarService.db;
       final model = await isar.doctorModels.get(int.parse(id.value));
 
       if (model == null) {
@@ -52,6 +54,7 @@ class DoctorRepositoryImpl implements DoctorRepository {
   @override
   Future<Either<DoctorFailure, List<Doctor>>> getAll() async {
     try {
+      final isar = await _isarService.db;
       final models = await isar.doctorModels.where().findAll();
 
       final doctors = models.map(DoctorMapper.toEntity).toList();
@@ -68,6 +71,7 @@ class DoctorRepositoryImpl implements DoctorRepository {
     StoreLocationId storeLocationId,
   ) async {
     try {
+      final isar = await _isarService.db;
       final models = await isar.doctorModels
           .filter()
           .storeLocation((s) => s.idEqualTo(int.parse(storeLocationId.value)))
@@ -86,7 +90,7 @@ class DoctorRepositoryImpl implements DoctorRepository {
   Future<Either<DoctorFailure, DoctorSuccess>> update(Doctor doctor) async {
     try {
       final id = int.parse(doctor.id.value);
-
+      final isar = await _isarService.db;
       final existing = await isar.doctorModels.get(id);
 
       if (existing == null) {
@@ -110,7 +114,7 @@ class DoctorRepositoryImpl implements DoctorRepository {
   Future<Either<DoctorFailure, DoctorSuccess>> deactivate(DoctorId id) async {
     try {
       final parsedId = int.parse(id.value);
-
+      final isar = await _isarService.db;
       final existing = await isar.doctorModels.get(parsedId);
 
       if (existing == null) {

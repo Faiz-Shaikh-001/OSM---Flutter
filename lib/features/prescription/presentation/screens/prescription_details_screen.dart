@@ -1,0 +1,140 @@
+import 'package:flutter/material.dart';
+import 'package:osm/features/prescription/domain/entities/prescription.dart';
+import 'package:osm/features/prescription/domain/entities/prescription_source.dart';
+
+class PrescriptionDetailsScreen extends StatelessWidget {
+  final Prescription prescription;
+
+  const PrescriptionDetailsScreen({
+    super.key,
+    required this.prescription,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Prescription Details'),
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            _section(
+              title: 'Prescription Info',
+              children: [
+                _infoTile(
+                  'Prescription Date',
+                  _formatDate(prescription.prescriptionDate),
+                ),
+                _infoTile(
+                  'Source',
+                  prescription.source.name.toUpperCase(),
+                ),
+                _infoTile(
+                  'Created At',
+                  _formatDate(prescription.createdAt),
+                ),
+              ],
+            ),
+
+            _eyeSection('Right Eye (OD)', prescription.rightEye),
+            _eyeSection('Left Eye (OS)', prescription.leftEye),
+
+            if (prescription.pd != null)
+              _section(
+                title: 'Pupillary Distance',
+                children: [
+                  _infoTile(
+                    'Left PD',
+                    prescription.pd!.left.toString(),
+                  ),
+                  _infoTile(
+                    'Right PD',
+                    prescription.pd!.right.toString(),
+                  ),
+                ],
+              ),
+
+            if (prescription.source == PrescriptionSource.external)
+              _section(
+                title: 'Doctor',
+                children: const [
+                  ListTile(
+                    leading: Icon(Icons.person),
+                    title: Text('External Doctor'),
+                    subtitle: Text('Linked doctor details'),
+                  ),
+                ],
+              ),
+
+            if (prescription.notes != null &&
+                prescription.notes!.isNotEmpty)
+              _section(
+                title: 'Notes',
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: Text(
+                      prescription.notes!,
+                      style: const TextStyle(fontSize: 16),
+                    ),
+                  ),
+                ],
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _eyeSection(String title, eye) {
+    return _section(
+      title: title,
+      children: [
+        _infoTile('Sphere', eye.sphere.toString()),
+        if (eye.cylinder != null)
+          _infoTile('Cylinder', eye.cylinder.toString()),
+        if (eye.axis != null)
+          _infoTile('Axis', eye.axis.toString()),
+        if (eye.add != null)
+          _infoTile('Add', eye.add.toString()),
+      ],
+    );
+  }
+
+  Widget _infoTile(String label, String value) {
+    return ListTile(
+      title: Text(label),
+      trailing: Text(
+        value,
+        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+      ),
+    );
+  }
+
+  Widget _section({
+    required String title,
+    required List<Widget> children,
+  }) {
+    return Card(
+      margin: const EdgeInsets.symmetric(vertical: 8),
+      child: Column(
+        children: [
+          ListTile(
+            title: Text(
+              title,
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+            ),
+          ),
+          const Divider(height: 1),
+          ...children,
+        ],
+      ),
+    );
+  }
+
+  String _formatDate(DateTime date) {
+    return date.toLocal().toString().split(' ').first;
+  }
+}

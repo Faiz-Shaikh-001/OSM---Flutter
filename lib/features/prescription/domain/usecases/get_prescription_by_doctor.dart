@@ -4,14 +4,14 @@ import '../failures/prescription_failure.dart';
 import '../repositories/prescription_repository.dart';
 import 'package:osm/core/value_objects/id.dart';
 
-class GetPrescriptionsByDoctor {
+class GetLatestPrescriptions {
   final PrescriptionRepository repository;
 
-  GetPrescriptionsByDoctor(this.repository);
+  GetLatestPrescriptions(this.repository);
 
-  Future<Either<PrescriptionFailure, List<Prescription>>> call(
-    DoctorId doctorId,
+  Future<Either<PrescriptionFailure, Prescription?>> call(
+    CustomerId customerId,
   ) {
-    return repository.getByDoctor(doctorId);
+    return repository.getLatestByCustomer(customerId);
   }
 }

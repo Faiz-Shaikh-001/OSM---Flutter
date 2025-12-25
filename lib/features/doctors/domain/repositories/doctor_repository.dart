@@ -9,7 +9,7 @@ abstract class DoctorRepository {
     Doctor doctor,
   );
 
-  Future<Either<DoctorFailure, Doctor>> getById(
+  Future<Either<DoctorFailure, Doctor?>> getById(
     DoctorId id,
   );
 

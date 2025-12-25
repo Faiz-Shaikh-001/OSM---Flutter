@@ -9,7 +9,7 @@ class GetDoctorById {
 
   GetDoctorById(this.repository);
 
-  Future<Either<DoctorFailure, Doctor>> call(
+  Future<Either<DoctorFailure, Doctor?>> call(
     DoctorId id,
   ) {
     return repository.getById(id);

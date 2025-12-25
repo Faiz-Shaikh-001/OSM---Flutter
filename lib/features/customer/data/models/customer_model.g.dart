@@ -53,69 +53,74 @@ const CustomerModelSchema = CollectionSchema(
       name: r'firstName',
       type: IsarType.string,
     ),
-    r'gender': PropertySchema(
+    r'fullName': PropertySchema(
       id: 7,
+      name: r'fullName',
+      type: IsarType.string,
+    ),
+    r'gender': PropertySchema(
+      id: 8,
       name: r'gender',
       type: IsarType.string,
       enumMap: _CustomerModelgenderEnumValueMap,
     ),
     r'isActive': PropertySchema(
-      id: 8,
+      id: 9,
       name: r'isActive',
       type: IsarType.bool,
     ),
     r'lastInteractionAt': PropertySchema(
-      id: 9,
+      id: 10,
       name: r'lastInteractionAt',
       type: IsarType.dateTime,
     ),
     r'lastName': PropertySchema(
-      id: 10,
+      id: 11,
       name: r'lastName',
       type: IsarType.string,
     ),
     r'notes': PropertySchema(
-      id: 11,
+      id: 12,
       name: r'notes',
       type: IsarType.string,
     ),
     r'postalCode': PropertySchema(
-      id: 12,
+      id: 13,
       name: r'postalCode',
       type: IsarType.string,
     ),
     r'primaryPhoneNumber': PropertySchema(
-      id: 13,
+      id: 14,
       name: r'primaryPhoneNumber',
       type: IsarType.string,
     ),
     r'profileImageUrl': PropertySchema(
-      id: 14,
+      id: 15,
       name: r'profileImageUrl',
       type: IsarType.string,
     ),
     r'secondaryPhoneNumber': PropertySchema(
-      id: 15,
+      id: 16,
       name: r'secondaryPhoneNumber',
       type: IsarType.string,
     ),
     r'state': PropertySchema(
-      id: 16,
+      id: 17,
       name: r'state',
       type: IsarType.string,
     ),
     r'streetAddress': PropertySchema(
-      id: 17,
+      id: 18,
       name: r'streetAddress',
       type: IsarType.string,
     ),
     r'tags': PropertySchema(
-      id: 18,
+      id: 19,
       name: r'tags',
       type: IsarType.stringList,
     ),
     r'updatedAt': PropertySchema(
-      id: 19,
+      id: 20,
       name: r'updatedAt',
       type: IsarType.dateTime,
     )
@@ -215,6 +220,7 @@ int _customerModelEstimateSize(
     }
   }
   bytesCount += 3 + object.firstName.length * 3;
+  bytesCount += 3 + object.fullName.length * 3;
   bytesCount += 3 + object.gender.name.length * 3;
   bytesCount += 3 + object.lastName.length * 3;
   {
@@ -277,19 +283,20 @@ void _customerModelSerialize(
   writer.writeDateTime(offsets[4], object.dateOfBirth);
   writer.writeString(offsets[5], object.email);
   writer.writeString(offsets[6], object.firstName);
-  writer.writeString(offsets[7], object.gender.name);
-  writer.writeBool(offsets[8], object.isActive);
-  writer.writeDateTime(offsets[9], object.lastInteractionAt);
-  writer.writeString(offsets[10], object.lastName);
-  writer.writeString(offsets[11], object.notes);
-  writer.writeString(offsets[12], object.postalCode);
-  writer.writeString(offsets[13], object.primaryPhoneNumber);
-  writer.writeString(offsets[14], object.profileImageUrl);
-  writer.writeString(offsets[15], object.secondaryPhoneNumber);
-  writer.writeString(offsets[16], object.state);
-  writer.writeString(offsets[17], object.streetAddress);
-  writer.writeStringList(offsets[18], object.tags);
-  writer.writeDateTime(offsets[19], object.updatedAt);
+  writer.writeString(offsets[7], object.fullName);
+  writer.writeString(offsets[8], object.gender.name);
+  writer.writeBool(offsets[9], object.isActive);
+  writer.writeDateTime(offsets[10], object.lastInteractionAt);
+  writer.writeString(offsets[11], object.lastName);
+  writer.writeString(offsets[12], object.notes);
+  writer.writeString(offsets[13], object.postalCode);
+  writer.writeString(offsets[14], object.primaryPhoneNumber);
+  writer.writeString(offsets[15], object.profileImageUrl);
+  writer.writeString(offsets[16], object.secondaryPhoneNumber);
+  writer.writeString(offsets[17], object.state);
+  writer.writeString(offsets[18], object.streetAddress);
+  writer.writeStringList(offsets[19], object.tags);
+  writer.writeDateTime(offsets[20], object.updatedAt);
 }
 
 CustomerModel _customerModelDeserialize(
@@ -309,20 +316,20 @@ CustomerModel _customerModelDeserialize(
     email: reader.readStringOrNull(offsets[5]),
     firstName: reader.readString(offsets[6]),
     gender:
-        _CustomerModelgenderValueEnumMap[reader.readStringOrNull(offsets[7])] ??
+        _CustomerModelgenderValueEnumMap[reader.readStringOrNull(offsets[8])] ??
             GenderModel.male,
-    isActive: reader.readBoolOrNull(offsets[8]) ?? true,
-    lastInteractionAt: reader.readDateTimeOrNull(offsets[9]),
-    lastName: reader.readString(offsets[10]),
-    notes: reader.readStringOrNull(offsets[11]),
-    postalCode: reader.readStringOrNull(offsets[12]),
-    primaryPhoneNumber: reader.readString(offsets[13]),
-    profileImageUrl: reader.readStringOrNull(offsets[14]),
-    secondaryPhoneNumber: reader.readStringOrNull(offsets[15]),
-    state: reader.readStringOrNull(offsets[16]),
-    streetAddress: reader.readStringOrNull(offsets[17]),
-    tags: reader.readStringList(offsets[18]) ?? const [],
-    updatedAt: reader.readDateTimeOrNull(offsets[19]),
+    isActive: reader.readBoolOrNull(offsets[9]) ?? true,
+    lastInteractionAt: reader.readDateTimeOrNull(offsets[10]),
+    lastName: reader.readString(offsets[11]),
+    notes: reader.readStringOrNull(offsets[12]),
+    postalCode: reader.readStringOrNull(offsets[13]),
+    primaryPhoneNumber: reader.readString(offsets[14]),
+    profileImageUrl: reader.readStringOrNull(offsets[15]),
+    secondaryPhoneNumber: reader.readStringOrNull(offsets[16]),
+    state: reader.readStringOrNull(offsets[17]),
+    streetAddress: reader.readStringOrNull(offsets[18]),
+    tags: reader.readStringList(offsets[19]) ?? const [],
+    updatedAt: reader.readDateTimeOrNull(offsets[20]),
   );
   object.id = id;
   return object;
@@ -352,23 +359,23 @@ P _customerModelDeserializeProp<P>(
     case 6:
       return (reader.readString(offset)) as P;
     case 7:
+      return (reader.readString(offset)) as P;
+    case 8:
       return (_CustomerModelgenderValueEnumMap[
               reader.readStringOrNull(offset)] ??
           GenderModel.male) as P;
-    case 8:
-      return (reader.readBoolOrNull(offset) ?? true) as P;
     case 9:
-      return (reader.readDateTimeOrNull(offset)) as P;
+      return (reader.readBoolOrNull(offset) ?? true) as P;
     case 10:
-      return (reader.readString(offset)) as P;
+      return (reader.readDateTimeOrNull(offset)) as P;
     case 11:
-      return (reader.readStringOrNull(offset)) as P;
+      return (reader.readString(offset)) as P;
     case 12:
       return (reader.readStringOrNull(offset)) as P;
     case 13:
-      return (reader.readString(offset)) as P;
-    case 14:
       return (reader.readStringOrNull(offset)) as P;
+    case 14:
+      return (reader.readString(offset)) as P;
     case 15:
       return (reader.readStringOrNull(offset)) as P;
     case 16:
@@ -376,8 +383,10 @@ P _customerModelDeserializeProp<P>(
     case 17:
       return (reader.readStringOrNull(offset)) as P;
     case 18:
-      return (reader.readStringList(offset) ?? const []) as P;
+      return (reader.readStringOrNull(offset)) as P;
     case 19:
+      return (reader.readStringList(offset) ?? const []) as P;
+    case 20:
       return (reader.readDateTimeOrNull(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -1565,6 +1574,142 @@ extension CustomerModelQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
         property: r'firstName',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<CustomerModel, CustomerModel, QAfterFilterCondition>
+      fullNameEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'fullName',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<CustomerModel, CustomerModel, QAfterFilterCondition>
+      fullNameGreaterThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'fullName',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<CustomerModel, CustomerModel, QAfterFilterCondition>
+      fullNameLessThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'fullName',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<CustomerModel, CustomerModel, QAfterFilterCondition>
+      fullNameBetween(
+    String lower,
+    String upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'fullName',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<CustomerModel, CustomerModel, QAfterFilterCondition>
+      fullNameStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'fullName',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<CustomerModel, CustomerModel, QAfterFilterCondition>
+      fullNameEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'fullName',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<CustomerModel, CustomerModel, QAfterFilterCondition>
+      fullNameContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'fullName',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<CustomerModel, CustomerModel, QAfterFilterCondition>
+      fullNameMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'fullName',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<CustomerModel, CustomerModel, QAfterFilterCondition>
+      fullNameIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'fullName',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<CustomerModel, CustomerModel, QAfterFilterCondition>
+      fullNameIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'fullName',
         value: '',
       ));
     });
@@ -3559,6 +3704,19 @@ extension CustomerModelQuerySortBy
     });
   }
 
+  QueryBuilder<CustomerModel, CustomerModel, QAfterSortBy> sortByFullName() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'fullName', Sort.asc);
+    });
+  }
+
+  QueryBuilder<CustomerModel, CustomerModel, QAfterSortBy>
+      sortByFullNameDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'fullName', Sort.desc);
+    });
+  }
+
   QueryBuilder<CustomerModel, CustomerModel, QAfterSortBy> sortByGender() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'gender', Sort.asc);
@@ -3809,6 +3967,19 @@ extension CustomerModelQuerySortThenBy
     });
   }
 
+  QueryBuilder<CustomerModel, CustomerModel, QAfterSortBy> thenByFullName() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'fullName', Sort.asc);
+    });
+  }
+
+  QueryBuilder<CustomerModel, CustomerModel, QAfterSortBy>
+      thenByFullNameDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'fullName', Sort.desc);
+    });
+  }
+
   QueryBuilder<CustomerModel, CustomerModel, QAfterSortBy> thenByGender() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'gender', Sort.asc);
@@ -4030,6 +4201,13 @@ extension CustomerModelQueryWhereDistinct
     });
   }
 
+  QueryBuilder<CustomerModel, CustomerModel, QDistinct> distinctByFullName(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'fullName', caseSensitive: caseSensitive);
+    });
+  }
+
   QueryBuilder<CustomerModel, CustomerModel, QDistinct> distinctByGender(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
@@ -4172,6 +4350,12 @@ extension CustomerModelQueryProperty
   QueryBuilder<CustomerModel, String, QQueryOperations> firstNameProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'firstName');
+    });
+  }
+
+  QueryBuilder<CustomerModel, String, QQueryOperations> fullNameProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'fullName');
     });
   }
 
