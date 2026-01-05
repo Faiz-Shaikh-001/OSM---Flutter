@@ -6,13 +6,11 @@ import 'package:osm/features/inventory/domain/failures/lens/lens_failure.dart';
 import 'package:osm/features/inventory/domain/success/lens/lens_success.dart';
 
 abstract class LensRepository {
-  /// Identity
+
   Future<Either<LensFailure, Lens>> getById(LensId id);
 
-  /// Collection
   Future<Either<LensFailure, List<Lens>>> getAll();
 
-  /// Queries (Firebase / Isar friendly)
   Future<Either<LensFailure, List<Lens>>> getByCompany(
     String companyName,
   );
@@ -25,7 +23,10 @@ abstract class LensRepository {
     LensType lensType,
   );
 
-  /// Lifecycle
+  Future<Lens?> getByQrKey(
+    String qrKey,
+  );
+
   Future<Either<LensFailure, LensCreatedSuccess>> create(
     Lens lens,
   );

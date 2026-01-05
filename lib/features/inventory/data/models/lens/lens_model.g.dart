@@ -53,18 +53,43 @@ const LensModelSchema = CollectionSchema(
       name: r'minIndex',
       type: IsarType.double,
     ),
-    r'productName': PropertySchema(
+    r'productCode': PropertySchema(
       id: 7,
+      name: r'productCode',
+      type: IsarType.string,
+    ),
+    r'productName': PropertySchema(
+      id: 8,
       name: r'productName',
       type: IsarType.string,
     ),
+    r'purchasePrice': PropertySchema(
+      id: 9,
+      name: r'purchasePrice',
+      type: IsarType.long,
+    ),
+    r'qrKey': PropertySchema(
+      id: 10,
+      name: r'qrKey',
+      type: IsarType.string,
+    ),
+    r'salesPrice': PropertySchema(
+      id: 11,
+      name: r'salesPrice',
+      type: IsarType.long,
+    ),
+    r'sku': PropertySchema(
+      id: 12,
+      name: r'sku',
+      type: IsarType.string,
+    ),
     r'supportedCoatings': PropertySchema(
-      id: 8,
+      id: 13,
       name: r'supportedCoatings',
       type: IsarType.stringList,
     ),
     r'supportedMaterials': PropertySchema(
-      id: 9,
+      id: 14,
       name: r'supportedMaterials',
       type: IsarType.stringList,
       enumMap: _LensModelsupportedMaterialsEnumValueMap,
@@ -101,6 +126,32 @@ const LensModelSchema = CollectionSchema(
           caseSensitive: true,
         )
       ],
+    ),
+    r'sku': IndexSchema(
+      id: -3348042439688860591,
+      name: r'sku',
+      unique: false,
+      replace: false,
+      properties: [
+        IndexPropertySchema(
+          name: r'sku',
+          type: IndexType.hash,
+          caseSensitive: true,
+        )
+      ],
+    ),
+    r'qrKey': IndexSchema(
+      id: -8578756362810763972,
+      name: r'qrKey',
+      unique: true,
+      replace: false,
+      properties: [
+        IndexPropertySchema(
+          name: r'qrKey',
+          type: IndexType.hash,
+          caseSensitive: true,
+        )
+      ],
     )
   },
   links: {},
@@ -126,7 +177,15 @@ int _lensModelEstimateSize(
     }
   }
   bytesCount += 3 + object.lensType.name.length * 3;
+  {
+    final value = object.productCode;
+    if (value != null) {
+      bytesCount += 3 + value.length * 3;
+    }
+  }
   bytesCount += 3 + object.productName.length * 3;
+  bytesCount += 3 + object.qrKey.length * 3;
+  bytesCount += 3 + object.sku.length * 3;
   bytesCount += 3 + object.supportedCoatings.length * 3;
   {
     for (var i = 0; i < object.supportedCoatings.length; i++) {
@@ -157,10 +216,15 @@ void _lensModelSerialize(
   writer.writeString(offsets[4], object.lensType.name);
   writer.writeDouble(offsets[5], object.maxIndex);
   writer.writeDouble(offsets[6], object.minIndex);
-  writer.writeString(offsets[7], object.productName);
-  writer.writeStringList(offsets[8], object.supportedCoatings);
+  writer.writeString(offsets[7], object.productCode);
+  writer.writeString(offsets[8], object.productName);
+  writer.writeLong(offsets[9], object.purchasePrice);
+  writer.writeString(offsets[10], object.qrKey);
+  writer.writeLong(offsets[11], object.salesPrice);
+  writer.writeString(offsets[12], object.sku);
+  writer.writeStringList(offsets[13], object.supportedCoatings);
   writer.writeStringList(
-      offsets[9], object.supportedMaterials.map((e) => e.name).toList());
+      offsets[14], object.supportedMaterials.map((e) => e.name).toList());
 }
 
 LensModel _lensModelDeserialize(
@@ -179,10 +243,15 @@ LensModel _lensModelDeserialize(
             LensTypeModel.singleVision,
     maxIndex: reader.readDouble(offsets[5]),
     minIndex: reader.readDouble(offsets[6]),
-    productName: reader.readString(offsets[7]),
-    supportedCoatings: reader.readStringList(offsets[8]) ?? const [],
+    productCode: reader.readStringOrNull(offsets[7]),
+    productName: reader.readString(offsets[8]),
+    purchasePrice: reader.readLong(offsets[9]),
+    qrKey: reader.readString(offsets[10]),
+    salesPrice: reader.readLong(offsets[11]),
+    sku: reader.readString(offsets[12]),
+    supportedCoatings: reader.readStringList(offsets[13]) ?? const [],
     supportedMaterials: reader
-            .readStringList(offsets[9])
+            .readStringList(offsets[14])
             ?.map((e) =>
                 _LensModelsupportedMaterialsValueEnumMap[e] ??
                 LensMaterialTypeModel.mineral)
@@ -216,10 +285,20 @@ P _lensModelDeserializeProp<P>(
     case 6:
       return (reader.readDouble(offset)) as P;
     case 7:
-      return (reader.readString(offset)) as P;
+      return (reader.readStringOrNull(offset)) as P;
     case 8:
-      return (reader.readStringList(offset) ?? const []) as P;
+      return (reader.readString(offset)) as P;
     case 9:
+      return (reader.readLong(offset)) as P;
+    case 10:
+      return (reader.readString(offset)) as P;
+    case 11:
+      return (reader.readLong(offset)) as P;
+    case 12:
+      return (reader.readString(offset)) as P;
+    case 13:
+      return (reader.readStringList(offset) ?? const []) as P;
+    case 14:
       return (reader
               .readStringList(offset)
               ?.map((e) =>
@@ -269,6 +348,60 @@ List<IsarLinkBase<dynamic>> _lensModelGetLinks(LensModel object) {
 
 void _lensModelAttach(IsarCollection<dynamic> col, Id id, LensModel object) {
   object.id = id;
+}
+
+extension LensModelByIndex on IsarCollection<LensModel> {
+  Future<LensModel?> getByQrKey(String qrKey) {
+    return getByIndex(r'qrKey', [qrKey]);
+  }
+
+  LensModel? getByQrKeySync(String qrKey) {
+    return getByIndexSync(r'qrKey', [qrKey]);
+  }
+
+  Future<bool> deleteByQrKey(String qrKey) {
+    return deleteByIndex(r'qrKey', [qrKey]);
+  }
+
+  bool deleteByQrKeySync(String qrKey) {
+    return deleteByIndexSync(r'qrKey', [qrKey]);
+  }
+
+  Future<List<LensModel?>> getAllByQrKey(List<String> qrKeyValues) {
+    final values = qrKeyValues.map((e) => [e]).toList();
+    return getAllByIndex(r'qrKey', values);
+  }
+
+  List<LensModel?> getAllByQrKeySync(List<String> qrKeyValues) {
+    final values = qrKeyValues.map((e) => [e]).toList();
+    return getAllByIndexSync(r'qrKey', values);
+  }
+
+  Future<int> deleteAllByQrKey(List<String> qrKeyValues) {
+    final values = qrKeyValues.map((e) => [e]).toList();
+    return deleteAllByIndex(r'qrKey', values);
+  }
+
+  int deleteAllByQrKeySync(List<String> qrKeyValues) {
+    final values = qrKeyValues.map((e) => [e]).toList();
+    return deleteAllByIndexSync(r'qrKey', values);
+  }
+
+  Future<Id> putByQrKey(LensModel object) {
+    return putByIndex(r'qrKey', object);
+  }
+
+  Id putByQrKeySync(LensModel object, {bool saveLinks = true}) {
+    return putByIndexSync(r'qrKey', object, saveLinks: saveLinks);
+  }
+
+  Future<List<Id>> putAllByQrKey(List<LensModel> objects) {
+    return putAllByIndex(r'qrKey', objects);
+  }
+
+  List<Id> putAllByQrKeySync(List<LensModel> objects, {bool saveLinks = true}) {
+    return putAllByIndexSync(r'qrKey', objects, saveLinks: saveLinks);
+  }
 }
 
 extension LensModelQueryWhereSort
@@ -532,6 +665,95 @@ extension LensModelQueryWhere
             .addWhereClause(IndexWhereClause.lessThan(
               indexName: r'productName',
               upper: [''],
+            ));
+      }
+    });
+  }
+
+  QueryBuilder<LensModel, LensModel, QAfterWhereClause> skuEqualTo(String sku) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.equalTo(
+        indexName: r'sku',
+        value: [sku],
+      ));
+    });
+  }
+
+  QueryBuilder<LensModel, LensModel, QAfterWhereClause> skuNotEqualTo(
+      String sku) {
+    return QueryBuilder.apply(this, (query) {
+      if (query.whereSort == Sort.asc) {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'sku',
+              lower: [],
+              upper: [sku],
+              includeUpper: false,
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'sku',
+              lower: [sku],
+              includeLower: false,
+              upper: [],
+            ));
+      } else {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'sku',
+              lower: [sku],
+              includeLower: false,
+              upper: [],
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'sku',
+              lower: [],
+              upper: [sku],
+              includeUpper: false,
+            ));
+      }
+    });
+  }
+
+  QueryBuilder<LensModel, LensModel, QAfterWhereClause> qrKeyEqualTo(
+      String qrKey) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.equalTo(
+        indexName: r'qrKey',
+        value: [qrKey],
+      ));
+    });
+  }
+
+  QueryBuilder<LensModel, LensModel, QAfterWhereClause> qrKeyNotEqualTo(
+      String qrKey) {
+    return QueryBuilder.apply(this, (query) {
+      if (query.whereSort == Sort.asc) {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'qrKey',
+              lower: [],
+              upper: [qrKey],
+              includeUpper: false,
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'qrKey',
+              lower: [qrKey],
+              includeLower: false,
+              upper: [],
+            ));
+      } else {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'qrKey',
+              lower: [qrKey],
+              includeLower: false,
+              upper: [],
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'qrKey',
+              lower: [],
+              upper: [qrKey],
+              includeUpper: false,
             ));
       }
     });
@@ -1270,6 +1492,158 @@ extension LensModelQueryFilter
     });
   }
 
+  QueryBuilder<LensModel, LensModel, QAfterFilterCondition>
+      productCodeIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'productCode',
+      ));
+    });
+  }
+
+  QueryBuilder<LensModel, LensModel, QAfterFilterCondition>
+      productCodeIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'productCode',
+      ));
+    });
+  }
+
+  QueryBuilder<LensModel, LensModel, QAfterFilterCondition> productCodeEqualTo(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'productCode',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<LensModel, LensModel, QAfterFilterCondition>
+      productCodeGreaterThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'productCode',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<LensModel, LensModel, QAfterFilterCondition> productCodeLessThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'productCode',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<LensModel, LensModel, QAfterFilterCondition> productCodeBetween(
+    String? lower,
+    String? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'productCode',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<LensModel, LensModel, QAfterFilterCondition>
+      productCodeStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'productCode',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<LensModel, LensModel, QAfterFilterCondition> productCodeEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'productCode',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<LensModel, LensModel, QAfterFilterCondition> productCodeContains(
+      String value,
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'productCode',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<LensModel, LensModel, QAfterFilterCondition> productCodeMatches(
+      String pattern,
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'productCode',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<LensModel, LensModel, QAfterFilterCondition>
+      productCodeIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'productCode',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<LensModel, LensModel, QAfterFilterCondition>
+      productCodeIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'productCode',
+        value: '',
+      ));
+    });
+  }
+
   QueryBuilder<LensModel, LensModel, QAfterFilterCondition> productNameEqualTo(
     String value, {
     bool caseSensitive = true,
@@ -1399,6 +1773,376 @@ extension LensModelQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
         property: r'productName',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<LensModel, LensModel, QAfterFilterCondition>
+      purchasePriceEqualTo(int value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'purchasePrice',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<LensModel, LensModel, QAfterFilterCondition>
+      purchasePriceGreaterThan(
+    int value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'purchasePrice',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<LensModel, LensModel, QAfterFilterCondition>
+      purchasePriceLessThan(
+    int value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'purchasePrice',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<LensModel, LensModel, QAfterFilterCondition>
+      purchasePriceBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'purchasePrice',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
+
+  QueryBuilder<LensModel, LensModel, QAfterFilterCondition> qrKeyEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'qrKey',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<LensModel, LensModel, QAfterFilterCondition> qrKeyGreaterThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'qrKey',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<LensModel, LensModel, QAfterFilterCondition> qrKeyLessThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'qrKey',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<LensModel, LensModel, QAfterFilterCondition> qrKeyBetween(
+    String lower,
+    String upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'qrKey',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<LensModel, LensModel, QAfterFilterCondition> qrKeyStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'qrKey',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<LensModel, LensModel, QAfterFilterCondition> qrKeyEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'qrKey',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<LensModel, LensModel, QAfterFilterCondition> qrKeyContains(
+      String value,
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'qrKey',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<LensModel, LensModel, QAfterFilterCondition> qrKeyMatches(
+      String pattern,
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'qrKey',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<LensModel, LensModel, QAfterFilterCondition> qrKeyIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'qrKey',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<LensModel, LensModel, QAfterFilterCondition> qrKeyIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'qrKey',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<LensModel, LensModel, QAfterFilterCondition> salesPriceEqualTo(
+      int value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'salesPrice',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<LensModel, LensModel, QAfterFilterCondition>
+      salesPriceGreaterThan(
+    int value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'salesPrice',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<LensModel, LensModel, QAfterFilterCondition> salesPriceLessThan(
+    int value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'salesPrice',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<LensModel, LensModel, QAfterFilterCondition> salesPriceBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'salesPrice',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
+
+  QueryBuilder<LensModel, LensModel, QAfterFilterCondition> skuEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'sku',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<LensModel, LensModel, QAfterFilterCondition> skuGreaterThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'sku',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<LensModel, LensModel, QAfterFilterCondition> skuLessThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'sku',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<LensModel, LensModel, QAfterFilterCondition> skuBetween(
+    String lower,
+    String upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'sku',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<LensModel, LensModel, QAfterFilterCondition> skuStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'sku',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<LensModel, LensModel, QAfterFilterCondition> skuEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'sku',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<LensModel, LensModel, QAfterFilterCondition> skuContains(
+      String value,
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'sku',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<LensModel, LensModel, QAfterFilterCondition> skuMatches(
+      String pattern,
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'sku',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<LensModel, LensModel, QAfterFilterCondition> skuIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'sku',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<LensModel, LensModel, QAfterFilterCondition> skuIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'sku',
         value: '',
       ));
     });
@@ -1938,6 +2682,18 @@ extension LensModelQuerySortBy on QueryBuilder<LensModel, LensModel, QSortBy> {
     });
   }
 
+  QueryBuilder<LensModel, LensModel, QAfterSortBy> sortByProductCode() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'productCode', Sort.asc);
+    });
+  }
+
+  QueryBuilder<LensModel, LensModel, QAfterSortBy> sortByProductCodeDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'productCode', Sort.desc);
+    });
+  }
+
   QueryBuilder<LensModel, LensModel, QAfterSortBy> sortByProductName() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'productName', Sort.asc);
@@ -1947,6 +2703,54 @@ extension LensModelQuerySortBy on QueryBuilder<LensModel, LensModel, QSortBy> {
   QueryBuilder<LensModel, LensModel, QAfterSortBy> sortByProductNameDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'productName', Sort.desc);
+    });
+  }
+
+  QueryBuilder<LensModel, LensModel, QAfterSortBy> sortByPurchasePrice() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'purchasePrice', Sort.asc);
+    });
+  }
+
+  QueryBuilder<LensModel, LensModel, QAfterSortBy> sortByPurchasePriceDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'purchasePrice', Sort.desc);
+    });
+  }
+
+  QueryBuilder<LensModel, LensModel, QAfterSortBy> sortByQrKey() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'qrKey', Sort.asc);
+    });
+  }
+
+  QueryBuilder<LensModel, LensModel, QAfterSortBy> sortByQrKeyDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'qrKey', Sort.desc);
+    });
+  }
+
+  QueryBuilder<LensModel, LensModel, QAfterSortBy> sortBySalesPrice() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'salesPrice', Sort.asc);
+    });
+  }
+
+  QueryBuilder<LensModel, LensModel, QAfterSortBy> sortBySalesPriceDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'salesPrice', Sort.desc);
+    });
+  }
+
+  QueryBuilder<LensModel, LensModel, QAfterSortBy> sortBySku() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'sku', Sort.asc);
+    });
+  }
+
+  QueryBuilder<LensModel, LensModel, QAfterSortBy> sortBySkuDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'sku', Sort.desc);
     });
   }
 }
@@ -2037,6 +2841,18 @@ extension LensModelQuerySortThenBy
     });
   }
 
+  QueryBuilder<LensModel, LensModel, QAfterSortBy> thenByProductCode() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'productCode', Sort.asc);
+    });
+  }
+
+  QueryBuilder<LensModel, LensModel, QAfterSortBy> thenByProductCodeDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'productCode', Sort.desc);
+    });
+  }
+
   QueryBuilder<LensModel, LensModel, QAfterSortBy> thenByProductName() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'productName', Sort.asc);
@@ -2046,6 +2862,54 @@ extension LensModelQuerySortThenBy
   QueryBuilder<LensModel, LensModel, QAfterSortBy> thenByProductNameDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'productName', Sort.desc);
+    });
+  }
+
+  QueryBuilder<LensModel, LensModel, QAfterSortBy> thenByPurchasePrice() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'purchasePrice', Sort.asc);
+    });
+  }
+
+  QueryBuilder<LensModel, LensModel, QAfterSortBy> thenByPurchasePriceDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'purchasePrice', Sort.desc);
+    });
+  }
+
+  QueryBuilder<LensModel, LensModel, QAfterSortBy> thenByQrKey() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'qrKey', Sort.asc);
+    });
+  }
+
+  QueryBuilder<LensModel, LensModel, QAfterSortBy> thenByQrKeyDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'qrKey', Sort.desc);
+    });
+  }
+
+  QueryBuilder<LensModel, LensModel, QAfterSortBy> thenBySalesPrice() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'salesPrice', Sort.asc);
+    });
+  }
+
+  QueryBuilder<LensModel, LensModel, QAfterSortBy> thenBySalesPriceDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'salesPrice', Sort.desc);
+    });
+  }
+
+  QueryBuilder<LensModel, LensModel, QAfterSortBy> thenBySku() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'sku', Sort.asc);
+    });
+  }
+
+  QueryBuilder<LensModel, LensModel, QAfterSortBy> thenBySkuDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'sku', Sort.desc);
     });
   }
 }
@@ -2096,10 +2960,43 @@ extension LensModelQueryWhereDistinct
     });
   }
 
+  QueryBuilder<LensModel, LensModel, QDistinct> distinctByProductCode(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'productCode', caseSensitive: caseSensitive);
+    });
+  }
+
   QueryBuilder<LensModel, LensModel, QDistinct> distinctByProductName(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'productName', caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<LensModel, LensModel, QDistinct> distinctByPurchasePrice() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'purchasePrice');
+    });
+  }
+
+  QueryBuilder<LensModel, LensModel, QDistinct> distinctByQrKey(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'qrKey', caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<LensModel, LensModel, QDistinct> distinctBySalesPrice() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'salesPrice');
+    });
+  }
+
+  QueryBuilder<LensModel, LensModel, QDistinct> distinctBySku(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'sku', caseSensitive: caseSensitive);
     });
   }
 
@@ -2166,9 +3063,39 @@ extension LensModelQueryProperty
     });
   }
 
+  QueryBuilder<LensModel, String?, QQueryOperations> productCodeProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'productCode');
+    });
+  }
+
   QueryBuilder<LensModel, String, QQueryOperations> productNameProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'productName');
+    });
+  }
+
+  QueryBuilder<LensModel, int, QQueryOperations> purchasePriceProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'purchasePrice');
+    });
+  }
+
+  QueryBuilder<LensModel, String, QQueryOperations> qrKeyProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'qrKey');
+    });
+  }
+
+  QueryBuilder<LensModel, int, QQueryOperations> salesPriceProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'salesPrice');
+    });
+  }
+
+  QueryBuilder<LensModel, String, QQueryOperations> skuProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'sku');
     });
   }
 

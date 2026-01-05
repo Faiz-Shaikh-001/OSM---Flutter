@@ -14,6 +14,8 @@ class FrameEnumMapper {
         return FrameType.fullShell;
       case FrameTypeModel.goggles:
         return FrameType.goggles;
+      case FrameTypeModel.custom:
+        return FrameType.custom;
     }
   }
 
@@ -29,6 +31,8 @@ class FrameEnumMapper {
         return FrameTypeModel.fullShell;
       case FrameType.goggles:
         return FrameTypeModel.goggles;
+      case FrameType.custom:
+        return FrameTypeModel.custom;
     }
   }
 }

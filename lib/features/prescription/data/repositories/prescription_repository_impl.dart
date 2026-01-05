@@ -3,9 +3,8 @@ import 'package:osm/core/services/isar_service.dart';
 import 'package:osm/core/value_objects/id.dart';
 import 'package:osm/features/customer/data/models/customer_model.dart';
 import 'package:osm/features/customer/data/repositories/customer_local_repository.dart';
-import 'package:osm/features/doctors/data/mapper/doctor_mapper.dart';
-import 'package:osm/features/doctors/data/repositories/doctor_repository.dart';
-import 'package:osm/features/doctors/domain/entities/doctor.dart';
+import 'package:osm/features/doctors/data/models/doctor_model.dart';
+import 'package:osm/features/doctors/data/repositories/doctor_local_repository.dart';
 import 'package:osm/features/prescription/data/mapper/prescription_mapper.dart';
 import 'package:osm/features/prescription/data/repositories/prescription_local_repository.dart';
 
@@ -19,13 +18,13 @@ class PrescriptionRepositoryImpl implements PrescriptionRepository {
   final IsarService _isarService;
   final PrescriptionLocalRepository _localRepository;
   final CustomerLocalRepository _customerRepository;
-  final DoctorRepositoryImpl _doctorRepository;
+  final DoctorLocalRepository _doctorLocalRepository;
 
   PrescriptionRepositoryImpl(
     this._isarService,
     this._localRepository,
     this._customerRepository,
-    this._doctorRepository,
+    this._doctorLocalRepository,
   );
 
   // CREATE
@@ -48,6 +47,7 @@ class PrescriptionRepositoryImpl implements PrescriptionRepository {
 
       final customerModel = await _customerRepository.getById(
         int.parse(customerId.value),
+        isar,
       );
 
       if (customerModel == null) {
@@ -63,16 +63,20 @@ class PrescriptionRepositoryImpl implements PrescriptionRepository {
         customer: customerModel,
       );
 
+      DoctorModel? doctorModel;
       if (prescription.doctorId != null) {
-        final doctorModel = await _doctorRepository.getById(
-          DoctorId(prescription.doctorId!.value),
+        doctorModel = await _doctorLocalRepository.getById(
+          int.parse(prescription.doctorId!.value),
+          isar,
         );
 
-        model.doctor.value = DoctorMapper.toModel(doctorModel as Doctor);
+        if (doctorModel == null) {
+          return const Left(PrescriptionDoctorNotFoundFailure());
+        }
       }
 
       await isar.writeTxn(() async {
-        await _localRepository.insert(model, customerModel, isar: isar);
+        await _localRepository.insert(model, customerModel, doctorModel, isar: isar);
         customerModel.updatedAt = DateTime.now();
         await isar.customerModels.put(customerModel);
       });
@@ -109,8 +113,10 @@ class PrescriptionRepositoryImpl implements PrescriptionRepository {
     CustomerId customerId,
   ) async {
     try {
+      final isar = await _isarService.db;
       final customerModel = await _customerRepository.getById(
         int.parse(customerId.value),
+        isar,
       );
 
       if (customerModel == null) {
@@ -138,8 +144,10 @@ class PrescriptionRepositoryImpl implements PrescriptionRepository {
     CustomerId customerId,
   ) async {
     try {
+      final isar = await _isarService.db;
       final customerModel = await _customerRepository.getById(
         int.parse(customerId.value),
+        isar,
       );
 
       if (customerModel == null) {

@@ -1,7 +1,6 @@
 import 'package:osm/core/value_objects/money.dart';
 
 class FrameVariant {
-  final String code;
   final String productCode;
   final String colorName;
   final int? colorValue;
@@ -10,9 +9,9 @@ class FrameVariant {
   final Money purchasePrice;
   final Money salesPrice;
   final List<String> imageUrls;
+  final String sku;
 
   FrameVariant({
-    required this.code,
     required this.productCode,
     required this.colorName,
     this.colorValue,
@@ -21,5 +20,6 @@ class FrameVariant {
     required this.purchasePrice,
     required this.salesPrice,
     required this.imageUrls,
+    required this.sku,
   });
 }

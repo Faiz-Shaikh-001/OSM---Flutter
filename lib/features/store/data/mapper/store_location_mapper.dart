@@ -4,7 +4,7 @@ import 'package:osm/features/store/data/model/store_location_model.dart';
 import '../../domain/entities/store_location.dart';
 
 class StoreLocationMapper {
-  static StoreLocation toDomain(StoreLocationModel model) {
+  static StoreLocation toEntity(StoreLocationModel model) {
     return StoreLocation(
       id: StoreLocationId(model.id.toString()),
       name: model.name,

@@ -100,15 +100,6 @@ class OrderCreationService {
   PrescriptionModel _createDefaultPrescription() {
     return PrescriptionModel(
       createdAt: DateTime.now(),
-      sphereRight: 0.0,
-      sphereLeft: 0.0,
-      cylinderRight: 0.0,
-      cylinderLeft: 0.0,
-      axisRight: 0,
-      axisLeft: 0,
-      addRight: 0.0,
-      addLeft: 0.0,
-      pd: 0.0,
     );
   }
 

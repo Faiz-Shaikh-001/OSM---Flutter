@@ -9,8 +9,13 @@ class FrameModel {
 
   final DateTime createdAt;
 
+  @Index(type: IndexType.hash, unique: true)
+  final String qrKey;
+
   @Enumerated(EnumType.name)
   final FrameTypeModel frameType;
+
+  final String? customTypeName;
 
   @Index(type: IndexType.hash)
   final String companyName;
@@ -21,8 +26,10 @@ class FrameModel {
   final List<FrameVariantModel> variants;
 
   FrameModel({
+    required this.qrKey,
     required this.createdAt,
     required this.frameType,
+    this.customTypeName,
     required this.companyName,
     required this.name,
     this.variants = const [],
@@ -31,10 +38,8 @@ class FrameModel {
 
 @embedded
 class FrameVariantModel {
-  final String? code;
-
   final String? productCode;
-
+  final String? sku;
   final String? colorName;
   final int? colorValue;
   final int? size;
@@ -45,10 +50,9 @@ class FrameVariantModel {
   final int? salesPrice;
 
   final List<String>? imageUrls;
-  final List<String>? localImagePaths;
 
   FrameVariantModel({
-    this.code,
+    this.sku,
     this.productCode,
     this.colorName,
     this.colorValue,
@@ -57,6 +61,5 @@ class FrameVariantModel {
     this.purchasePrice,
     this.salesPrice,
     this.imageUrls = const [],
-    this.localImagePaths = const [],
   });
 }

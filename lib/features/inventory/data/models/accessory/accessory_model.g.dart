@@ -57,18 +57,23 @@ const AccessoryModelSchema = CollectionSchema(
       name: r'purchasePrice',
       type: IsarType.long,
     ),
-    r'quantity': PropertySchema(
+    r'qrKey': PropertySchema(
       id: 8,
+      name: r'qrKey',
+      type: IsarType.string,
+    ),
+    r'quantity': PropertySchema(
+      id: 9,
       name: r'quantity',
       type: IsarType.long,
     ),
     r'salesPrice': PropertySchema(
-      id: 9,
+      id: 10,
       name: r'salesPrice',
       type: IsarType.long,
     ),
     r'sku': PropertySchema(
-      id: 10,
+      id: 11,
       name: r'sku',
       type: IsarType.string,
     )
@@ -121,11 +126,24 @@ const AccessoryModelSchema = CollectionSchema(
     r'sku': IndexSchema(
       id: -3348042439688860591,
       name: r'sku',
-      unique: true,
+      unique: false,
       replace: false,
       properties: [
         IndexPropertySchema(
           name: r'sku',
+          type: IndexType.hash,
+          caseSensitive: true,
+        )
+      ],
+    ),
+    r'qrKey': IndexSchema(
+      id: -8578756362810763972,
+      name: r'qrKey',
+      unique: true,
+      replace: false,
+      properties: [
+        IndexPropertySchema(
+          name: r'qrKey',
           type: IndexType.hash,
           caseSensitive: true,
         )
@@ -162,6 +180,7 @@ int _accessoryModelEstimateSize(
     }
   }
   bytesCount += 3 + object.name.length * 3;
+  bytesCount += 3 + object.qrKey.length * 3;
   bytesCount += 3 + object.sku.length * 3;
   return bytesCount;
 }
@@ -180,9 +199,10 @@ void _accessoryModelSerialize(
   writer.writeBool(offsets[5], object.isActive);
   writer.writeString(offsets[6], object.name);
   writer.writeLong(offsets[7], object.purchasePrice);
-  writer.writeLong(offsets[8], object.quantity);
-  writer.writeLong(offsets[9], object.salesPrice);
-  writer.writeString(offsets[10], object.sku);
+  writer.writeString(offsets[8], object.qrKey);
+  writer.writeLong(offsets[9], object.quantity);
+  writer.writeLong(offsets[10], object.salesPrice);
+  writer.writeString(offsets[11], object.sku);
 }
 
 AccessoryModel _accessoryModelDeserialize(
@@ -200,9 +220,10 @@ AccessoryModel _accessoryModelDeserialize(
     isActive: reader.readBoolOrNull(offsets[5]) ?? true,
     name: reader.readString(offsets[6]),
     purchasePrice: reader.readLongOrNull(offsets[7]) ?? 0,
-    quantity: reader.readLongOrNull(offsets[8]) ?? 0,
-    salesPrice: reader.readLongOrNull(offsets[9]) ?? 0,
-    sku: reader.readString(offsets[10]),
+    qrKey: reader.readString(offsets[8]),
+    quantity: reader.readLongOrNull(offsets[9]) ?? 0,
+    salesPrice: reader.readLongOrNull(offsets[10]) ?? 0,
+    sku: reader.readString(offsets[11]),
   );
   object.id = id;
   return object;
@@ -232,10 +253,12 @@ P _accessoryModelDeserializeProp<P>(
     case 7:
       return (reader.readLongOrNull(offset) ?? 0) as P;
     case 8:
-      return (reader.readLongOrNull(offset) ?? 0) as P;
+      return (reader.readString(offset)) as P;
     case 9:
       return (reader.readLongOrNull(offset) ?? 0) as P;
     case 10:
+      return (reader.readLongOrNull(offset) ?? 0) as P;
+    case 11:
       return (reader.readString(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -256,57 +279,57 @@ void _accessoryModelAttach(
 }
 
 extension AccessoryModelByIndex on IsarCollection<AccessoryModel> {
-  Future<AccessoryModel?> getBySku(String sku) {
-    return getByIndex(r'sku', [sku]);
+  Future<AccessoryModel?> getByQrKey(String qrKey) {
+    return getByIndex(r'qrKey', [qrKey]);
   }
 
-  AccessoryModel? getBySkuSync(String sku) {
-    return getByIndexSync(r'sku', [sku]);
+  AccessoryModel? getByQrKeySync(String qrKey) {
+    return getByIndexSync(r'qrKey', [qrKey]);
   }
 
-  Future<bool> deleteBySku(String sku) {
-    return deleteByIndex(r'sku', [sku]);
+  Future<bool> deleteByQrKey(String qrKey) {
+    return deleteByIndex(r'qrKey', [qrKey]);
   }
 
-  bool deleteBySkuSync(String sku) {
-    return deleteByIndexSync(r'sku', [sku]);
+  bool deleteByQrKeySync(String qrKey) {
+    return deleteByIndexSync(r'qrKey', [qrKey]);
   }
 
-  Future<List<AccessoryModel?>> getAllBySku(List<String> skuValues) {
-    final values = skuValues.map((e) => [e]).toList();
-    return getAllByIndex(r'sku', values);
+  Future<List<AccessoryModel?>> getAllByQrKey(List<String> qrKeyValues) {
+    final values = qrKeyValues.map((e) => [e]).toList();
+    return getAllByIndex(r'qrKey', values);
   }
 
-  List<AccessoryModel?> getAllBySkuSync(List<String> skuValues) {
-    final values = skuValues.map((e) => [e]).toList();
-    return getAllByIndexSync(r'sku', values);
+  List<AccessoryModel?> getAllByQrKeySync(List<String> qrKeyValues) {
+    final values = qrKeyValues.map((e) => [e]).toList();
+    return getAllByIndexSync(r'qrKey', values);
   }
 
-  Future<int> deleteAllBySku(List<String> skuValues) {
-    final values = skuValues.map((e) => [e]).toList();
-    return deleteAllByIndex(r'sku', values);
+  Future<int> deleteAllByQrKey(List<String> qrKeyValues) {
+    final values = qrKeyValues.map((e) => [e]).toList();
+    return deleteAllByIndex(r'qrKey', values);
   }
 
-  int deleteAllBySkuSync(List<String> skuValues) {
-    final values = skuValues.map((e) => [e]).toList();
-    return deleteAllByIndexSync(r'sku', values);
+  int deleteAllByQrKeySync(List<String> qrKeyValues) {
+    final values = qrKeyValues.map((e) => [e]).toList();
+    return deleteAllByIndexSync(r'qrKey', values);
   }
 
-  Future<Id> putBySku(AccessoryModel object) {
-    return putByIndex(r'sku', object);
+  Future<Id> putByQrKey(AccessoryModel object) {
+    return putByIndex(r'qrKey', object);
   }
 
-  Id putBySkuSync(AccessoryModel object, {bool saveLinks = true}) {
-    return putByIndexSync(r'sku', object, saveLinks: saveLinks);
+  Id putByQrKeySync(AccessoryModel object, {bool saveLinks = true}) {
+    return putByIndexSync(r'qrKey', object, saveLinks: saveLinks);
   }
 
-  Future<List<Id>> putAllBySku(List<AccessoryModel> objects) {
-    return putAllByIndex(r'sku', objects);
+  Future<List<Id>> putAllByQrKey(List<AccessoryModel> objects) {
+    return putAllByIndex(r'qrKey', objects);
   }
 
-  List<Id> putAllBySkuSync(List<AccessoryModel> objects,
+  List<Id> putAllByQrKeySync(List<AccessoryModel> objects,
       {bool saveLinks = true}) {
-    return putAllByIndexSync(r'sku', objects, saveLinks: saveLinks);
+    return putAllByIndexSync(r'qrKey', objects, saveLinks: saveLinks);
   }
 }
 
@@ -666,6 +689,51 @@ extension AccessoryModelQueryWhere
               indexName: r'sku',
               lower: [],
               upper: [sku],
+              includeUpper: false,
+            ));
+      }
+    });
+  }
+
+  QueryBuilder<AccessoryModel, AccessoryModel, QAfterWhereClause> qrKeyEqualTo(
+      String qrKey) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.equalTo(
+        indexName: r'qrKey',
+        value: [qrKey],
+      ));
+    });
+  }
+
+  QueryBuilder<AccessoryModel, AccessoryModel, QAfterWhereClause>
+      qrKeyNotEqualTo(String qrKey) {
+    return QueryBuilder.apply(this, (query) {
+      if (query.whereSort == Sort.asc) {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'qrKey',
+              lower: [],
+              upper: [qrKey],
+              includeUpper: false,
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'qrKey',
+              lower: [qrKey],
+              includeLower: false,
+              upper: [],
+            ));
+      } else {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'qrKey',
+              lower: [qrKey],
+              includeLower: false,
+              upper: [],
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'qrKey',
+              lower: [],
+              upper: [qrKey],
               includeUpper: false,
             ));
       }
@@ -1640,6 +1708,142 @@ extension AccessoryModelQueryFilter
   }
 
   QueryBuilder<AccessoryModel, AccessoryModel, QAfterFilterCondition>
+      qrKeyEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'qrKey',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<AccessoryModel, AccessoryModel, QAfterFilterCondition>
+      qrKeyGreaterThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'qrKey',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<AccessoryModel, AccessoryModel, QAfterFilterCondition>
+      qrKeyLessThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'qrKey',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<AccessoryModel, AccessoryModel, QAfterFilterCondition>
+      qrKeyBetween(
+    String lower,
+    String upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'qrKey',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<AccessoryModel, AccessoryModel, QAfterFilterCondition>
+      qrKeyStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'qrKey',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<AccessoryModel, AccessoryModel, QAfterFilterCondition>
+      qrKeyEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'qrKey',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<AccessoryModel, AccessoryModel, QAfterFilterCondition>
+      qrKeyContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'qrKey',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<AccessoryModel, AccessoryModel, QAfterFilterCondition>
+      qrKeyMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'qrKey',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<AccessoryModel, AccessoryModel, QAfterFilterCondition>
+      qrKeyIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'qrKey',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<AccessoryModel, AccessoryModel, QAfterFilterCondition>
+      qrKeyIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'qrKey',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<AccessoryModel, AccessoryModel, QAfterFilterCondition>
       quantityEqualTo(int value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
@@ -1987,6 +2191,18 @@ extension AccessoryModelQuerySortBy
     });
   }
 
+  QueryBuilder<AccessoryModel, AccessoryModel, QAfterSortBy> sortByQrKey() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'qrKey', Sort.asc);
+    });
+  }
+
+  QueryBuilder<AccessoryModel, AccessoryModel, QAfterSortBy> sortByQrKeyDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'qrKey', Sort.desc);
+    });
+  }
+
   QueryBuilder<AccessoryModel, AccessoryModel, QAfterSortBy> sortByQuantity() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'quantity', Sort.asc);
@@ -2132,6 +2348,18 @@ extension AccessoryModelQuerySortThenBy
     });
   }
 
+  QueryBuilder<AccessoryModel, AccessoryModel, QAfterSortBy> thenByQrKey() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'qrKey', Sort.asc);
+    });
+  }
+
+  QueryBuilder<AccessoryModel, AccessoryModel, QAfterSortBy> thenByQrKeyDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'qrKey', Sort.desc);
+    });
+  }
+
   QueryBuilder<AccessoryModel, AccessoryModel, QAfterSortBy> thenByQuantity() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'quantity', Sort.asc);
@@ -2229,6 +2457,13 @@ extension AccessoryModelQueryWhereDistinct
     });
   }
 
+  QueryBuilder<AccessoryModel, AccessoryModel, QDistinct> distinctByQrKey(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'qrKey', caseSensitive: caseSensitive);
+    });
+  }
+
   QueryBuilder<AccessoryModel, AccessoryModel, QDistinct> distinctByQuantity() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'quantity');
@@ -2305,6 +2540,12 @@ extension AccessoryModelQueryProperty
   QueryBuilder<AccessoryModel, int, QQueryOperations> purchasePriceProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'purchasePrice');
+    });
+  }
+
+  QueryBuilder<AccessoryModel, String, QQueryOperations> qrKeyProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'qrKey');
     });
   }
 

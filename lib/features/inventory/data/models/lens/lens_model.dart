@@ -15,6 +15,8 @@ class LensModel {
   @Index(type: IndexType.value)
   final String productName;
 
+  final String? productCode;
+
   @Enumerated(EnumType.name)
   final LensTypeModel lensType;
 
@@ -27,14 +29,28 @@ class LensModel {
   final List<String> imageUrls;
   final bool isActive;
 
+  final int purchasePrice;
+  final int salesPrice;
+
+  @Index(type: IndexType.hash)
+  final String sku;
+
+  @Index(type: IndexType.hash, unique: true)
+  final String qrKey;
+
   LensModel({
+    required this.qrKey,
     required this.createdAt,
     required this.companyName,
-    required this.productName, 
+    required this.productName,
+    this.productCode,
     required this.lensType,
     required this.supportedMaterials,
     required this.minIndex,
     required this.maxIndex,
+    required this.purchasePrice,
+    required this.salesPrice,
+    required this.sku,
     this.supportedCoatings = const [],
     this.imageUrls = const [],
     this.isActive = true,

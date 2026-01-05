@@ -1,17 +1,32 @@
 abstract class LensFailure {
-  const LensFailure();
+  final String message;
+  const LensFailure(this.message);
 }
+
 
 class LensNotFoundFailure extends LensFailure {
-  const LensNotFoundFailure();
+  const LensNotFoundFailure()
+      : super('Lens not found');
 }
 
+
 class LensValidationFailure extends LensFailure {
-  final String message;
-  const LensValidationFailure(this.message);
+  const LensValidationFailure(super.message);
+}
+
+
+class LensConflictFailure extends LensFailure {
+  const LensConflictFailure(super.message);
 }
 
 class LensStorageFailure extends LensFailure {
-  final String message;
-  const LensStorageFailure(this.message);
+  const LensStorageFailure([
+    super.message = 'Failed to save lens',
+  ]);
+}
+
+class LensUnexpectedFailure extends LensFailure {
+  const LensUnexpectedFailure([
+    super.message = 'Unexpected lens failure',
+  ]);
 }

@@ -25,6 +25,9 @@ abstract class FrameRepository {
     FrameType type,
   );
 
+  Future<Frame?> getByQrKey(
+    String qrKey,
+  );
   
   Future<Either<FrameFailure, FrameCreatedSuccess>> create(
     Frame frame,

@@ -1,307 +1,197 @@
-// import 'dart:io';
+import 'dart:io';
+import 'package:flutter/material.dart';
+import 'package:osm/core/utils/product_type.dart';
+import 'package:osm/features/inventory/domain/entities/accessory/accessory.dart';
+import 'package:osm/features/inventory/domain/entities/frame/frame.dart';
+import 'package:osm/features/inventory/domain/entities/lens/lens.dart';
 
-// import 'package:cached_network_image/cached_network_image.dart';
-// import 'package:flutter/material.dart';
-// import 'package:osm/features/inventory/data/models/frame/frame_model.dart';
-// import 'package:osm/features/inventory/data/models/lens/lens_model.dart';
-// import 'package:osm/features/inventory/presentation/screens/item_screen.dart';
-// import 'package:osm/core/utils/product_type.dart';
+class GridCard extends StatelessWidget {
+  final Object product;
+  final ProductType productType;
+  final VoidCallback? onTap;
+  final VoidCallback? onLongPress;
 
-// class GridCard extends StatelessWidget {
-//   final dynamic product;
-//   final ProductType productType;
-//   final int heroIndex;
-//   final bool isLowStock;
+  const GridCard({
+    super.key,
+    required this.product,
+    required this.productType,
+    this.onTap,
+    this.onLongPress,
+  });
 
-//   const GridCard({
-//     super.key,
-//     required this.heroIndex,
-//     required this.product,
-//     required this.productType,
-//     this.isLowStock = false,
-//   });
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
+        onLongPress: onLongPress,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _ImageSection(product: product, productType: productType),
+            _DetailsSection(product: product, productType: productType),
+          ],
+        ),
+      ),
+    );
+  }
+}
 
-//   final double _borderRadius = 15.0;
+class _ImageSection extends StatelessWidget {
+  final Object product;
+  final ProductType productType;
 
-//   @override
-//   Widget build(BuildContext context) {
-//     return Card(
-//       elevation: 4,
-//       shape: RoundedRectangleBorder(
-//         borderRadius: BorderRadius.circular(_borderRadius),
-//       ),
-//       clipBehavior: Clip.antiAlias,
-//       // padding: const EdgeInsets.all(8.0),
-//       child: InkWell(
-//         onTap: () {
-//           try {
-//             Navigator.push(
-//               context,
-//               MaterialPageRoute(
-//                 builder: (context) => ItemPage(
-//                   product: product,
-//                   productType: productType,
-//                   heroIndex: heroIndex,
-//                 ),
-//               ),
-//             );
-//           } catch (e, stack) {
-//             debugPrint("Error during navigation: $e");
-//             debugPrint("$stack");
-//           }
-//         },
-//         child: Column(
-//           crossAxisAlignment: CrossAxisAlignment.start,
-//           children: [
-//             _BuildImageSection(
-//               product: product,
-//               productType: productType,
-//               heroIndex: heroIndex,
-//             ),
-//             const SizedBox(height: 4),
-//             _BuildDetailsSection(
-//               product: product,
-//               productType: productType,
-//               isLowStock: isLowStock,
-//             ),
-//           ],
-//         ),
-//       ),
-//     );
-//   }
-// }
+  const _ImageSection({required this.product, required this.productType});
 
-// class _BuildImageSection extends StatelessWidget {
-//   final dynamic product;
-//   final ProductType productType;
-//   final int heroIndex;
-//   const _BuildImageSection({
-//     required this.product,
-//     required this.productType,
-//     required this.heroIndex,
-//   });
+  String? _resolveImage() {
+    switch (productType) {
+      case ProductType.frame:
+        final frame = product as Frame;
+        if (frame.variants.isNotEmpty &&
+            frame.variants.first.imageUrls.isNotEmpty) {
+          return frame.variants.first.imageUrls.first;
+        }
+        break;
 
-//   Widget _buildImage(String imagePath) {
-//     if (imagePath.startsWith('http')) {
-//       return CachedNetworkImage(
-//         imageUrl: imagePath,
-//         fit: BoxFit.cover,
-//         placeholder: (context, url) => Container(
-//           color: Colors.white,
-//           child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
-//         ),
-//         errorWidget: (context, url, error) => Container(
-//           color: Colors.grey[200],
-//           child: const Center(
-//             child: Icon(Icons.broken_image, color: Colors.grey, size: 50),
-//           ),
-//         ),
-//       );
-//     } else {
-//       return Image.file(
-//         File(imagePath),
-//         fit: BoxFit.cover,
-//         errorBuilder: (context, error, stackTrace) => Container(
-//           color: Colors.grey[200],
-//           child: const Center(
-//             child: Icon(Icons.broken_image, color: Colors.grey, size: 50),
-//           ),
-//         ),
-//       );
-//     }
-//   }
+      case ProductType.lens:
+        final lens = product as Lens;
+        if (lens.imageUrls.isNotEmpty) {
+          return lens.imageUrls.first;
+        }
+        break;
 
-//   String _getImageUrl(dynamic product, ProductType type) {
-//     if (type == ProductType.frame) {
-//       final frame = product as FrameModel;
-//       return frame.variants.isNotEmpty &&
-//               frame.variants.first.imageUrls.isNotEmpty
-//           ? frame.variants.first.imageUrls.first
-//           : 'https://placehold.co/400x400/png?text=Frame';
-//     } else if (type == ProductType.lens) {
-//       final lens = product as LensModel;
-//       return lens.imageUrls.isNotEmpty
-//           ? lens.imageUrls.first
-//           : 'https://placehold.co/400x400/png?text=Product';
-//     }
-//     return 'https://placehold.co/400x400/png?text=Product';
-//   }
+      case ProductType.accessory:
+        final accessory = product as Accessory;
+        if (accessory.imageUrls.isNotEmpty) {
+          return accessory.imageUrls.first;
+        }
+        break;
+    }
+    return null;
+  }
 
-//   @override
-//   Widget build(BuildContext context) {
-//     return Expanded(
-//       // Image change
-//       child: Hero(
-//         tag: 'itemImage_${product.id ?? 'noid'}_$heroIndex',
-//         child: SizedBox(
-//           width: double.infinity,
-//           child: _buildImage(_getImageUrl(product, productType)),
-//         ),
+  String _heroTag() {
+    return '${productType.name}_${(product as dynamic).id}';
+  }
 
-//         // CachedNetworkImage(
-//         //   imageUrl: _getImageUrl(product, productType),
-//         //   fit: BoxFit.cover,
-//         //   width: double.infinity,
-//         //   placeholder: (context, url) => Container(
-//         //     color: Colors.white,
-//         //     child: const Center(
-//         //       child: CircularProgressIndicator(strokeWidth: 2),
-//         //     ),
-//         //   ),
-//         //   errorWidget: (context, url, error) => Container(
-//         //     color: Colors.grey[200],
-//         //     child: const Center(
-//         //       child: Icon(Icons.broken_image, color: Colors.grey, size: 50),
-//         //     ),
-//         //   ),
-//         // ),
-//       ),
-//     );
-//   }
-// }
+  @override
+  Widget build(BuildContext context) {
+    final imagePath = _resolveImage();
 
-// class _BuildDetailsSection extends StatelessWidget {
-//   final dynamic product;
-//   final ProductType productType;
-//   final bool isLowStock;
+    return Expanded(
+      child: Hero(
+        tag: _heroTag(),
+        child: imagePath == null
+            ? _placeholder()
+            : Image.file(
+                File(imagePath),
+                fit: BoxFit.cover,
+                width: double.infinity,
+                errorBuilder: (_, __, ___) => _placeholder(),
+              ),
+      ),
+    );
+  }
 
-//   const _BuildDetailsSection({
-//     required this.product,
-//     required this.productType,
-//     required this.isLowStock,
-//   });
+  Widget _placeholder() {
+    return Container(
+      color: Colors.grey[200],
+      child: const Center(
+        child: Icon(Icons.image_not_supported, size: 48, color: Colors.grey),
+      ),
+    );
+  }
+}
 
-//   String _getTitle(dynamic product, ProductType type) {
-//     if (type == ProductType.frame) {
-//       return '${(product as FrameModel).companyName} ${product.name}';
-//     } else if (type == ProductType.lens) {
-//       return '${(product as LensModel).companyName} ${product.productName}';
-//     }
-//     return 'Unknown Product';
-//   }
+class _DetailsSection extends StatelessWidget {
+  final Object product;
+  final ProductType productType;
 
-//   String _getCompanyName(dynamic product, ProductType type) {
-//     if (type == ProductType.frame) {
-//       return (product as FrameModel).companyName;
-//     } else if (type == ProductType.lens) {
-//       return (product as LensModel).companyName;
-//     }
-//     return 'N/A';
-//   }
+  const _DetailsSection({required this.product, required this.productType});
 
-//   bool _isLowStock(dynamic product, ProductType type) {
-//     return false;
-//   }
+  String get _title {
+    switch (productType) {
+      case ProductType.frame:
+        final frame = product as Frame;
+        return '${frame.companyName} ${frame.name}';
 
-//   @override
-//   Widget build(BuildContext context) {
-//     return SafeArea(
-//       child: Padding(
-//         padding: const EdgeInsets.all(8.0),
-//         child: Column(
-//           crossAxisAlignment: CrossAxisAlignment.start,
-//           children: [
-//             _BuildTitleAndBadge(
-//               title: _getTitle(product, productType),
-//               isLowStock: isLowStock,
-//             ),
-//             const SizedBox(height: 4),
-//             Text(
-//               _getCompanyName(product, productType),
-//               style: TextStyle(color: Colors.grey[600], fontSize: 12),
-//             ),
-//             const SizedBox(height: 4),
-//             _BuildPriceAndStock(product: product, productType: productType),
-//           ],
-//         ),
-//       ),
-//     );
-//   }
-// }
+      case ProductType.lens:
+        final lens = product as Lens;
+        return '${lens.companyName} ${lens.productName}';
 
-// class _BuildTitleAndBadge extends StatelessWidget {
-//   final String title;
-//   final bool isLowStock;
+      case ProductType.accessory:
+        final accessory = product as Accessory;
+        return '${accessory.brand} ${accessory.name}';
+    }
+  }
 
-//   const _BuildTitleAndBadge({required this.title, required this.isLowStock});
+  double get _price {
+    switch (productType) {
+      case ProductType.frame:
+        final frame = product as Frame;
+        return frame.variants.isNotEmpty
+            ? frame.variants.first.salesPrice.value
+            : 0;
 
-//   @override
-//   Widget build(BuildContext context) {
-//     return Row(
-//       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-//       children: [
-//         Expanded(
-//           child: Text(
-//             title,
-//             style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-//             maxLines: 1,
-//             overflow: TextOverflow.ellipsis,
-//           ),
-//         ),
+      case ProductType.lens:
+        final lens = product as Lens;
+        return lens
+            .salesPrice
+            .value;
 
-//         if (isLowStock)
-//           Container(
-//             padding: EdgeInsets.symmetric(horizontal: 10.0),
-//             decoration: BoxDecoration(
-//               color: Colors.redAccent,
-//               borderRadius: BorderRadius.circular(25),
-//             ),
-//             child: const Text(
-//               'Low Stock',
-//               style: TextStyle(fontSize: 12, color: Colors.white),
-//             ),
-//           ),
-//       ],
-//     );
-//   }
-// }
+      case ProductType.accessory:
+        final accessory = product as Accessory;
+        return accessory.salesPrice.value;
+    }
+  }
 
-// class _BuildPriceAndStock extends StatelessWidget {
-//   final dynamic product;
-//   final ProductType productType;
+  int get _quantity {
+    switch (productType) {
+      case ProductType.frame:
+        final frame = product as Frame;
+        return frame.variants.isNotEmpty ? frame.variants.first.quantity : 0;
 
-//   const _BuildPriceAndStock({required this.product, required this.productType});
+      case ProductType.lens:
+        return 0;
 
-//   double _getProductPrice(dynamic product, ProductType type) {
-//     if (type == ProductType.frame) {
-//       final frame = product as FrameModel;
-//       return frame.variants.isNotEmpty
-//           ? frame.variants.first.salesPrice ?? 0.0
-//           : 0.0;
-//     } else if (type == ProductType.lens) {
-//       final lens = product as LensModel;
-//       return lens.variants.isNotEmpty
-//           ? lens.variants.first.salesPrice ?? 0.0
-//           : 0.0;
-//     }
-//     return 0.0;
-//   }
+      case ProductType.accessory:
+        final accessory = product as Accessory;
+        return accessory.quantity;
+    }
+  }
 
-//   int _getProductQuantity(dynamic product, ProductType type) {
-//     if (type == ProductType.frame) {
-//       final frame = product as FrameModel;
-//       return frame.variants.isNotEmpty ? frame.variants.first.quantity ?? 0 : 0;
-//     } else if (type == ProductType.lens) {
-//       final lens = product as LensModel;
-//       return lens.variants.isNotEmpty ? lens.variants.first.quantity ?? 0 : 0;
-//     }
-//     return 0;
-//   }
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Row(
-//       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-//       children: [
-//         Text(
-//           '₹${_getProductPrice(product, productType).toStringAsFixed(2)}',
-//           style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-//         ),
-//         Text(
-//           'Qty: ${_getProductQuantity(product, productType)}',
-//           style: TextStyle(color: Colors.grey[700]),
-//         ),
-//       ],
-//     );
-//   }
-// }
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(10),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            _title,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 4),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                '₹${_price.toStringAsFixed(2)}',
+                style: const TextStyle(fontWeight: FontWeight.w600),
+              ),
+              Text(
+                'Qty: $_quantity',
+                style: TextStyle(color: Colors.grey[700]),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}

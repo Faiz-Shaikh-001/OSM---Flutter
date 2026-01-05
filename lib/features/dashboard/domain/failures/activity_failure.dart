@@ -4,9 +4,9 @@ abstract class ActivityFailure {
 }
 
 class ActivityStorageFailure extends ActivityFailure {
-  const ActivityStorageFailure(String message) : super(message);
+  const ActivityStorageFailure(super.message);
 }
 
 class ActivityUnknownFailure extends ActivityFailure {
-  const ActivityUnknownFailure(String message) : super(message);
+  const ActivityUnknownFailure(super.message);
 }
