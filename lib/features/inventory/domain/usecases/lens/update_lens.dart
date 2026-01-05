@@ -12,7 +12,7 @@ class UpdateLens {
   Future<Either<LensFailure, LensUpdatedSuccess>> call(
     Lens lens,
   ) async {
-    if (lens.id.value.isEmpty) {
+    if (lens.id!.value.isEmpty) {
       return const Left(
         LensValidationFailure('Lens ID is required'),
       );

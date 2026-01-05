@@ -8,6 +8,7 @@ import 'package:osm/features/customer/presentation/bloc/customer/customer_bloc.d
 import 'package:osm/features/customer/presentation/bloc/customer_details/customer_details_bloc.dart';
 import 'package:osm/features/customer/presentation/screens/add_new_customer_form.dart';
 import 'package:osm/features/customer/services/build_customer_image.dart';
+import 'package:osm/features/prescription/domain/repositories/prescription_repository.dart';
 import 'package:osm/features/prescription/domain/usecases/add_prescription.dart';
 import 'package:osm/features/prescription/presentation/bloc/add_prescription/bloc/add_prescription_bloc.dart';
 import 'package:osm/features/prescription/presentation/bloc/prescription_timeline/bloc/prescription_timeline_bloc.dart';
@@ -253,19 +254,19 @@ class _CustomerDetailsScreenState extends State<CustomerDetailsScreen> {
         ),
         floatingActionButton: FloatingActionButton(
           onPressed: () async {
-            await Navigator.push(
+            final added = await Navigator.push(
               context,
               MaterialPageRoute(
                 builder: (_) => BlocProvider(
                   create: (context) => AddPrescriptionBloc(
-                    addPrescription: context.read<AddPrescription>(),
+                    addPrescription: AddPrescription(context.read<PrescriptionRepository>()),
                   ),
                   child: AddPrescriptionScreen(customerId: widget.customerId),
                 ),
               ),
             );
 
-            if (context.mounted) {
+            if (added == true && context.mounted) {
               context.read<PrescriptionTimelineBloc>().add(
                 LoadPrescriptionTimeline(widget.customerId),
               );

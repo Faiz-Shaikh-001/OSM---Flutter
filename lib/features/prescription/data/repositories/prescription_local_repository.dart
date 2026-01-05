@@ -1,5 +1,6 @@
 import 'package:isar/isar.dart';
 import 'package:osm/features/customer/data/models/customer_model.dart';
+import 'package:osm/features/doctors/data/models/doctor_model.dart';
 import 'package:osm/features/prescription/data/models/prescription_model.dart';
 
 class PrescriptionLocalRepository {
@@ -7,7 +8,8 @@ class PrescriptionLocalRepository {
 
   Future<int> insert(
     PrescriptionModel prescription,
-    CustomerModel customer, {
+    CustomerModel customer,
+    DoctorModel? doctor, {
     required Isar isar,
   }) async {
     final id = await isar.prescriptionModels.put(prescription);
@@ -15,6 +17,12 @@ class PrescriptionLocalRepository {
     prescription.customer.value = customer;
 
     await prescription.customer.save();
+
+    if (doctor != null) {
+      prescription.doctor.value = doctor;
+      await prescription.doctor.save();
+    }
+    
     return id;
   }
 

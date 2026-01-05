@@ -2,25 +2,27 @@ import 'package:flutter/material.dart';
 import 'package:osm/core/utils/product_type.dart';
 import 'package:osm/core/widgets/grid_card.dart';
 
-class ProductGrid extends StatelessWidget {
-  final List<dynamic> products;
+class ProductGrid<T extends Object> extends StatelessWidget {
+  final List<T> products;
   final ProductType productType;
   final VoidCallback onRefresh;
+  final ValueChanged<Object> onTap;
+  final ValueChanged<Object> onLongPress;
 
   const ProductGrid({
     super.key,
     required this.products,
     required this.productType,
     required this.onRefresh,
+    required this.onLongPress,
+    required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    if (products.isEmpty) {
-      return const Center(child: Text('No products to display.'));
-    }
-
     return GridView.builder(
+      padding: const EdgeInsets.all(8),
+      physics: const AlwaysScrollableScrollPhysics(),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
         crossAxisSpacing: 8,
@@ -32,9 +34,10 @@ class ProductGrid extends StatelessWidget {
         final product = products[index];
 
         return GridCard(
-          heroIndex: index,
           product: product,
           productType: productType,
+          onTap: () => onTap(product),
+          onLongPress: () => onLongPress(product),
         );
       },
     );

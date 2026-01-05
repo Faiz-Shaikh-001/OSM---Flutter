@@ -186,7 +186,7 @@ class _PaymentStepState extends State<PaymentStep> {
             const SizedBox(height: 16),
 
             DropdownButtonFormField<String>(
-              value: _method,
+              initialValue: _method,
               items: const [
                 DropdownMenuItem(value: "Cash", child: Text("Cash")),
                 DropdownMenuItem(value: "Card", child: Text("Card")),

@@ -17,7 +17,7 @@ class AccessoryModel {
   @Index(type: IndexType.value)
   final String name;
 
-  @Index(unique: true)
+  @Index(type: IndexType.hash)
   final String sku;
 
   final String? description;
@@ -31,7 +31,11 @@ class AccessoryModel {
 
   final bool isActive;
 
+  @Index(type: IndexType.hash, unique: true)
+  final String qrKey;
+
   AccessoryModel({
+    required this.qrKey,
     required this.createdAt,
     required this.category,
     required this.brand,

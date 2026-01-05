@@ -5,7 +5,7 @@ import '../../../domain/entities/frame/frame_variant.dart';
 
 class FrameVariantMapper {
   static FrameVariant toEntity(FrameVariantModel model) {
-    if (model.code == null ||
+    if (model.sku == null ||
         model.productCode == null ||
         model.colorName == null ||
         model.size == null) {
@@ -13,7 +13,7 @@ class FrameVariantMapper {
     }
 
     return FrameVariant(
-      code: model.code!,
+      sku: model.sku!,
       productCode: model.productCode!,
       colorName: model.colorName!,
       colorValue: model.colorValue,
@@ -27,7 +27,7 @@ class FrameVariantMapper {
 
   static FrameVariantModel toModel(FrameVariant entity) {
     return FrameVariantModel(
-      code: entity.code,
+      sku: entity.sku,
       productCode: entity.productCode,
       colorName: entity.colorName,
       colorValue: entity.colorValue,

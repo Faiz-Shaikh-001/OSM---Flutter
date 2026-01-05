@@ -1,615 +1,777 @@
 import 'dart:io';
+import 'package:flex_color_picker/flex_color_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:osm/features/inventory/data/models/frame/frame_model_trial.dart';
-import 'package:osm/features/inventory/data/enums/frame_type_model.dart';
-import 'package:osm/features/inventory/data/models/lens/lens_model.dart';
-import 'package:osm/features/inventory/data/enums/lens_type_model.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:isar/isar.dart';
+
 import 'package:osm/core/utils/product_type.dart';
-import 'package:osm/features/inventory/viewmodels/frame_viewmodel.dart';
-import 'package:osm/features/inventory/viewmodels/lens_viewmodel.dart';
+import 'package:osm/core/value_objects/id.dart';
+import 'package:osm/core/widgets/custom_button.dart';
 import 'package:osm/core/widgets/qr_generator.dart';
-import 'package:provider/provider.dart';
-import '../../../../core/widgets/color_dropdown_widget.dart';
-import '../../../../core/widgets/size_dropdown_widget.dart';
-import '../../../../core/widgets/custom_button.dart';
-import 'package:osm/features/inventory/presentation/screens/update_stock_screen.dart';
 
-class ItemPage extends StatefulWidget {
-  final dynamic product;
+import 'package:osm/features/inventory/domain/entities/accessory/accessory.dart';
+import 'package:osm/features/inventory/domain/entities/frame/frame.dart';
+import 'package:osm/features/inventory/domain/entities/frame/frame_type.dart';
+import 'package:osm/features/inventory/domain/entities/frame/frame_variant.dart';
+import 'package:osm/features/inventory/domain/entities/lens/lens.dart';
+import 'package:osm/features/inventory/domain/entities/lens/lens_type.dart';
+
+import 'package:osm/features/inventory/presentation/blocs/accessory/accessory_detail/accessory_detail_bloc.dart';
+import 'package:osm/features/inventory/presentation/blocs/frames/frame_detail/frame_detail_bloc.dart';
+import 'package:osm/features/inventory/presentation/blocs/lens/lens_detail/lens_detail_bloc.dart';
+
+class ItemScreen extends StatefulWidget {
   final ProductType productType;
-  final int? heroIndex;
+  final Id productId;
 
-  const ItemPage({
+  const ItemScreen({
     super.key,
-    this.heroIndex,
-    required this.product,
     required this.productType,
+    required this.productId,
   });
 
   @override
-  State<ItemPage> createState() => _ItemPageState();
+  State<ItemScreen> createState() => _ItemScreenState();
 }
 
-class _ItemPageState extends State<ItemPage> {
-  // --- STATE VARIABLES ---
-  late dynamic _currentProduct;
-  FrameVariant? _selectedFrameVariant;
-  LensVariant? _selectedLensVariant;
-  late ProductType _currentProductType;
-  int _currentPage = 0;
+class _ItemScreenState extends State<ItemScreen> {
+  Object? _product;
+  FrameVariant? _selectedVariant;
+
   final PageController _pageController = PageController();
 
   @override
   void initState() {
     super.initState();
-    _currentProduct = widget.product;
-    _currentProductType = widget.productType;
-    _initializeVariants();
+
+    switch (widget.productType) {
+      case ProductType.frame:
+        context.read<FrameDetailBloc>().add(
+          GetFrameByIdEvent(FrameId(widget.productId.toString())),
+        );
+        break;
+      case ProductType.lens:
+        context.read<LensDetailBloc>().add(
+          GetLensByIdEvent(LensId(widget.productId.toString())),
+        );
+        break;
+      case ProductType.accessory:
+        context.read<AccessoryDetailBloc>().add(
+          GetAccessoryByIdEvent(AccessoryId(widget.productId.toString())),
+        );
+        break;
+    }
   }
 
   @override
   void dispose() {
+    _selectedVariant = null;
+    _product = null;
     _pageController.dispose();
     super.dispose();
   }
 
-  void _initializeVariants() {
-    if (widget.productType == ProductType.frame &&
-        _currentProduct is FrameModel) {
-      final frame = _currentProduct as FrameModel;
-      if (frame.variants.isNotEmpty) {
-        _selectedFrameVariant = frame.variants.first;
-      }
+  void _initVariant(Frame frame) {
+    if (_selectedVariant == null ||
+        !frame.variants.contains(_selectedVariant)) {
+      _selectedVariant = frame.variants.first;
     }
   }
 
-  List<String> _getImageUrls(dynamic product, ProductType type) {
-    if (type == ProductType.frame) {
-      final frame = product as FrameModel;
-      // For frames, we assume all variants have the same images for the model
-      return frame.variants.isNotEmpty &&
-              frame.variants.first.imageUrls.isNotEmpty
-          ? frame.variants.first.imageUrls
-          : ['https://placehold.co/600x400/cccccc/000000?text=No+Image'];
-    } else if (type == ProductType.lens) {
-      final lens = product as LensModel;
-      // For lenses, we get images from the top-level model, or the first variant as a fallback
-      return lens.imageUrls.isNotEmpty
-          ? lens.imageUrls
-          : (lens.variants.isNotEmpty &&
-                    lens.variants.first.imageUrls != null &&
-                    lens.variants.first.imageUrls!.isNotEmpty
-                ? lens.variants.first.imageUrls!
-                : ['https://placehold.co/600x400/cccccc/000000?text=No+Image']);
-    }
-    return ['https://placehold.co/600x400/cccccc/000000?text=No+Image'];
-  }
-
-  String _getTitle() {
-    if (widget.productType == ProductType.frame) {
-      return (_currentProduct as FrameModel).name;
-    } else if (widget.productType == ProductType.lens) {
-      return (_currentProduct as LensModel).productName;
-    }
-    return 'Unknown Product';
-  }
-
-  String _getCompanyName() {
-    if (widget.productType == ProductType.frame) {
-      return (_currentProduct as FrameModel).companyName;
-    } else if (widget.productType == ProductType.lens) {
-      return (_currentProduct as LensModel).companyName;
-    }
-    return 'N/A';
-  }
-
-  String _getSku() {
-    if (widget.productType == ProductType.frame) {
-      return _selectedFrameVariant?.productCode ?? 'N/A';
-    } else if (widget.productType == ProductType.lens) {
-      return _selectedLensVariant?.productCode ?? 'N/A';
-    }
-    return 'N/A';
-  }
-
-  double _getSalesPrice() {
-    if (widget.productType == ProductType.frame) {
-      return _selectedFrameVariant?.salesPrice ?? 0.0;
-    } else if (widget.productType == ProductType.lens) {
-      return _selectedLensVariant?.salesPrice ?? 0.0;
-    }
-    return 0.0;
-  }
-
-  int _getQuantity() {
-    if (widget.productType == ProductType.frame) {
-      return _selectedFrameVariant?.quantity ?? 0;
-    } else if (widget.productType == ProductType.lens) {
-      return _selectedLensVariant?.quantity ?? 0;
-    }
-    return 0;
-  }
-
-  String _getCategory() {
-    if (widget.productType == ProductType.frame) {
-      return (_currentProduct as FrameModel).frameType.displayName;
-    } else if (widget.productType == ProductType.lens) {
-      return (_currentProduct as LensModel).lensType.displayName;
-    }
-    return 'N/A';
-  }
-
-  void _onColorChanged(Color newColor) {
-    if (widget.productType == ProductType.frame &&
-        _currentProduct is FrameModel) {
-      final frame = _currentProduct as FrameModel;
-      final newVariant = frame.variants.firstWhere(
-        (v) => v.color == newColor && v.size == _selectedFrameVariant?.size,
-        orElse: () => _selectedFrameVariant!,
-      );
-      setState(() {
-        _selectedFrameVariant = newVariant;
-      });
-    }
-  }
-
-  void _onSizeChanged(int newSize) {
-    if (widget.productType == ProductType.frame &&
-        _currentProduct is FrameModel) {
-      final frame = _currentProduct as FrameModel;
-      final newVariant = frame.variants.firstWhere(
-        (v) => v.size == newSize && v.color == _selectedFrameVariant?.color,
-        orElse: () => _selectedFrameVariant!,
-      );
-      setState(() {
-        _selectedFrameVariant = newVariant;
-      });
-    }
-  }
-
-  Widget _buildImageWidget(String imagePath) {
-    if (imagePath.startsWith('http')) {
-      return CachedNetworkImage(
-        imageUrl: imagePath,
-        fit: BoxFit.cover,
-        placeholder: (context, url) =>
-            const Center(child: CircularProgressIndicator()),
-        errorWidget: (context, url, error) => const Center(
-          child: Icon(Icons.broken_image, size: 50, color: Colors.grey),
-        ),
-      );
-    } else {
-      return Image.file(
-        File(imagePath),
-        fit: BoxFit.cover,
-        errorBuilder: (context, error, stackTrace) => const Center(
-          child: Icon(Icons.broken_image, size: 50, color: Colors.grey),
-        ),
-      );
-    }
-  }
-
-  Widget _buildDotIndicator(int totalDots, int currentDot) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        // First dot (for the first image)
-        Container(
-          width: currentDot == 0 ? 8.0 : 6.0,
-          height: currentDot == 0 ? 8.0 : 6.0,
-          margin: const EdgeInsets.symmetric(horizontal: 4.0),
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: currentDot == 0 ? Colors.blue : Colors.grey.shade700,
-          ),
-        ),
-        // Middle dot (for all images in between)
-        Container(
-          width: 8.0,
-          height: 8.0,
-          margin: const EdgeInsets.symmetric(horizontal: 4.0),
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: currentDot > 0 && currentDot < totalDots - 1
-                ? Colors.blue
-                : Colors.grey,
-          ),
-        ),
-        // Last dot (for the last image)
-        Container(
-          width: currentDot == totalDots - 1 ? 8.0 : 6.0,
-          height: currentDot == totalDots - 1 ? 8.0 : 6.0,
-          margin: const EdgeInsets.symmetric(horizontal: 4.0),
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: currentDot == totalDots - 1
-                ? Colors.blue
-                : Colors.grey.shade700,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildHeroImage(dynamic product, ProductType productType) {
-    final List<String> imageUrls = _getImageUrls(product, productType);
-    return Hero(
-      tag: 'itemImage_${product.id}_${widget.heroIndex}',
-      child: SizedBox(
-        height: 300,
-        width: double.infinity,
-        child: Stack(
-          children: [
-            // Image Carousel
-            PageView.builder(
-              controller: _pageController,
-              itemCount: imageUrls.length,
-              onPageChanged: (index) {
-                setState(() {
-                  _currentPage = index;
-                });
-              },
-              itemBuilder: (context, index) {
-                final imageUrl = imageUrls[index];
-                return _buildImageWidget(imageUrl);
-              },
-            ),
-            // Navigation Buttons
-            if (imageUrls.length > 1) ...[
-              Positioned.fill(
-                child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: IconButton(
-                    icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
-                    onPressed: () {
-                      if (_currentPage > 0) {
-                        _pageController.previousPage(
-                          duration: const Duration(milliseconds: 300),
-                          curve: Curves.easeInOut,
-                        );
-                      }
-                    },
-                  ),
-                ),
-              ),
-              Positioned.fill(
-                child: Align(
-                  alignment: Alignment.centerRight,
-                  child: IconButton(
-                    icon: const Icon(
-                      Icons.arrow_forward_ios,
-                      color: Colors.white,
-                    ),
-                    onPressed: () {
-                      if (_currentPage < imageUrls.length - 1) {
-                        _pageController.nextPage(
-                          duration: const Duration(milliseconds: 300),
-                          curve: Curves.easeInOut,
-                        );
-                      }
-                    },
-                  ),
-                ),
-              ),
-            ],
-            // Dot Indicators
-            Positioned(
-              bottom: 10,
-              left: 0,
-              right: 0,
-              child: _buildDotIndicator(imageUrls.length, _currentPage),
-            ),
-          ],
-        ),
-      ),
-    );
+  List<String> _images() {
+    if (_product is Frame) return _selectedVariant?.imageUrls ?? [];
+    if (_product is Lens) return (_product as Lens).imageUrls;
+    if (_product is Accessory) return (_product as Accessory).imageUrls;
+    return [];
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Center(child: Text(_getTitle())),
-        leading: IconButton(
-          icon: const Icon(Icons.chevron_left),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
-        actions: [
-          IconButton(onPressed: () {}, icon: const Icon(Icons.notifications)),
-        ],
-      ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildHeroImage(widget.product, widget.productType),
-              Padding(
-                padding: const EdgeInsets.all(15.0),
-                child: _buildProductDetails(
-                  context,
-                  _currentProduct,
-                  _currentProductType,
-                  _selectedFrameVariant,
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 15.0),
-                child: _buildSpecificDetails(),
-              ),
-              const SizedBox(height: 25),
-              _buildActionButtons(),
-              const SizedBox(height: 25),
-              const DeleteWarningBanner(),
-              const SizedBox(height: 20),
-            ],
-          ),
-        ),
-      ),
+      appBar: AppBar(title: const Text('Item Details')),
+      body: SafeArea(child: _buildBloc()),
     );
   }
 
-  Widget _buildProductDetails(
-    BuildContext context,
-    dynamic product,
-    ProductType productType,
-    FrameVariant? currentFrameVariant,
-  ) {
-    final titleStyle = TextStyle(fontSize: 30, fontWeight: FontWeight.bold);
-    final labelStyle = TextStyle(fontSize: 20, color: Colors.grey);
-    final priceStyle = TextStyle(
-      fontSize: 25,
-      color: Colors.blue,
-      fontWeight: FontWeight.bold,
-    );
-    final stockStyle = TextStyle(fontSize: 20, color: Colors.blueGrey);
-
-    final frame = widget.productType == ProductType.frame
-        ? _currentProduct as FrameModel
-        : null;
-    final availableSizes =
-        frame?.variants.map((v) => v.size).whereType<int>().toSet().toList() ??
-        [];
-    final availableColors =
-        frame?.variants
-            .where((v) => v.colorName != null && v.color != null)
-            .map((v) => MapEntry(v.colorName!, v.color!))
-            .toSet()
-            .toList() ??
-        [];
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text("${_getCompanyName()} - ${_getTitle()}", style: titleStyle),
-        Text('SKU: ${_getSku()}', style: labelStyle),
-        const SizedBox(height: 15),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Text('₹${_getSalesPrice().toStringAsFixed(2)}', style: priceStyle),
-            Text('In Stock: ${_getQuantity()}', style: stockStyle),
-          ],
-        ),
-        const SizedBox(height: 25),
-        if (widget.productType == ProductType.frame &&
-            _selectedFrameVariant != null) ...[
-          Row(
-            children: [
-              Expanded(
-                child: ColorDropDownWidget(
-                  availableColorsWithNames: availableColors,
-                  selectedColorName: _selectedFrameVariant!.colorName,
-                  onColorChanged: _onColorChanged,
-                ),
-              ),
-              const SizedBox(width: 16),
-              Container(
-                width: 30,
-                height: 30,
-                decoration: BoxDecoration(
-                  color: _selectedFrameVariant!.color ?? Colors.grey,
-                  shape: BoxShape.circle,
-                  border: Border.all(color: Colors.grey.shade400),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          SizeDropdownWidget(
-            selectedSize: _selectedFrameVariant!.size,
-            availableSizes: availableSizes,
-            onSizeChanged: _onSizeChanged,
-          ),
-          const SizedBox(height: 15),
-        ],
-      ],
-    );
+  Widget _buildBloc() {
+    switch (widget.productType) {
+      case ProductType.frame:
+        return BlocBuilder<FrameDetailBloc, FrameDetailState>(
+          builder: _handleState,
+        );
+      case ProductType.lens:
+        return BlocBuilder<LensDetailBloc, LensDetailState>(
+          builder: _handleState,
+        );
+      case ProductType.accessory:
+        return BlocBuilder<AccessoryDetailBloc, AccessoryDetailState>(
+          builder: _handleState,
+        );
+    }
   }
 
-  Widget _buildSpecificDetails() {
-    final captionStyle = TextStyle(fontSize: 15, color: Colors.blueGrey);
-    final valueStyle = TextStyle(fontSize: 15, fontWeight: FontWeight.w500);
-
-    Widget detailRow(String label, String value) {
-      return Padding(
-        padding: const EdgeInsets.only(bottom: 8.0),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(label, style: captionStyle),
-            Text(value, style: valueStyle),
-          ],
-        ),
-      );
+  Widget _handleState(BuildContext context, dynamic state) {
+    if (state is FrameDetailLoading ||
+        state is LensDetailLoading ||
+        state is AccessoryDetailLoading) {
+      return const Center(child: CircularProgressIndicator());
     }
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
+    if (state is FrameDetailLoaded) {
+      _product = state.frame;
+      _initVariant(state.frame);
+    } else if (state is LensDetailLoaded) {
+      _product = state.lens;
+    } else if (state is AccessoryDetailLoaded) {
+      _product = state.accessory;
+    }
+
+    if (_product == null) {
+      return const Center(child: Text('Product not found'));
+    }
+
+    return _buildContent();
+  }
+
+  Widget _buildContent() {
+    final images = _images();
+
+    return SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          detailRow('Category', _getCategory()),
-          if (widget.productType == ProductType.lens &&
-              _selectedLensVariant != null) ...[
-            detailRow(
-              'Material',
-              _selectedLensVariant!.materialType?.displayName ?? 'N/A',
-            ),
-            detailRow('Side', _selectedLensVariant!.side?.displayName ?? 'N/A'),
-          ],
+          _imageCarousel(images),
+          if (_product is Frame) ..._buildFrameDetails(),
+          if (_product is Lens) ..._buildLensDetails(),
+          if (_product is Accessory) ..._buildAccessoryDetails(),
         ],
       ),
     );
   }
 
-  Widget _buildActionButtons() {
-    return Column(
-      children: [
-        CustomButton(
-          onPressed: () async {
-            final updatedProduct = await Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => UpdateStockScreen(
-                  product: _currentProduct,
-                  productType: widget.productType,
-                  selectedVariant: widget.productType == ProductType.frame
-                      ? _selectedFrameVariant
-                      : _selectedLensVariant,
+  List<Widget> _buildFrameDetails() {
+    final frame = _product as Frame;
+    return [
+      _variantSelector(),
+      Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(10.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        frame.companyName.capitalize,
+                        style: const TextStyle(fontSize: 14),
+                      ),
+                      Text(
+                        frame.name.capitalize,
+                        style: const TextStyle(
+                          fontSize: 32,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                  Text(
+                    '₹${_selectedVariant?.salesPrice.value.toStringAsFixed(2)}',
+                    style: const TextStyle(
+                      fontSize: 32,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.grey[200],
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
+                child: Row(
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'SKU: ${_selectedVariant?.sku}',
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        Text(
+                          'Product Code: ${_selectedVariant?.productCode}',
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
               ),
-            );
+            ),
+            const SizedBox(height: 12),
 
-            if (updatedProduct != null) {
-              setState(() {
-                _currentProduct = updatedProduct;
-                _initializeVariants();
-              });
-            }
-          },
-          label: 'Edit Stock',
-          icon: Icons.edit_outlined,
-        ),
-        const SizedBox(height: 10),
-        CustomButton(
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => QrGeneratorWidget(
-                  product: _currentProduct,
-                  productType: widget.productType,
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
+                child: Column(
+                  children: [
+                    Row(
+                      children: [
+                        Text(
+                          'Stock: ${_selectedVariant?.quantity}',
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    Divider(),
+                    const SizedBox(height: 16),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Frame Type',
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                        Text(
+                          frame.type.label,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 8),
+
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        _selectedVariant != null
+                            ? Text(
+                                'Color',
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              )
+                            : const SizedBox.shrink(),
+
+                        _selectedVariant != null
+                            ? Row(
+                                children: [
+                                  Container(
+                                    width: 25,
+                                    height: 25,
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(25),
+                                      color: Color(
+                                        int.parse(
+                                          '0xFF${_selectedVariant!.colorValue!.toRadixString(16).padLeft(6, '0')}',
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  SizedBox(width: 8),
+                                  Text(
+                                    _selectedVariant!.colorName,
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ],
+                              )
+                            : const Text(
+                                'No variant selected',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: Colors.red,
+                                ),
+                              ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    _selectedVariant != null
+                        ? Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                'Size',
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              ),
+                              Text(
+                                ' ${_selectedVariant!.size}',
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          )
+                        : const SizedBox.shrink(),
+                  ],
                 ),
               ),
-            );
-          },
-          label: 'Generate QR Code',
-          icon: Icons.qr_code,
-          background: const Color(0xfff0f4f9),
-          foreGround: Colors.black,
-        ),
-        const SizedBox(height: 25),
-        CustomButton(
-          onPressed: () async {
-            final frameViewModel = context.read<FrameViewmodel>();
-            final lensViewModel = context.read<LensViewmodel>();
-            final scaffoldMessenger = ScaffoldMessenger.of(context);
-            final navigator = Navigator.of(context);
-
-            final confirmDelete = await _showDeleteConfirmationDialog(context);
-
-            if (confirmDelete) {
-              try {
-                if (widget.productType == ProductType.frame) {
-                  await frameViewModel.deleteFrame(widget.product.id);
-                } else {
-                  await lensViewModel.deleteLens(widget.product.id);
-                }
-
-                scaffoldMessenger.showSnackBar(
-                  SnackBar(
-                    content: Text('${_getTitle()} deleted successfully!'),
+            ),
+            const SizedBox(height: 20),
+            CustomButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => QrGeneratorWidget(
+                      product: _product!,
+                      productType: widget.productType,
+                      selectedFrameVariant: _selectedVariant,
+                    ),
                   ),
                 );
-                navigator.pop();
-              } catch (e) {
-                scaffoldMessenger.showSnackBar(
-                  SnackBar(content: Text('Failed to delete product: $e')),
-                );
-              }
-            }
-          },
-          label: 'Delete Product',
-          icon: Icons.delete_forever_outlined,
-          background: const Color(0xfff0f4f9),
-          foreGround: Colors.red,
+              },
+              label: 'View Qr Code',
+              icon: Icons.qr_code,
+            ),
+          ],
         ),
-      ],
+      ),
+    ];
+  }
+
+  List<Widget> _buildLensDetails() {
+    final lens = _product as Lens;
+
+    return [
+      Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(10.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        lens.companyName.capitalize,
+                        style: const TextStyle(fontSize: 14),
+                      ),
+                      Text(
+                        lens.productName.capitalize,
+                        style: const TextStyle(
+                          fontSize: 32,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                  Text(
+                    '₹${lens.salesPrice.value.toStringAsFixed(2)}',
+                    style: const TextStyle(
+                      fontSize: 32,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.grey[200],
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
+                child: Row(
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'SKU: ${lens.sku}',
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        Text(
+                          'Product Code: ${lens.productCode}',
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "Supported Materials ",
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: [
+                        ...lens.supportedMaterials.map(
+                          (material) => Padding(
+                            padding: const EdgeInsets.only(left: 8.0),
+                            child: Chip(label: Text(material.label)),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "Supported Coatings ",
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: [
+                        if (lens.supportedCoatings.isEmpty)
+                          const Padding(
+                            padding: EdgeInsets.only(left: 8.0),
+                            child: Text(
+                              'None',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                        ...lens.supportedCoatings.map(
+                          (coating) => Padding(
+                            padding: const EdgeInsets.only(left: 8.0),
+                            child: Chip(label: Text(coating.capitalize)),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          "Lens Type ",
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                        Text(
+                          lens.lensType.label,
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          "Min Index ",
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                        Text(
+                          lens.minIndex.toString(),
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          "Max Index ",
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                        Text(
+                          lens.maxIndex.toString(),
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+            CustomButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => QrGeneratorWidget(
+                      product: _product!,
+                      productType: widget.productType,
+                    ),
+                  ),
+                );
+              },
+              label: 'View Qr Code',
+              icon: Icons.qr_code,
+            ),
+          ],
+        ),
+      ),
+    ];
+  }
+
+  List<Widget> _buildAccessoryDetails() {
+    final accessory = _product as Accessory;
+
+    return [
+      Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(10.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        accessory.brand,
+                        style: const TextStyle(fontSize: 14),
+                      ),
+                      Text(
+                        accessory.name,
+                        style: const TextStyle(
+                          fontSize: 32,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                  Text(
+                    '₹${accessory.salesPrice.value.toStringAsFixed(2)}',
+                    style: const TextStyle(
+                      fontSize: 32,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            // category
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.grey[200],
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
+                child: Row(
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'SKU: ${accessory.sku}',
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
+                child: Column(
+                  children: [
+                    Row(
+                      children: [
+                        Text(
+                          'Stock: ${accessory.quantity}',
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                    Divider(),
+                    const SizedBox(width: 12),
+                    Row(
+                      children: [
+                        Text(
+                          'Description: ',
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                    Text(
+                      accessory.description != null
+                          ? accessory.description!
+                          : 'No description available.',
+                      style: const TextStyle(fontSize: 16),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+            CustomButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => QrGeneratorWidget(
+                      product: _product!,
+                      productType: widget.productType,
+                    ),
+                  ),
+                );
+              },
+              label: 'View Qr Code',
+              icon: Icons.qr_code,
+            ),
+          ],
+        ),
+      ),
+    ];
+  }
+
+  Widget _imageCarousel(List<String> images) {
+    return SizedBox(
+      height: 320,
+      child: PageView.builder(
+        controller: _pageController,
+        itemCount: images.length,
+        itemBuilder: (_, i) =>
+            Image.file(File(images[i]), fit: BoxFit.fitHeight),
+      ),
     );
   }
 
-  Future<bool> _showDeleteConfirmationDialog(BuildContext context) async {
-    return await showDialog<bool>(
-          context: context,
-          builder: (BuildContext dialogContext) {
-            return AlertDialog(
-              title: const Text('Confirm Deletion'),
-              content: const Text(
-                'Are you sure you want to permanently delete this product? This action cannot be undone.',
-              ),
-              actions: <Widget>[
-                TextButton(
-                  child: const Text('Cancel'),
-                  onPressed: () {
-                    Navigator.of(dialogContext).pop(false);
-                  },
-                ),
-                TextButton(
-                  style: TextButton.styleFrom(foregroundColor: Colors.red),
-                  child: const Text('Delete'),
-                  onPressed: () {
-                    Navigator.of(dialogContext).pop(true);
-                  },
-                ),
-              ],
-            );
-          },
-        ) ??
-        false;
-  }
-}
+  Widget _variantSelector() {
+    final frame = _product as Frame;
 
-class DeleteWarningBanner extends StatelessWidget {
-  const DeleteWarningBanner({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Container(
-        decoration: BoxDecoration(
-          border: Border.all(width: .2, color: Colors.red),
-          borderRadius: BorderRadius.circular(10),
-        ),
-        width: MediaQuery.of(context).size.width * .9,
-        padding: const EdgeInsets.all(8.0),
+    return Padding(
+      padding: const EdgeInsets.all(12),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Icon(Icons.warning, color: Colors.red),
-            const SizedBox(width: 10),
-            Expanded(
-              child: const Text(
-                'Deleting this product will permanently remove it from the inventory. This action cannot be undone.',
-                style: TextStyle(color: Colors.red),
+          children: frame.variants.map((v) {
+            final selected = v == _selectedVariant;
+            return Padding(
+              padding: const EdgeInsets.fromLTRB(8, 0, 0, 0),
+              child: ChoiceChip(
+                label: Text('${v.colorName} • ${v.size}'),
+                selected: selected,
+                onSelected: (_) {
+                  setState(() {
+                    _selectedVariant = v;
+                  });
+                },
+                selectedColor: Colors.blue.shade100,
               ),
-            ),
-          ],
+            );
+          }).toList(),
         ),
       ),
     );

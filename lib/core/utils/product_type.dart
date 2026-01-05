@@ -1,1 +1,1 @@
-enum ProductType { frame, lens }
+enum ProductType { frame, lens, accessory }

@@ -39,7 +39,10 @@ class CustomerRepositoryImpl implements CustomerRepository {
     }
 
     final id = await isar.writeTxn(() async {
-      return await _localRepository.insert(CustomerMapper.fromEntity(customer));  
+      return await _localRepository.insert(
+        CustomerMapper.fromEntity(customer),
+        isar,
+      );
     });
 
     await isar.writeTxn(() async {
@@ -51,7 +54,7 @@ class CustomerRepositoryImpl implements CustomerRepository {
         ),
         isar: isar,
       );
-    }) ;
+    });
 
     return Right(CustomerId(id.toString()));
   }
@@ -69,8 +72,25 @@ class CustomerRepositoryImpl implements CustomerRepository {
       final model = CustomerMapper.fromEntity(customer)
         ..id = int.parse(customer.id!);
 
+      final existing = await isar.customerModels.get(model.id);
+
+      if (existing == null) {
+        return Left(CustomerNotFoundFailure());
+      }
+
+      if (customer.primaryPhoneNumber != existing.primaryPhoneNumber) {
+        final phoneExist = await isar.customerModels
+            .filter()
+            .primaryPhoneNumberEqualTo(customer.primaryPhoneNumber)
+            .findFirst();
+
+        if (phoneExist != null) {
+          throw Exception("Phone number already in use.");
+        }
+      }
+
       await isar.writeTxn(() async {
-        await _localRepository.update(model);
+        await _localRepository.update(model, isar);
         await _activityRepository.log(
           Activity(
             type: ActivityType.customerUpdated,
@@ -94,21 +114,21 @@ class CustomerRepositoryImpl implements CustomerRepository {
       final isar = await _isarService.db;
       final parsedId = int.parse(id.value);
 
+      final model = await _localRepository.getById(parsedId, isar);
+
+      if (model == null) {
+        throw const CustomerNotFoundFailure();
+      }
+
+      await model.orders.load();
+      await model.prescriptions.load();
+
+      if (model.orders.isNotEmpty || model.prescriptions.isNotEmpty) {
+        throw const CustomerHasRelationsFailure();
+      }
+
       await isar.writeTxn(() async {
-        final model = await _localRepository.getById(parsedId);
-
-        if (model == null) {
-          throw const CustomerNotFoundFailure();
-        }
-
-        await model.orders.load();
-        await model.prescriptions.load();
-
-        if (model.orders.isNotEmpty || model.prescriptions.isNotEmpty) {
-          throw const CustomerHasRelationsFailure();
-        }
-
-        await _localRepository.delete(parsedId);
+        await _localRepository.delete(parsedId, isar);
 
         await _activityRepository.log(
           Activity(
@@ -131,7 +151,8 @@ class CustomerRepositoryImpl implements CustomerRepository {
   @override
   Future<Either<CustomerFailure, Customer>> getById(CustomerId id) async {
     try {
-      final model = await _localRepository.getById(int.parse(id.value));
+      final isar = await _isarService.db;
+      final model = await _localRepository.getById(int.parse(id.value), isar);
 
       if (model == null) {
         return const Left(CustomerNotFoundFailure());
@@ -147,7 +168,8 @@ class CustomerRepositoryImpl implements CustomerRepository {
   @override
   Future<Either<CustomerFailure, List<Customer>>> getAll() async {
     try {
-      final models = await _localRepository.getAll();
+      final isar = await _isarService.db;
+      final models = await _localRepository.getAll(isar);
       return Right(models.map(CustomerMapper.toEntity).toList());
     } catch (_) {
       return const Left(CustomerUnknownFailure());
@@ -157,7 +179,8 @@ class CustomerRepositoryImpl implements CustomerRepository {
   @override
   Stream<Either<CustomerFailure, List<Customer>>> watchAll() async* {
     try {
-      yield* _localRepository.watchAll().map(
+      final isar = await _isarService.db;
+      yield* _localRepository.watchAll(isar).map(
         (models) => Right(models.map(CustomerMapper.toEntity).toList()),
       );
     } catch (e) {
@@ -169,7 +192,8 @@ class CustomerRepositoryImpl implements CustomerRepository {
   @override
   Future<Either<CustomerFailure, List<Customer>>> search(String query) async {
     try {
-      final models = await _localRepository.search(query);
+      final isar = await _isarService.db;
+      final models = await _localRepository.search(query, isar);
       return Right(models.map(CustomerMapper.toEntity).toList());
     } catch (_) {
       return const Left(CustomerUnknownFailure());

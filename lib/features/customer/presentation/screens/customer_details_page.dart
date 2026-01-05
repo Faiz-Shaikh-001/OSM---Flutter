@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:osm/core/value_objects/id.dart';
-import 'package:osm/features/customer/data/repositories/customer_repository_impl.dart';
+import 'package:osm/features/customer/domain/repositories/customer_repository.dart';
 import 'package:osm/features/customer/domain/usecases/delete_customer.dart';
 import 'package:osm/features/customer/domain/usecases/get_customer_details.dart';
 import 'package:osm/features/customer/presentation/bloc/customer_details/customer_details_bloc.dart';
 import 'package:osm/features/customer/presentation/screens/customer_details_screen.dart';
-import 'package:osm/features/orders/data/repositories/order_repository_impl.dart';
-import 'package:osm/features/prescription/data/repositories/prescription_repository_impl.dart';
+import 'package:osm/features/orders/domain/repositories/order_repository.dart';
+import 'package:osm/features/prescription/domain/repositories/prescription_repository.dart';
 import 'package:osm/features/prescription/domain/usecases/get_prescription_history.dart';
 import 'package:osm/features/prescription/presentation/bloc/prescription_timeline/bloc/prescription_timeline_bloc.dart';
 
@@ -17,9 +17,9 @@ class CustomerDetailsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final customerRepo = context.read<CustomerRepositoryImpl>();
-    final orderRepo = context.read<OrderRepositoryImpl>();
-    final prescriptionRepo = context.read<PrescriptionRepositoryImpl>();
+    final customerRepo = context.read<CustomerRepository>();
+    final orderRepo = context.read<OrderRepository>();
+    final prescriptionRepo = context.read<PrescriptionRepository>();
     return MultiBlocProvider(
       providers: [
         BlocProvider(

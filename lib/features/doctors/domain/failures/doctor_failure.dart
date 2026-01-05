@@ -19,6 +19,5 @@ class DoctorPersistenceFailure extends DoctorFailure {
 }
 
 class InvalidDoctorFailure extends DoctorFailure {
-  const InvalidDoctorFailure(String message)
-      : super(message);
+  const InvalidDoctorFailure(super.message);
 }

@@ -12,7 +12,7 @@ class UpdateAccessory {
   Future<Either<AccessoryFailure, AccessoryUpdatedSuccess>> call(
     Accessory accessory,
   ) async {
-    if (accessory.id.value.isEmpty) {
+    if (accessory.id!.value.isEmpty) {
       return const Left(
         AccessoryValidationFailure('Accessory ID is required'),
       );

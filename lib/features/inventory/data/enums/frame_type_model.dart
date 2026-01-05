@@ -4,4 +4,5 @@ enum FrameTypeModel {
   fullMetal,
   fullShell,
   goggles,
+  custom,
 }

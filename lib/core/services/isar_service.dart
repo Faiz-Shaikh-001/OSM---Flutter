@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:isar/isar.dart';
+import 'package:osm/core/entities/index_counter.dart';
 import 'package:osm/features/dashboard/data/models/activity_model.dart';
 import 'package:osm/features/inventory/data/models/accessory/accessory_model.dart';
 import 'package:osm/features/inventory/data/models/frame/frame_model.dart';
@@ -49,6 +50,7 @@ class IsarService {
         StoreLocationModelSchema,
         ActiveStoreModelSchema,
         ActivityModelSchema,
+        IndexCounterSchema,
       ],
       directory: dir.path,
       inspector: true,

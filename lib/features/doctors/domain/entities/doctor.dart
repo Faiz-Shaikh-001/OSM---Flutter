@@ -1,7 +1,7 @@
 import 'package:osm/core/value_objects/id.dart';
 
 class Doctor {
-  final DoctorId id;
+  final DoctorId? id;
   final DateTime createdAt;
   final String name;
   final String designation;
@@ -11,7 +11,7 @@ class Doctor {
   final StoreLocationId storeLocationId;
 
   Doctor({
-    required this.id,
+    this.id,
     required this.createdAt,
     required this.name,
     required this.designation,

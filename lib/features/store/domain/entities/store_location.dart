@@ -1,7 +1,7 @@
 import 'package:osm/core/value_objects/id.dart';
 
 class StoreLocation {
-  final StoreLocationId id;
+  final StoreLocationId? id;
   final String name;
   final String address;
   final String city;
@@ -11,7 +11,7 @@ class StoreLocation {
   final DateTime createdAt;
 
   StoreLocation({
-    required this.id,
+    this.id,
     required this.name,
     required this.address,
     required this.city,

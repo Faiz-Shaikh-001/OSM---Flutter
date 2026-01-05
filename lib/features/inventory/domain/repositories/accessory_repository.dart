@@ -19,6 +19,10 @@ abstract class AccessoryRepository {
     String name,
   );
 
+  Future<Accessory?> getByQrKey(
+    String qrKey,
+  );
+
   Future<Either<AccessoryFailure, AccessoryCreatedSuccess>> create(
     Accessory accessory,
   );

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:osm/core/value_objects/id.dart';
+import 'package:osm/features/prescription/domain/repositories/prescription_repository.dart';
 import 'package:osm/features/prescription/domain/usecases/get_prescription_history.dart';
 import 'package:osm/features/prescription/presentation/bloc/prescription_timeline/bloc/prescription_timeline_bloc.dart';
 import 'package:osm/features/prescription/presentation/widgets/prescription_timeline_list.dart';
@@ -13,7 +14,7 @@ class PrescriptionTimelineSection extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (context) => PrescriptionTimelineBloc(
-        getPrescriptionHistory: context.read<GetPrescriptionHistory>(),
+        getPrescriptionHistory: GetPrescriptionHistory(context.read<PrescriptionRepository>()),
       )..add(LoadPrescriptionTimeline(customerId)),
       child: const _PrescriptionTimelineView(),
     );

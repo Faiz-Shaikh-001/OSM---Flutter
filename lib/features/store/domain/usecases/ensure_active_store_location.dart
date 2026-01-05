@@ -23,7 +23,7 @@ class EnsureActiveStoreLocation {
           (stores) async {
             final first = stores.first;
             final setResult =
-                await repository.setActive(first.id);
+                await repository.setActive(first.id!);
 
             return setResult.fold(
               (f) => Left(f),
