@@ -1,49 +1,39 @@
 import 'package:isar/isar.dart';
-import 'package:osm/core/services/isar_service.dart';
 import 'package:osm/features/customer/data/models/customer_model.dart';
 import 'package:osm/features/orders/data/models/order_item/order_item_model.dart';
 import 'package:osm/features/orders/data/models/payment/payment_model.dart';
 import '../models/order/order_model.dart';
 
 class OrderLocalRepository {
-  final IsarService _isarService;
-  OrderLocalRepository(this._isarService);
 
-  Future<OrderModel?> getById(int id) async {
-    final isar = await _isarService.db;
+  Future<OrderModel?> getById(int id, Isar isar) async {
     return isar.orderModels.get(id);
   }
 
-  Future<List<OrderModel>> getAll() async {
-    final isar = await _isarService.db;
+  Future<List<OrderModel>> getAll(Isar isar) async {
     return isar.orderModels.where().findAll();
   }
 
-  Stream<List<OrderModel>> watchAll() async* {
-    final isar = await _isarService.db;
+  Stream<List<OrderModel>> watchAll(Isar isar) async* {
     yield* isar.orderModels.where().watch(fireImmediately: true);
   }
 
-  Future<int> insert(OrderModel model) async {
-    final isar = await _isarService.db;
+  Future<int> insert(OrderModel model, Isar isar) async {
     return isar.writeTxn(() => isar.orderModels.put(model));
   }
 
-  Future<void> save(OrderModel model) async {
-    final isar = await _isarService.db;
+  Future<void> save(OrderModel model, Isar isar) async {
     return isar.writeTxn(() => isar.orderModels.put(model));
   }
 
-  Future<List<OrderModel>> getByCustomer(int customerId) async {
-    final isar = await _isarService.db;
+  Future<List<OrderModel>> getByCustomer(int customerId, Isar isar) async {
     return isar.orderModels
         .filter()
         .customer((c) => c.idEqualTo(customerId))
         .findAll();
   }
 
-  Future<void> delete(int id) async {
-    final isar = await _isarService.db;
+  Future<void> delete(int id, Isar isar) async {
     await isar.writeTxn(() async {
       await isar.orderItemModels
           .filter()
@@ -59,8 +49,7 @@ class OrderLocalRepository {
     });
   }
 
-  Future<List<OrderModel>> searchByCustomerOrOrderId(String query) async {
-    final isar = await _isarService.db;
+  Future<List<OrderModel>> searchByCustomerOrOrderId(String query, Isar isar) async {
     final parsedId = int.tryParse(query);
     return isar.orderModels
         .filter()

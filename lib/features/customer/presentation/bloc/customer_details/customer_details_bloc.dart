@@ -43,7 +43,7 @@ class CustomerDetailsBloc
 
     if (currentState is! CustomerDetailsLoaded) return;
 
-    final result = await deleteCustomer(CustomerId(currentState.details.customer.id!));
+    final result = await deleteCustomer(currentState.details.customer.id!);
 
     result.fold(
       (failure) => emit(CustomerDetailsError(failure.message)),

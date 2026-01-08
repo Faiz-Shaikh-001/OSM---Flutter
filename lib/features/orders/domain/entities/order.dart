@@ -50,5 +50,5 @@ class Order {
   bool get isFullyPaid => pendingAmount.isZero;
 
   bool get canBeCompleted =>
-      status == OrderStatus.completed && isFullyPaid;
+      status != OrderStatus.completed && isFullyPaid;
 }

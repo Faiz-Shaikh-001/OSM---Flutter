@@ -1,43 +1,41 @@
 import 'package:flutter/material.dart';
+import 'package:osm/features/customer/domain/entities/customer.dart';
 import 'package:osm/features/orders/presentation/screens/customer_step/widgets/no_result_found_view.dart';
-import 'package:provider/provider.dart';
-import 'package:osm/features/customer/presentation/viewmodel/customer_viewmodel.dart';
-import 'package:osm/features/customer/data/models/customer_model.dart';
 
 class CustomerSearchResults extends StatelessWidget {
-  final Function(CustomerModel) onCustomerSelected;
+  final bool isLoading;
+  final List<Customer> results;
+  final ValueChanged<Customer> onCustomerSelected;
   final VoidCallback onAddNew;
 
   const CustomerSearchResults({
     super.key,
+    required this.isLoading,
+    required this.results,
     required this.onCustomerSelected,
     required this.onAddNew,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<CustomerViewModel>(
-      builder: (context, customerViewModel, child) {
-        if (customerViewModel.isLoading) {
-          return const Center(child: CircularProgressIndicator());
-        }
+    if (isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
 
-        if (customerViewModel.searchResults.isEmpty) {
-          return NoResultsFoundView(onAddNew: onAddNew);
-        }
+    if (results.isEmpty) {
+      return NoResultsFoundView(onAddNew: onAddNew);
+    }
 
-        return ListView.builder(
-          itemCount: customerViewModel.searchResults.length,
-          itemBuilder: (context, index) {
-            final customer = customerViewModel.searchResults[index];
-            return Card(
-              child: ListTile(
-                title: Text('${customer.firstName} ${customer.lastName}'),
-                subtitle: Text(customer.primaryPhoneNumber),
-                onTap: () => onCustomerSelected(customer),
-              ),
-            );
-          },
+    return ListView.builder(
+      itemCount: results.length,
+      itemBuilder: (context, index) {
+        final customer = results[index];
+        return Card(
+          child: ListTile(
+            title: Text(customer.fullName),
+            subtitle: Text(customer.primaryPhoneNumber),
+            onTap: () => onCustomerSelected(customer),
+          ),
         );
       },
     );

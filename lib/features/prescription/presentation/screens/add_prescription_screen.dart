@@ -11,7 +11,7 @@ import 'package:osm/features/prescription/domain/entities/prescription.dart';
 import 'package:osm/features/prescription/domain/entities/prescription_source.dart';
 import 'package:osm/features/prescription/domain/value_objects/eye_power.dart';
 import 'package:osm/features/prescription/domain/value_objects/pupillary_distance.dart';
-import 'package:osm/features/prescription/presentation/bloc/add_prescription/bloc/add_prescription_bloc.dart';
+import 'package:osm/features/prescription/presentation/bloc/add_prescription/add_prescription_bloc.dart';
 import 'package:osm/features/store/presentation/bloc/store_location_bloc.dart';
 
 class AddPrescriptionScreen extends StatefulWidget {
@@ -135,7 +135,7 @@ class _AddPrescriptionScreenState extends State<AddPrescriptionScreen> {
         return BlocListener<AddPrescriptionBloc, AddPrescriptionState>(
           listener: (context, state) {
             if (state is AddPrescriptionSuccess) {
-              Navigator.pop(context, true);
+              Navigator.pop(context, state.prescription);
             }
             if (state is AddPrescriptionFailure) {
               ScaffoldMessenger.of(

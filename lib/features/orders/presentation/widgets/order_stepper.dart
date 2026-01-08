@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:osm/features/orders/presentation/enum/order_step.dart';
 
 class OrderStepper extends StatelessWidget {
-  final int currentStep;
+  final OrderStep currentStep;
   const OrderStepper({super.key, required this.currentStep});
 
   @override
   Widget build(BuildContext context) {
     return _buildOrderSteps();
   }
+
+  int get _index => OrderStep.values.indexOf(currentStep);
 
   Widget _buildOrderSteps() {
     return Row(
@@ -24,8 +27,8 @@ class OrderStepper extends StatelessWidget {
   }
 
   Widget _buildStep({required int stepNumber, required String label}) {
-    bool isCompleted = stepNumber < currentStep;
-    bool isCurrent = stepNumber == currentStep;
+    bool isCompleted = stepNumber < _index;
+    bool isCurrent = stepNumber == _index + 1;
 
     Color stepColor = isCurrent
         ? Colors.blue
@@ -62,7 +65,7 @@ class OrderStepper extends StatelessWidget {
   }
 
   Widget _buildStepConnector(int stepNumber) {
-    bool isActive = currentStep >= stepNumber;
+    bool isActive = _index >= stepNumber;
 
     return Expanded(
       child: Container(

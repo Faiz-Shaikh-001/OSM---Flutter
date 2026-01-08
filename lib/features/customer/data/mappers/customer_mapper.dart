@@ -1,3 +1,4 @@
+import 'package:osm/core/value_objects/id.dart';
 import 'package:osm/features/customer/data/mappers/customer_enum_mapper.dart';
 
 import '../../domain/entities/customer.dart';
@@ -19,7 +20,9 @@ class CustomerMapper {
       state: customer.state,
       postalCode: customer.postalCode,
       country: customer.country,
-      customerType: CustomerEnumMapper.toCustomerTypeModel(customer.customerType),
+      customerType: CustomerEnumMapper.toCustomerTypeModel(
+        customer.customerType,
+      ),
       tags: customer.tags,
       notes: customer.notes,
       lastInteractionAt: customer.lastInteractionAt,
@@ -30,7 +33,7 @@ class CustomerMapper {
 
   static Customer toEntity(CustomerModel model) {
     return Customer(
-      id: model.id.toString(),
+      id: CustomerId(model.id.toString()),
       firstName: model.firstName,
       lastName: model.lastName,
       primaryPhoneNumber: model.primaryPhoneNumber,

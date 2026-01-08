@@ -11,5 +11,6 @@ class CustomerDeletedSuccess extends CustomerSuccess {
 
 class CustomerCreatedSuccess extends CustomerSuccess {
   final CustomerId customerId;
-  const CustomerCreatedSuccess(this.customerId) : super('Successfully added customer with customerId: $customerId');
+  const CustomerCreatedSuccess(this.customerId)
+    : super('Successfully added customer with customerId: $customerId');
 }

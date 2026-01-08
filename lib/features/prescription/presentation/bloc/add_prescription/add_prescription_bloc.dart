@@ -25,7 +25,7 @@ class AddPrescriptionBloc
 
     result.fold(
       (failure) => emit(AddPrescriptionFailure(failure.message)),
-      (_) => emit(AddPrescriptionSuccess()),
+      (_) => emit(AddPrescriptionSuccess(event.prescription)),
     );
   }
 }

@@ -70,7 +70,7 @@ class CustomerRepositoryImpl implements CustomerRepository {
       final isar = await _isarService.db;
 
       final model = CustomerMapper.fromEntity(customer)
-        ..id = int.parse(customer.id!);
+        ..id = int.parse(customer.id!.value);
 
       final existing = await isar.customerModels.get(model.id);
 

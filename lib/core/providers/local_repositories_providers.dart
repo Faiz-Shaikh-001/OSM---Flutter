@@ -1,12 +1,10 @@
-
-
-import 'package:osm/core/services/isar_service.dart';
 import 'package:osm/features/customer/data/repositories/customer_local_repository.dart';
 import 'package:osm/features/dashboard/data/repositories/activity_local_repository.dart';
 import 'package:osm/features/doctors/data/repositories/doctor_local_repository.dart';
 import 'package:osm/features/inventory/data/repositories/accessory_local_repository.dart';
 import 'package:osm/features/inventory/data/repositories/frame_local_repository.dart';
 import 'package:osm/features/inventory/data/repositories/lens_local_repository.dart';
+import 'package:osm/features/orders/data/repositories/order_item_local_repository.dart';
 import 'package:osm/features/orders/data/repositories/order_local_repository.dart';
 import 'package:osm/features/orders/data/repositories/payment_local_repository.dart';
 import 'package:osm/features/prescription/data/repositories/prescription_local_repository.dart';
@@ -15,46 +13,29 @@ import 'package:provider/provider.dart';
 
 final List<Provider> localRepositoryProviders = [
   // Local Repositories
-        Provider<CustomerLocalRepository>(
-          create: (context) => CustomerLocalRepository(),
-        ),
+  Provider<CustomerLocalRepository>(create: (_) => CustomerLocalRepository()),
 
-        Provider<ActivityLocalRepository>(
-          create: (context) => ActivityLocalRepository(),
-        ),
+  Provider<ActivityLocalRepository>(create: (_) => ActivityLocalRepository()),
 
-        Provider<OrderLocalRepository>(
-          create: (context) =>
-              OrderLocalRepository(context.read<IsarService>()),
-        ),
+  Provider<OrderItemLocalRepository>(create: (_) => OrderItemLocalRepository()),
 
-        Provider<PaymentLocalRepository>(
-          create: (context) =>
-              PaymentLocalRepository(context.read<IsarService>()),
-        ),
+  Provider<OrderLocalRepository>(create: (_) => OrderLocalRepository()),
 
-        Provider<PrescriptionLocalRepository>(
-          create: (context) => PrescriptionLocalRepository(),
-        ),
+  Provider<PaymentLocalRepository>(create: (_) => PaymentLocalRepository()),
 
-        Provider<DoctorLocalRepository>(
-          create: (context) => DoctorLocalRepository(),
-        ),
+  Provider<PrescriptionLocalRepository>(
+    create: (_) => PrescriptionLocalRepository(),
+  ),
 
-        Provider<StoreLocationLocalRepository>(
-          create: (context) => StoreLocationLocalRepository(),
-        ),
+  Provider<DoctorLocalRepository>(create: (_) => DoctorLocalRepository()),
 
-        Provider<AccessoryLocalRepository>(
-          create: (context) => AccessoryLocalRepository(),
-        ),
+  Provider<StoreLocationLocalRepository>(
+    create: (_) => StoreLocationLocalRepository(),
+  ),
 
-        Provider<FrameLocalRepository>(
-          create: (context) => FrameLocalRepository(),
-        ),
+  Provider<AccessoryLocalRepository>(create: (_) => AccessoryLocalRepository()),
 
-        Provider<LensLocalRepository>(
-          create: (context) => LensLocalRepository(),
-        ),
+  Provider<FrameLocalRepository>(create: (_) => FrameLocalRepository()),
 
+  Provider<LensLocalRepository>(create: (context) => LensLocalRepository()),
 ];

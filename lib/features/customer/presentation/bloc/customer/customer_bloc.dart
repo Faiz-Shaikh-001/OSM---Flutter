@@ -4,7 +4,6 @@ import 'package:bloc/bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:meta/meta.dart';
 import 'package:osm/core/either.dart';
-import 'package:osm/core/value_objects/id.dart';
 import 'package:osm/features/customer/domain/entities/customer.dart';
 import 'package:osm/features/customer/domain/failures/customer_failure.dart';
 import 'package:osm/features/customer/domain/usecases/add_customer.dart';
@@ -118,7 +117,7 @@ class CustomerBloc extends Bloc<CustomerEvent, CustomerState> {
     Emitter<CustomerState> emit,
   ) async {
     final customerToDelete = event.customer;
-    final result = await deleteCustomer(CustomerId(event.customer.id!));
+    final result = await deleteCustomer(event.customer.id!);
 
     result.fold((failure) => emit(CustomerError(failure.message)), (
       deletedCustomer,

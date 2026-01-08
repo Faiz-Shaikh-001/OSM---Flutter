@@ -49,8 +49,9 @@ final List<Provider> repositoryImplProviders = [
 
   Provider<OrderRepository>(
     create: (context) => OrderRepositoryImpl(
-      orderLocal: context.read<OrderLocalRepository>(),
-      paymentLocal: context.read<PaymentLocalRepository>(),
+      context.read<IsarService>(),
+      context.read<OrderLocalRepository>(),
+      context.read<PaymentLocalRepository>(),
     ),
   ),
 

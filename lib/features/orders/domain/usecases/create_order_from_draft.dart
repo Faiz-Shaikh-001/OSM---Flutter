@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:osm/core/either.dart';
 
 import '../entities/order.dart';
@@ -12,18 +13,26 @@ class CreateOrderFromDraft {
   CreateOrderFromDraft(this.repository);
 
   Future<Either<OrderFailure, Order>> call(OrderDraft draft) async {
+    debugPrint(draft.isComplete.toString());
+
     if (!draft.isComplete) {
       return const Left(OrderValidationFailure('Order draft is incomplete'));
     }
 
     try {
+      debugPrint("Order in create Order from draft");
+      final status = draft.payment == null ? OrderStatus.pendingPayment : OrderStatus.completed;
+
+      debugPrint("status: $status");
       final order = Order.newOrder(
         createdAt: DateTime.now(),
-        status: OrderStatus.pendingPayment,
+        status: status,
         customerId: draft.customerId!,
         items: draft.items,
         payments: draft.payment != null ? [draft.payment!] : [],
       );
+
+      debugPrint("Order created");
 
       final result = await repository.create(order);
 

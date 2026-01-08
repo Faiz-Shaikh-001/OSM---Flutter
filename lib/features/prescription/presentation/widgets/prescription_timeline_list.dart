@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:osm/features/prescription/domain/entities/prescription.dart';
+import 'package:osm/features/prescription/presentation/dto/prescription_with_doctor.dart';
 import 'package:osm/features/prescription/presentation/screens/prescription_details_screen.dart';
 
 class PrescriptionTimelineList extends StatelessWidget {
-  final List<Prescription> prescriptions;
+  final List<PrescriptionWithDoctor> prescriptions;
 
   const PrescriptionTimelineList({super.key, required this.prescriptions});
 
@@ -22,16 +22,20 @@ class PrescriptionTimelineList extends StatelessWidget {
           ...prescriptions.map((p) {
             return ListTile(
               title: Text(
-                p.prescriptionDate.toLocal().toString().split(' ').first,
+                p.prescription.prescriptionDate
+                    .toLocal()
+                    .toString()
+                    .split(' ')
+                    .first,
               ),
-              subtitle: Text(p.source.name.toUpperCase()),
+              subtitle: Text(p.prescription.source.name.toUpperCase()),
               trailing: const Icon(Icons.chevron_right),
               onTap: () {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder: (_) =>
-                        PrescriptionDetailsScreen(prescription: p),
+                        PrescriptionDetailsScreen(prescription: p.prescription),
                   ),
                 );
               },
