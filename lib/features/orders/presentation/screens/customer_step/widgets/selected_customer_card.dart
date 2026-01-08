@@ -1,10 +1,9 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
-import 'package:osm/features/customer/data/models/customer_model.dart';
+import 'package:osm/features/customer/domain/entities/customer.dart';
+import 'package:osm/features/customer/services/build_customer_image.dart';
 
 class SelectedCustomerCard extends StatelessWidget {
-  final CustomerModel customer;
+  final Customer customer;
   final VoidCallback onRemove;
 
   const SelectedCustomerCard({
@@ -32,10 +31,7 @@ class SelectedCustomerCard extends StatelessWidget {
                 CircleAvatar(
                   radius: 32,
                   backgroundColor: colorScheme.primaryContainer,
-                  backgroundImage: customer.profileImageUrl.startsWith('http')
-                      ? NetworkImage(customer.profileImageUrl)
-                      : FileImage(File(customer.profileImageUrl))
-                            as ImageProvider,
+                  backgroundImage: buildCustomerImage(customer.profileImageUrl),
                 ),
                 const SizedBox(width: 16),
                 Expanded(

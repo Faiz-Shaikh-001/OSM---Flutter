@@ -1,16 +1,15 @@
-import 'package:osm/core/services/isar_service.dart';
+import 'package:isar/isar.dart';
 import '../models/payment/payment_model.dart';
 import '../models/order/order_model.dart';
 
 class PaymentLocalRepository {
-  final IsarService _isarService;
-  PaymentLocalRepository(this._isarService);
+  PaymentLocalRepository();
 
   Future<int> insert({
     required PaymentModel payment,
     required OrderModel order,
+    required Isar isar,
   }) async {
-    final isar = await _isarService.db;
     return isar.writeTxn(() async {
       payment.order.value = order;
       final id = await isar.paymentModels.put(payment);
@@ -22,15 +21,13 @@ class PaymentLocalRepository {
     });
   }
 
-  Future<void> update(PaymentModel payment) async {
-    final isar = await _isarService.db;
+  Future<void> update(PaymentModel payment, Isar isar) async {
     return isar.writeTxn(() async {
       await isar.paymentModels.put(payment);
     });
   }
 
-  Future<bool> delete(int id) async {
-    final isar = await _isarService.db;
+  Future<bool> delete(int id, Isar isar) async {
     return isar.writeTxn(() async {
       return await isar.paymentModels.delete(id);
     });

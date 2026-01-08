@@ -3,12 +3,12 @@ import '../models/order_item/order_item_model.dart';
 import '../models/order/order_model.dart';
 
 class OrderItemLocalRepository {
-  final Isar isar;
-  OrderItemLocalRepository(this.isar);
+  OrderItemLocalRepository();
 
   Future<int> insert({
     required OrderItemModel item,
     required OrderModel order,
+    required Isar isar,
   }) async {
     return isar.writeTxn(() async {
       item.order.value = order;
@@ -21,13 +21,13 @@ class OrderItemLocalRepository {
     });
   }
 
-  Future<void> update(OrderItemModel item) {
+  Future<void> update(OrderItemModel item, Isar isar) {
     return isar.writeTxn(() async {
       await isar.orderItemModels.put(item);
     });
   }
 
-  Future<bool> delete(int id) {
+  Future<bool> delete(int id, Isar isar) {
     return isar.writeTxn(() async {
       return await isar.orderItemModels.delete(id);
     });

@@ -8,7 +8,7 @@ final class PrescriptionTimelineInitial extends PrescriptionTimelineState {}
 class PrescriptionTimelineLoading extends PrescriptionTimelineState {}
 
 class PrescriptionTimelineLoaded extends PrescriptionTimelineState {
-  final List<Prescription> prescriptions;
+  final List<PrescriptionWithDoctor> prescriptions;
   PrescriptionTimelineLoaded(this.prescriptions);
 }
 

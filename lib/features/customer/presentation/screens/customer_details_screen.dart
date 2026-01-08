@@ -10,8 +10,8 @@ import 'package:osm/features/customer/presentation/screens/add_new_customer_form
 import 'package:osm/features/customer/services/build_customer_image.dart';
 import 'package:osm/features/prescription/domain/repositories/prescription_repository.dart';
 import 'package:osm/features/prescription/domain/usecases/add_prescription.dart';
-import 'package:osm/features/prescription/presentation/bloc/add_prescription/bloc/add_prescription_bloc.dart';
-import 'package:osm/features/prescription/presentation/bloc/prescription_timeline/bloc/prescription_timeline_bloc.dart';
+import 'package:osm/features/prescription/presentation/bloc/add_prescription/add_prescription_bloc.dart';
+import 'package:osm/features/prescription/presentation/bloc/prescription_timeline/prescription_timeline_bloc.dart';
 import 'package:osm/features/prescription/presentation/screens/add_prescription_screen.dart';
 import 'package:osm/features/prescription/presentation/widgets/prescription_timeline_section.dart';
 
@@ -216,7 +216,7 @@ class _CustomerDetailsScreenState extends State<CustomerDetailsScreen> {
                       ),
 
                     PrescriptionTimelineSection(
-                      customerId: CustomerId(customer.id!),
+                      customerId: customer.id!,
                     ),
 
                     _InfoCard(

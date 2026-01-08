@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:osm/core/value_objects/id.dart';
 import 'package:osm/features/prescription/domain/repositories/prescription_repository.dart';
 import 'package:osm/features/prescription/domain/usecases/get_prescription_history.dart';
-import 'package:osm/features/prescription/presentation/bloc/prescription_timeline/bloc/prescription_timeline_bloc.dart';
+import 'package:osm/features/prescription/presentation/bloc/prescription_timeline/prescription_timeline_bloc.dart';
 import 'package:osm/features/prescription/presentation/widgets/prescription_timeline_list.dart';
 
 class PrescriptionTimelineSection extends StatelessWidget {

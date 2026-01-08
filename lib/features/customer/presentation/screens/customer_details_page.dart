@@ -9,7 +9,7 @@ import 'package:osm/features/customer/presentation/screens/customer_details_scre
 import 'package:osm/features/orders/domain/repositories/order_repository.dart';
 import 'package:osm/features/prescription/domain/repositories/prescription_repository.dart';
 import 'package:osm/features/prescription/domain/usecases/get_prescription_history.dart';
-import 'package:osm/features/prescription/presentation/bloc/prescription_timeline/bloc/prescription_timeline_bloc.dart';
+import 'package:osm/features/prescription/presentation/bloc/prescription_timeline/prescription_timeline_bloc.dart';
 
 class CustomerDetailsPage extends StatelessWidget {
   final CustomerId customerId;

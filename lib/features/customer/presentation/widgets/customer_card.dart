@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:osm/core/value_objects/id.dart';
 import 'package:osm/features/customer/domain/entities/customer.dart';
 import 'package:osm/features/customer/presentation/bloc/customer/customer_bloc.dart';
 import 'package:osm/features/customer/presentation/screens/customer_details_page.dart';
@@ -39,7 +38,7 @@ class CustomerCard extends StatelessWidget {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (_) => CustomerDetailsPage(customerId: CustomerId(customer.id!)),
+              builder: (_) => CustomerDetailsPage(customerId: customer.id!),
             ),
           );
         },

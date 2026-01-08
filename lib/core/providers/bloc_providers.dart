@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:osm/core/repositories/index_counter_repository.dart';
 import 'package:osm/core/usecases/resolve_qr_scan.dart';
@@ -42,124 +43,119 @@ import 'package:osm/features/inventory/presentation/blocs/frames/frame_list/fram
 import 'package:osm/features/inventory/presentation/blocs/lens/lens_detail/lens_detail_bloc.dart';
 import 'package:osm/features/inventory/presentation/blocs/lens/lens_list/lens_list_bloc.dart';
 import 'package:osm/features/inventory/presentation/blocs/qr_scan/qr_scan_bloc.dart';
+import 'package:osm/features/prescription/domain/repositories/prescription_repository.dart';
+import 'package:osm/features/prescription/domain/usecases/add_prescription.dart';
+import 'package:osm/features/prescription/domain/usecases/get_prescription_history.dart';
+import 'package:osm/features/prescription/presentation/bloc/add_prescription/add_prescription_bloc.dart';
+import 'package:osm/features/prescription/presentation/bloc/prescription_timeline/prescription_timeline_bloc.dart';
 import 'package:osm/features/store/domain/repositories/store_location_repository.dart';
 import 'package:osm/features/store/domain/usecases/get_all_store_location.dart';
 import 'package:osm/features/store/domain/usecases/get_store_locations.dart';
 import 'package:osm/features/store/domain/usecases/set_active_store_location.dart';
 import 'package:osm/features/store/presentation/bloc/store_location_bloc.dart';
 
-final List<BlocProvider> blocProviders = [
-  // BlocProviders
-  BlocProvider(
-    create: (context) {
-      final repo = context.read<StoreLocationRepository>();
+List<BlocProvider> buildBlocProviders(BuildContext context) {
+  final storeLocationRepository = context.read<StoreLocationRepository>();
+  final customerRepository = context.read<CustomerRepository>();
+  final frameRepository = context.read<FrameRepository>();
+  final counterRepository = context.read<IndexCounterRepository>();
+  final lensRepository = context.read<LensRepository>();
+  final accessoryRepository = context.read<AccessoryRepository>();
+  final prescriptionRepository = context.read<PrescriptionRepository>();
 
-      return StoreLocationBloc(
-        getStoreLocations: GetStoreLocations(repo),
-        getAllStoreLocation: GetAllStoreLocation(repo),
-        setActiveStoreLocation: SetActiveStoreLocation(repo),
-      )..add(LoadStoreLocations());
-    },
-  ),
+  return [
+    // BlocProviders
+    BlocProvider<StoreLocationBloc>(
+      create: (_) => StoreLocationBloc(
+        getStoreLocations: GetStoreLocations(storeLocationRepository),
+        getAllStoreLocation: GetAllStoreLocation(storeLocationRepository),
+        setActiveStoreLocation: SetActiveStoreLocation(storeLocationRepository),
+      )..add(LoadStoreLocations()),
+    ),
 
-  BlocProvider(
-    create: (context) {
-      final repo = context.read<CustomerRepository>();
+    BlocProvider<CustomerBloc>(
+      create: (_) => CustomerBloc(
+        addCustomer: AddCustomer(customerRepository),
+        updateCustomer: UpdateCustomer(customerRepository),
+        deleteCustomer: DeleteCustomer(customerRepository),
+        getCustomers: GetCustomers(customerRepository),
+        searchCustomers: SearchCustomers(customerRepository),
+        watchCustomersStream: WatchCustomersStream(customerRepository),
+      )..add(const LoadCustomers()),
+    ),
 
-      return CustomerBloc(
-        addCustomer: AddCustomer(repo),
-        updateCustomer: UpdateCustomer(repo),
-        deleteCustomer: DeleteCustomer(repo),
-        getCustomers: GetCustomers(repo),
-        searchCustomers: SearchCustomers(repo),
-        watchCustomersStream: WatchCustomersStream(repo),
-      )..add(const LoadCustomers());
-    },
-  ),
+    BlocProvider<FrameListBloc>(
+      create: (_) => FrameListBloc(
+        getAllFrames: GetAllFrames(frameRepository),
+        getFramesByCompany: GetFramesByCompany(frameRepository),
+        getFramesByName: GetFramesByName(frameRepository),
+        getFramesByType: GetFramesByType(frameRepository),
+        createFrame: CreateFrame(frameRepository, counterRepository),
+        updateFrame: UpdateFrame(frameRepository, counterRepository),
+        deleteFrame: DeleteFrame(frameRepository),
+      ),
+    ),
 
-  BlocProvider(
-    create: (context) {
-      final repo = context.read<FrameRepository>();
+    BlocProvider<FrameDetailBloc>(
+      create: (_) => FrameDetailBloc(GetFrameById(frameRepository)),
+    ),
 
-      return FrameListBloc(
-        getAllFrames: GetAllFrames(repo),
-        getFramesByCompany: GetFramesByCompany(repo),
-        getFramesByName: GetFramesByName(repo),
-        getFramesByType: GetFramesByType(repo),
-        createFrame: CreateFrame(repo, context.read<IndexCounterRepository>()),
-        updateFrame: UpdateFrame(repo, context.read<IndexCounterRepository>()),
-        deleteFrame: DeleteFrame(repo),
-      );
-    },
-  ),
+    BlocProvider<LensListBloc>(
+      create: (_) => LensListBloc(
+        getAllLenses: GetAllLenses(lensRepository),
+        getLensesByCompany: GetLensesByCompany(lensRepository),
+        getLensesByProductName: GetLensesByProductName(lensRepository),
+        getLensesByType: GetLensesByType(lensRepository),
+        createLens: CreateLens(lensRepository, counterRepository),
+        updateLens: UpdateLens(lensRepository),
+        deleteLens: DeleteLens(lensRepository),
+      ),
+    ),
 
-  BlocProvider(
-    create: (context) {
-      final repo = context.read<FrameRepository>();
+    BlocProvider<LensDetailBloc>(
+      create: (_) => LensDetailBloc(GetLensById(lensRepository)),
+    ),
 
-      return FrameDetailBloc(GetFrameById(repo));
-    },
-  ),
-
-  BlocProvider(
-    create: (context) {
-      final repository = context.read<LensRepository>();
-
-      return LensListBloc(
-        getAllLenses: GetAllLenses(repository),
-        getLensesByCompany: GetLensesByCompany(repository),
-        getLensesByProductName: GetLensesByProductName(repository),
-        getLensesByType: GetLensesByType(repository),
-        createLens: CreateLens(
-          repository,
-          context.read<IndexCounterRepository>(),
-        ),
-        updateLens: UpdateLens(repository),
-        deleteLens: DeleteLens(repository),
-      );
-    },
-  ),
-
-  BlocProvider(
-    create: (context) {
-      final repo = context.read<LensRepository>();
-      return LensDetailBloc(GetLensById(repo));
-    },
-  ),
-
-  BlocProvider(
-    create: (context) {
-      final repository = context.read<AccessoryRepository>();
-
-      return AccessoryListBloc(
-        getAllAccessories: GetAllAccessories(repository),
-        getAccessoriesByBrand: GetAccessoriesByBrand(repository),
-        getAccessoriesByName: GetAccessoriesByName(repository),
+    BlocProvider<AccessoryListBloc>(
+      create: (_) => AccessoryListBloc(
+        getAllAccessories: GetAllAccessories(accessoryRepository),
+        getAccessoriesByBrand: GetAccessoriesByBrand(accessoryRepository),
+        getAccessoriesByName: GetAccessoriesByName(accessoryRepository),
         createAccessory: CreateAccessory(
-          repository,
-          context.read<IndexCounterRepository>(),
+          accessoryRepository,
+          counterRepository,
         ),
-        deleteAccessory: DeleteAccessory(repository),
-        updateAccessory: UpdateAccessory(repository),
-      );
-    },
-  ),
+        deleteAccessory: DeleteAccessory(accessoryRepository),
+        updateAccessory: UpdateAccessory(accessoryRepository),
+      ),
+    ),
 
-  BlocProvider(
-    create: (context) {
-      final repository = context.read<AccessoryRepository>();
-      return AccessoryDetailBloc(
-        getAccessoryById: GetAccessoryById(repository),
-      );
-    },
-  ),
+    BlocProvider<AccessoryDetailBloc>(
+      create: (_) => AccessoryDetailBloc(
+        getAccessoryById: GetAccessoryById(accessoryRepository),
+      ),
+    ),
 
-  BlocProvider(
-    create: (context) {
-      final frame = context.read<FrameRepository>();
-      final lens = context.read<LensRepository>();
-      final accessory = context.read<AccessoryRepository>();
-      return QrScanBloc(resolveQrScan: ResolveQrScan(frame, lens, accessory));
-    },
-  ),
-];
+    BlocProvider<QrScanBloc>(
+      create: (_) => QrScanBloc(
+        resolveQrScan: ResolveQrScan(
+          frameRepository,
+          lensRepository,
+          accessoryRepository,
+        ),
+      ),
+    ),
+
+    BlocProvider<PrescriptionTimelineBloc>(
+      create: (_) => PrescriptionTimelineBloc(
+        getPrescriptionHistory: GetPrescriptionHistory(prescriptionRepository),
+      ),
+    ),
+
+    BlocProvider<AddPrescriptionBloc>(
+      create: (_) => AddPrescriptionBloc(
+        addPrescription: AddPrescription(prescriptionRepository),
+      ),
+    ),
+  ];
+}

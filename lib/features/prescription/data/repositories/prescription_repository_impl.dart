@@ -3,6 +3,7 @@ import 'package:osm/core/services/isar_service.dart';
 import 'package:osm/core/value_objects/id.dart';
 import 'package:osm/features/customer/data/models/customer_model.dart';
 import 'package:osm/features/customer/data/repositories/customer_local_repository.dart';
+import 'package:osm/features/doctors/data/mapper/doctor_mapper.dart';
 import 'package:osm/features/doctors/data/models/doctor_model.dart';
 import 'package:osm/features/doctors/data/repositories/doctor_local_repository.dart';
 import 'package:osm/features/prescription/data/mapper/prescription_mapper.dart';
@@ -13,6 +14,7 @@ import 'package:osm/features/prescription/domain/entities/prescription_source.da
 import 'package:osm/features/prescription/domain/failures/prescription_failure.dart';
 import 'package:osm/features/prescription/domain/repositories/prescription_repository.dart';
 import 'package:osm/features/prescription/domain/success/prescription_success.dart';
+import 'package:osm/features/prescription/presentation/dto/prescription_with_doctor.dart';
 
 class PrescriptionRepositoryImpl implements PrescriptionRepository {
   final IsarService _isarService;
@@ -76,7 +78,12 @@ class PrescriptionRepositoryImpl implements PrescriptionRepository {
       }
 
       await isar.writeTxn(() async {
-        await _localRepository.insert(model, customerModel, doctorModel, isar: isar);
+        await _localRepository.insert(
+          model,
+          customerModel,
+          doctorModel,
+          isar: isar,
+        );
         customerModel.updatedAt = DateTime.now();
         await isar.customerModels.put(customerModel);
       });
@@ -109,9 +116,8 @@ class PrescriptionRepositoryImpl implements PrescriptionRepository {
   }
 
   @override
-  Future<Either<PrescriptionFailure, List<Prescription>>> getByCustomer(
-    CustomerId customerId,
-  ) async {
+  Future<Either<PrescriptionFailure, List<Prescription>>>
+  getByCustomer(CustomerId customerId) async {
     try {
       final isar = await _isarService.db;
       final customerModel = await _customerRepository.getById(
@@ -133,7 +139,53 @@ class PrescriptionRepositoryImpl implements PrescriptionRepository {
           .map(PrescriptionMapper.toEntity)
           .toList(growable: false);
 
+      
       return Right(entities);
+    } catch (e) {
+      return Left(PrescriptionUnknownFailure());
+    }
+  }
+
+    @override
+  Future<Either<PrescriptionFailure, List<PrescriptionWithDoctor>>>
+  getByCustomerWithDoctor(CustomerId customerId) async {
+    try {
+      final isar = await _isarService.db;
+      final customerModel = await _customerRepository.getById(
+        int.parse(customerId.value),
+        isar,
+      );
+
+      if (customerModel == null) {
+        return Left(
+          PrescriptionCustomerNotFoundFailure(
+            "Customer not found for prescription",
+          ),
+        );
+      }
+
+      final models = await _localRepository.getByCustomer(customerModel);
+
+      final entities = models
+          .map(PrescriptionMapper.toEntity)
+          .toList(growable: false);
+
+      final enriched = <PrescriptionWithDoctor>[];
+      for (final p in entities) {
+        if (p.doctorId == null) {
+          enriched.add(PrescriptionWithDoctor(p, null));
+        } else {
+          final doctor = await _doctorLocalRepository.getById(
+            int.parse(p.doctorId!.value),
+            isar,
+          );
+
+          final doctorEntity = DoctorMapper.toEntity(doctor!);
+
+          enriched.add(PrescriptionWithDoctor(p, doctorEntity));
+        }
+      }
+      return Right(enriched);
     } catch (e) {
       return Left(PrescriptionUnknownFailure());
     }

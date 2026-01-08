@@ -1,7 +1,8 @@
+import 'package:osm/core/value_objects/id.dart';
 import 'package:osm/features/customer/domain/entities/customer_type.dart';
 
 class Customer {
-  final String? id;
+  final CustomerId? id;
 
   final String firstName;
   final String lastName;

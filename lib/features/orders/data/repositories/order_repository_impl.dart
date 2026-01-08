@@ -1,4 +1,6 @@
+import 'package:flutter/material.dart';
 import 'package:osm/core/either.dart';
+import 'package:osm/core/services/isar_service.dart';
 import 'package:osm/core/value_objects/id.dart';
 import 'package:osm/features/orders/data/mappers/order_mapper.dart';
 import 'package:osm/features/orders/data/mappers/order_status_mapper.dart';
@@ -13,15 +15,16 @@ import 'package:osm/features/orders/domain/failures/order_failure.dart';
 import 'package:osm/features/orders/domain/repositories/order_repository.dart';
 
 class OrderRepositoryImpl implements OrderRepository {
+  final IsarService _isarService;
   final OrderLocalRepository orderLocal;
   final PaymentLocalRepository paymentLocal;
 
-  OrderRepositoryImpl({required this.orderLocal, required this.paymentLocal});
-
+  OrderRepositoryImpl(this._isarService, this.orderLocal, this.paymentLocal);
   @override
   Future<Either<OrderFailure, Order>> getById(OrderId id) async {
     try {
-      final model = await orderLocal.getById(int.parse(id.value));
+      final isar = await _isarService.db;
+      final model = await orderLocal.getById(int.parse(id.value), isar);
       if (model == null) {
         return const Left(OrderNotFoundFailure());
       }
@@ -42,7 +45,8 @@ class OrderRepositoryImpl implements OrderRepository {
   @override
   Future<Either<OrderFailure, List<Order>>> getAll() async {
     try {
-      final models = await orderLocal.getAll();
+      final isar = await _isarService.db;
+      final models = await orderLocal.getAll(isar);
 
       for (final m in models) {
         await _loadRelations(m);
@@ -66,7 +70,8 @@ class OrderRepositoryImpl implements OrderRepository {
 
   @override
   Stream<Either<OrderFailure, List<Order>>> watchAll() async* {
-    yield* orderLocal.watchAll().asyncMap((models) async {
+    final isar = await _isarService.db;
+    yield* orderLocal.watchAll(isar).asyncMap((models) async {
       try {
         for (final m in models) {
           await _loadRelations(m);
@@ -91,9 +96,12 @@ class OrderRepositoryImpl implements OrderRepository {
   @override
   Future<Either<OrderFailure, OrderId>> create(Order order) async {
     try {
+      debugPrint("Order in repository impl");
+      final isar = await _isarService.db;
       final model = OrderMapper.toModel(order);
 
-      final id = await orderLocal.insert(model);
+      final id = await orderLocal.insert(model, isar);
+      debugPrint("Order added with id $id");
       return Right(OrderId(id.toString()));
     } catch (e) {
       return Left(OrderStorageFailure(e.toString()));
@@ -106,7 +114,8 @@ class OrderRepositoryImpl implements OrderRepository {
     OrderStatus status,
   ) async {
     try {
-      final existing = await orderLocal.getById(int.parse(orderId.value));
+      final isar = await _isarService.db;
+      final existing = await orderLocal.getById(int.parse(orderId.value), isar);
       if (existing == null) {
         return const Left(OrderNotFoundFailure());
       }
@@ -121,7 +130,7 @@ class OrderRepositoryImpl implements OrderRepository {
         payments: existing.payments,
       )..id = existing.id;
 
-      await orderLocal.save(updated);
+      await orderLocal.save(updated, isar);
 
       await _loadRelations(updated);
       return Right(
@@ -142,14 +151,15 @@ class OrderRepositoryImpl implements OrderRepository {
     Payment payment,
   ) async {
     try {
-      final order = await orderLocal.getById(int.parse(orderId.value));
+      final isar = await _isarService.db;
+      final order = await orderLocal.getById(int.parse(orderId.value), isar);
       if (order == null) {
         return const Left(OrderNotFoundFailure());
       }
 
       final paymentModel = PaymentMapper.toModel(payment);
 
-      await paymentLocal.insert(payment: paymentModel, order: order);
+      await paymentLocal.insert(payment: paymentModel, order: order, isar: isar);
 
       await _loadRelations(order);
 
@@ -178,8 +188,10 @@ class OrderRepositoryImpl implements OrderRepository {
     CustomerId customerId,
   ) async {
     try {
+      final isar = await _isarService.db;
       final models = await orderLocal.getByCustomer(
         int.parse(customerId.value),
+        isar,
       );
 
       for (final model in models) {
@@ -205,9 +217,10 @@ class OrderRepositoryImpl implements OrderRepository {
   @override
   Future<Either<OrderFailure, Order>> delete(OrderId orderId) async {
     try {
+      final isar = await _isarService.db;
       final id = int.parse(orderId.value);
 
-      final model = await orderLocal.getById(id);
+      final model = await orderLocal.getById(id, isar);
       if (model == null) {
         return const Left(OrderNotFoundFailure());
       }
@@ -220,7 +233,7 @@ class OrderRepositoryImpl implements OrderRepository {
         payments: model.payments.toList(),
       );
 
-      await orderLocal.delete(id);
+      await orderLocal.delete(id, isar);
 
       return Right(deletedOrder);
     } catch (e) {
