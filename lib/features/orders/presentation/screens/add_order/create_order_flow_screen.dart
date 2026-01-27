@@ -48,10 +48,12 @@ class _CreateOrderFlowScreenState extends State<CreateOrderFlowScreen> {
               child: OrderStepper(currentStep: _currentStep),
             ),
             const Divider(height: 1),
-            Expanded(child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8.0),
-              child: _buildStep(),
-            )),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                child: _buildStep(),
+              ),
+            ),
           ],
         ),
       ),
@@ -63,7 +65,7 @@ class _CreateOrderFlowScreenState extends State<CreateOrderFlowScreen> {
       case OrderStep.customer:
         return CustomerStep(onNext: () => _goTo(OrderStep.product));
       case OrderStep.product:
-        return ProductStep();
+        return ProductStep(onNext: () {});
       case OrderStep.payment:
         return PaymentStep();
     }

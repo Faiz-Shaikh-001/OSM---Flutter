@@ -91,7 +91,9 @@ class _FrameFormWidgetState extends State<FrameFormWidget> {
           const SizedBox(height: 24),
           CustomButton(
             label: widget.isEdit ? 'Update Frame' : 'Save Frame',
-            onPressed: () => _submit,
+            onPressed: () {
+              _submit();
+            },
             icon: Icons.save,
           ),
         ],

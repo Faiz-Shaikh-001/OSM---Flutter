@@ -5,6 +5,7 @@ import 'order_item_type.dart';
 
 
 class OrderItem {
+  final String productID;
   final String productName;
   final String productCode;
   final OrderItemType type;
@@ -19,6 +20,7 @@ class OrderItem {
   final double? refractiveIndex;
 
   OrderItem({
+    required this.productID,
     required this.productName,
     required this.productCode,
     required this.type,
