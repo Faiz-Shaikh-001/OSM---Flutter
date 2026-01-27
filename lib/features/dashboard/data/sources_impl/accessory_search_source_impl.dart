@@ -1,16 +1,18 @@
 import 'package:isar/isar.dart';
+import 'package:osm/core/services/isar_service.dart';
 import 'package:osm/features/dashboard/data/sources/accessory_search_source.dart';
 import 'package:osm/features/inventory/data/mappers/accessory/accessory_mapper.dart';
 import 'package:osm/features/inventory/data/models/accessory/accessory_model.dart';
 import 'package:osm/features/inventory/domain/entities/accessory/accessory.dart';
 
 class AccessorySearchSourceImpl implements AccessorySearchSource {
-  final Isar isar;
+  final IsarService _isarService;
 
-  AccessorySearchSourceImpl(this.isar);
+  AccessorySearchSourceImpl(this._isarService);
 
   @override
   Future<List<Accessory>> search(String query) async {
+    final isar = await _isarService.db;
     final models = await isar.accessoryModels
         .filter()
         .group((q) => q

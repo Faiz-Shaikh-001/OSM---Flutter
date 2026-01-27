@@ -1,18 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:osm/features/inventory/data/models/product/product_model.dart';
-import 'package:osm/features/orders/viewmodel/order_viewmodel.dart';
+import 'package:osm/features/orders/domain/entities/order_item.dart';
 import 'package:provider/provider.dart';
 import 'quantity_stepper.dart';
 
 class ProductCard extends StatelessWidget {
-  final Product product;
+  final OrderItem product;
   final int quantity;
   const ProductCard({super.key, required this.product, required this.quantity});
 
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final viewModel = context.read<OrderViewModel>();
 
     return Card(
       elevation: 0,

@@ -90,7 +90,7 @@ class _ImageSection extends StatelessWidget {
                 File(imagePath),
                 fit: BoxFit.cover,
                 width: double.infinity,
-                errorBuilder: (_, __, ___) => _placeholder(),
+                errorBuilder: (_, _, _) => _placeholder(),
               ),
       ),
     );

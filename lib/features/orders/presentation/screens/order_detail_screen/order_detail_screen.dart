@@ -52,7 +52,7 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
                 "Items:",
                 style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
               ),
-              pw.Table.fromTextArray(
+              pw.TableHelper.fromTextArray(
                 headers: ["Product", "Qty", "Price"],
                 data: order.items
                     .map(

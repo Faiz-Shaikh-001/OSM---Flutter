@@ -8,6 +8,7 @@ import '../models/order_item/order_item_model.dart';
 class OrderItemMapper {
    static OrderItem toEntity(OrderItemModel model) {
     return OrderItem(
+      productID: model.id.toString(),
       productName: model.productName,
       productCode: model.productCode,
       type: OrderItemTypeMapper.toOrderItemType(model.itemType),

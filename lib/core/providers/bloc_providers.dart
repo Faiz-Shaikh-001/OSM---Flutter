@@ -10,6 +10,10 @@ import 'package:osm/features/customer/domain/usecases/search_customers.dart';
 import 'package:osm/features/customer/domain/usecases/update_customer.dart';
 import 'package:osm/features/customer/domain/usecases/watch_customers_stream.dart';
 import 'package:osm/features/customer/presentation/bloc/customer/customer_bloc.dart';
+import 'package:osm/features/dashboard/domain/repositories/activity_repository.dart';
+import 'package:osm/features/dashboard/domain/usecases/save_activity.dart';
+import 'package:osm/features/dashboard/domain/usecases/watch_recent_activities.dart';
+import 'package:osm/features/dashboard/presentation/blocs/activity/activity_bloc.dart';
 import 'package:osm/features/inventory/domain/repositories/accessory_repository.dart';
 import 'package:osm/features/inventory/domain/repositories/frame_repository.dart';
 import 'package:osm/features/inventory/domain/repositories/lens_repository.dart';
@@ -62,9 +66,17 @@ List<BlocProvider> buildBlocProviders(BuildContext context) {
   final lensRepository = context.read<LensRepository>();
   final accessoryRepository = context.read<AccessoryRepository>();
   final prescriptionRepository = context.read<PrescriptionRepository>();
+  final activityReposistory = context.read<ActivityRepository>();
 
   return [
     // BlocProviders
+    BlocProvider<ActivityBloc>(
+      create: (_) => ActivityBloc(
+        saveActivity: SaveActivity(activityReposistory),
+        watchRecentActivities: WatchRecentActivities(activityReposistory),
+      ),
+    ),
+
     BlocProvider<StoreLocationBloc>(
       create: (_) => StoreLocationBloc(
         getStoreLocations: GetStoreLocations(storeLocationRepository),

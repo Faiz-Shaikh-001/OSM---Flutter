@@ -5,6 +5,14 @@ import 'package:osm/core/providers/local_repositories_providers.dart';
 import 'package:osm/core/providers/repositories_impl_providers.dart';
 import 'package:osm/core/services/isar_service.dart';
 import 'package:osm/core/theme_provider.dart';
+// ignore: unused_import
+import 'package:osm/features/inventory/presentation/screens/add_stock/screen/add_stock_screen.dart';
+// ignore: unused_import
+import 'package:osm/features/inventory/presentation/screens/inventory_screen.dart';
+// import 'package:osm/features/customer/presentation/screens/customer_list_screen.dart';
+// import 'package:osm/features/dashboard/presentation/screens/dashboard_screen.dart';
+// import 'package:osm/features/inventory/presentation/screens/inventory_screen.dart';
+// ignore: unused_import
 import 'package:osm/features/orders/presentation/screens/add_order/create_order_flow_screen.dart';
 import 'package:osm/features/store/data/repositories/store_location_local_repository.dart';
 import 'package:osm/features/store/data/repositories/store_location_repository_impl.dart';
@@ -53,7 +61,10 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return const MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: CreateOrderFlowScreen(),
+      // home: CustomerListScreen(),
+      // home: DashboardScreen(),
+      // home: InventoryScreen(),
+      home: CreateOrderFlowScreen()
     );
   }
 }

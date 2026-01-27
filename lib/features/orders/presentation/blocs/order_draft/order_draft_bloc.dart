@@ -18,6 +18,7 @@ class OrderDraftBloc extends Bloc<OrderDraftEvent, OrderDraftState> {
     on<StoreSelected>(_onStoreSelected);
     on<ItemAdded>(_onItemAdded);
     on<ItemRemoved>(_onItemRemoved);
+    on<ItemQuantityUpdated>(_onItemQuantityUpdated);
     on<PaymentAdded>(_onPaymentAdded);
     on<OrderDraftReset>(_onOrderDraftReset);
   }
@@ -83,6 +84,28 @@ class OrderDraftBloc extends Bloc<OrderDraftEvent, OrderDraftState> {
 
     final updatedDraft = state.draft.withItems(updatedItems);
     emit(OrderDraftState(updatedDraft));
+  }
+
+  void _onItemQuantityUpdated(
+    ItemQuantityUpdated event,
+    Emitter<OrderDraftState> emit,
+  ) {
+    final items = [...state.draft.items];
+
+    final old = items[event.index];
+
+    final updated = OrderItem(
+      productID: old.productID,
+      productName: old.productName,
+      productCode: old.productCode,
+      type: old.type,
+      quantity: event.quantity,
+      unitPrice: old.unitPrice,
+    );
+
+    items[event.index] = updated;
+
+    emit(OrderDraftState(state.draft.withItems(items)));
   }
 
   void _onPaymentAdded(PaymentAdded event, Emitter<OrderDraftState> emit) {

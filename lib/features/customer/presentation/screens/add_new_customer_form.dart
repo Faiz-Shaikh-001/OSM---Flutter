@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'dart:io';
 import 'package:flex_color_picker/flex_color_picker.dart';
 import 'package:flutter/material.dart';
@@ -127,7 +129,7 @@ class _AddNewCustomerFormState extends State<AddNewCustomerForm> {
     );
 
     setState(() => _isSaving = false);
-
+    
     Navigator.pop(context, customer);
   }
 

@@ -57,6 +57,16 @@ class ItemRemoved extends OrderDraftEvent {
   List<Object?> get props => [index];
 }
 
+class ItemQuantityUpdated extends OrderDraftEvent {
+  final int index;
+  final int quantity;
+
+  const ItemQuantityUpdated(this.index, this.quantity);
+
+  @override
+  List<Object?> get props => [index, quantity];
+}
+
 class PaymentAdded extends OrderDraftEvent {
   final Payment payment;
 
