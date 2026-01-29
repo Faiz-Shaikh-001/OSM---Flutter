@@ -1,12 +1,13 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
-import 'package:isar/isar.dart';
-import 'package:osm/features/orders/data/models/order/order_model.dart';
+import 'package:osm/features/orders/domain/entities/order.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 
 class OrderDetailsScreen extends StatefulWidget {
-  final OrderModel order;
+  final Order order;
 
   const OrderDetailsScreen({super.key, required this.order});
 
@@ -16,7 +17,7 @@ class OrderDetailsScreen extends StatefulWidget {
 
 class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
   final List<String> _statuses = ["Pending", "Completed", "Cancelled"];
-  late OrderModel order;
+  late Order order;
 
   @override
   void initState() {
@@ -43,9 +44,10 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
               pw.SizedBox(height: 10),
               pw.Text("Order ID: ${order.id}"),
               pw.Text(
-                "Customer: ${order.customer.value?.firstName} ${order.customer.value?.lastName}",
+                // "Customer: ${customer.name} ${order.customer.value?.lastName}",
+                "Customer: "
               ),
-              pw.Text("Date: ${order.orderDate.toLocal()}"),
+              pw.Text("Date: ${order.createdAt.toLocal()}"),
               pw.Text("Status: ${order.status}"),
               pw.SizedBox(height: 20),
               pw.Text(
@@ -59,14 +61,14 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
                       (item) => [
                         item.productName,
                         item.quantity.toString(),
-                        "₹${item.unitPrice.toStringAsFixed(2)}",
+                        "₹${item.unitPrice}",
                       ],
                     )
                     .toList(),
               ),
               pw.SizedBox(height: 10),
               pw.Text(
-                "Total: ₹${order.totalAmount.toStringAsFixed(2)}",
+                "Total: ₹${order.payments.first.amountPaid}",
                 style: pw.TextStyle(
                   fontSize: 16,
                   fontWeight: pw.FontWeight.bold,
@@ -129,7 +131,7 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    "Date: ${order.orderDate.toLocal().toString().split(' ').first}",
+                    "Date: ${order.createdAt.toLocal().toString().split(' ').first}",
                   ),
                   const SizedBox(height: 8),
                   Row(
@@ -140,8 +142,8 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
                       ),
                       const SizedBox(width: 10),
                       DropdownButton<String>(
-                        value: _statuses.contains(order.status)
-                            ? order.status
+                        value: _statuses.contains(order.status.toString())
+                            ? order.status.toString()
                             : _statuses.first,
                         items: _statuses
                             .map(
@@ -162,22 +164,29 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
                             )
                             .toList(),
                         onChanged: (newStatus) async {
-                          if (newStatus != null) {
-                            setState(() {
-                              order = order.copyWith(status: newStatus);
-                            });
-                            final isar = Isar.getInstance()!;
-                            await isar.writeTxn(() async {
-                              await isar.orderModels.put(order);
-                            });
-
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text("Status updated to $newStatus"),
-                              ),
-                            );
-                          }
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text("Status updated to $newStatus"),
+                            ),
+                          );
                         },
+                        // onChanged: (newStatus) async {
+                        //   if (newStatus != null) {
+                        //     setState(() {
+                        //       order = order.copyWith(status: newStatus);
+                        //     });
+                        //     final isar = Isar.getInstance()!;
+                        //     await isar.writeTxn(() async {
+                        //       await isar.orderModels.put(order);
+                        //     });
+
+                        //     ScaffoldMessenger.of(context).showSnackBar(
+                        //       SnackBar(
+                        //         content: Text("Status updated to $newStatus"),
+                        //       ),
+                        //     );
+                        //   }
+                        // },
                       ),
                     ],
                   ),
@@ -205,7 +214,7 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    "${order.customer.value?.firstName} ${order.customer.value?.lastName}",
+                    order.customerId.value,
                     style: const TextStyle(fontSize: 15),
                   ),
                 ],
@@ -236,7 +245,7 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
                       contentPadding: EdgeInsets.zero,
                       title: Text(item.productName),
                       subtitle: Text("Qty: ${item.quantity}"),
-                      trailing: Text("₹${item.unitPrice.toStringAsFixed(2)}"),
+                      trailing: Text("₹${item.unitPrice}"),
                     ),
                   ),
                 ],
@@ -250,7 +259,7 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
           Align(
             alignment: Alignment.centerRight,
             child: Text(
-              "Total: ₹${order.totalAmount.toStringAsFixed(2)}",
+              "Total: ₹${order.totalAmount}",
               style: const TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,

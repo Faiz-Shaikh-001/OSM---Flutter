@@ -85,8 +85,9 @@ class ProductSearchBloc extends Bloc<ProductSearchEvent, ProductSearchState> {
 Iterable<ProductSearchResult> _mapFrameVariants(Frame f) {
   return f.variants.map((v) {
     return ProductSearchResult(
-      id: v.sku,
+      id: f.id.toString(),
       name: '${f.companyName} ${f.name} - ${v.colorName} - ${v.size}',
+      sku: v.sku,
       code: v.productCode,
       type: ProductSearchType.frame,
       price: v.salesPrice,
@@ -97,7 +98,8 @@ Iterable<ProductSearchResult> _mapFrameVariants(Frame f) {
 
 ProductSearchResult _mapLens(Lens l) {
   return ProductSearchResult(
-    id: l.sku,
+    id: l.id.toString(),
+    sku: l.sku,
     name: l.productName,
     code: l.productCode!,
     type: ProductSearchType.lens,
@@ -109,6 +111,7 @@ ProductSearchResult _mapLens(Lens l) {
 ProductSearchResult _mapAccessory(Accessory a) {
   return ProductSearchResult(
     id: a.id.toString(),
+    sku: a.sku,
     name: a.name,
     code: a.sku,
     type: ProductSearchType.accessory,
