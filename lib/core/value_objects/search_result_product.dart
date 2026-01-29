@@ -3,6 +3,7 @@ import 'package:osm/features/orders/domain/entities/order_item_type.dart';
 
 class SearchResultProduct {
   final String id;
+  final String sku;
   final String name;
   final String code;
   final Money price;
@@ -12,6 +13,7 @@ class SearchResultProduct {
 
   const SearchResultProduct({
     required this.id,
+    required this.sku,
     required this.name,
     required this.code,
     required this.price,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:osm/features/orders/presentation/screens/product_step/widgets/action_buttons.dart';
 
 class EmptyStateView extends StatelessWidget {
   final VoidCallback onScan;
@@ -38,24 +39,7 @@ class EmptyStateView extends StatelessWidget {
 
           const SizedBox(height: 24),
 
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              ElevatedButton.icon(
-                icon: const Icon(Icons.search),
-                onPressed: onSearch,
-                label: Text("Search Product"),
-              ),
-
-              const SizedBox(width: 16),
-
-              ElevatedButton.icon(
-                icon: const Icon(Icons.qr_code_scanner),
-                label: const Text("Scan Product"),
-                onPressed: onScan,
-              ),
-            ],
-          ),
+          ActionButtons(onScan: onScan, onSearch: onSearch)
         ],
       ),
     );

@@ -65,7 +65,7 @@ class _CreateOrderFlowScreenState extends State<CreateOrderFlowScreen> {
       case OrderStep.customer:
         return CustomerStep(onNext: () => _goTo(OrderStep.product));
       case OrderStep.product:
-        return ProductStep(onNext: () {});
+        return ProductStep(onNext: () => _goTo(OrderStep.payment));
       case OrderStep.payment:
         return PaymentStep();
     }

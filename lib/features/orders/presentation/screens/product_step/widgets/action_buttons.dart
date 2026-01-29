@@ -1,55 +1,32 @@
-// import 'package:flutter/material.dart';
-// import 'package:osm/features/scanner/presentation/screens/scanner_screen.dart';
-// import 'package:provider/provider.dart';
+import 'package:flutter/material.dart';
 
-// class ActionButtons extends StatelessWidget {
-//   final List<Product> allProducts;
-//   const ActionButtons({super.key, required this.allProducts});
+class ActionButtons extends StatelessWidget {
+  final VoidCallback onScan;
+  final VoidCallback onSearch;
 
-//   void _handleScannedCode(BuildContext context, String scannedCode) {
-//     final orderViewModel = context.read<OrderViewModel>();
-//     try {
-//       final product = allProducts.firstWhere((p) => p.id == scannedCode);
-//       orderViewModel.addProduct(product);
-//     } catch (_) {
-//       ScaffoldMessenger.of(
-//         context,
-//       ).showSnackBar(const SnackBar(content: Text('Product not found!')));
-//     }
-//   }
+  const ActionButtons({
+    super.key,
+    required this.onScan,
+    required this.onSearch,
+  });
 
-//   @override
-//   Widget build(BuildContext context) {
-//     return Row(
-//       mainAxisAlignment: MainAxisAlignment.center,
-//       children: [
-//         ElevatedButton.icon(
-//           icon: const Icon(Icons.qr_code_scanner),
-//           label: const Text('Scan Product'),
-//           onPressed: () async {
-//             final scannedCode = await Navigator.of(context).push<String>(
-//               MaterialPageRoute(builder: (c) => const ScannerScreen()),
-//             );
-//             if (scannedCode != null && context.mounted) {
-//               _handleScannedCode(context, scannedCode);
-//             }
-//           },
-//         ),
-//         const SizedBox(width: 16),
-//         ElevatedButton.icon(
-//           icon: const Icon(Icons.search),
-//           label: const Text('Search'),
-//           onPressed: () async {
-//             final selectedProduct = await showSearch<Product?>(
-//               context: context,
-//               delegate: ProductSearchDelegate(searchableProducts: allProducts),
-//             );
-//             if (context.mounted && selectedProduct != null) {
-//               context.read<OrderViewModel>().addProduct(selectedProduct);
-//             }
-//           },
-//         ),
-//       ],
-//     );
-//   }
-// }
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        ElevatedButton.icon(
+          icon: const Icon(Icons.qr_code_scanner),
+          label: const Text('Scan Product'),
+          onPressed: onScan,
+        ),
+        const SizedBox(width: 16),
+        ElevatedButton.icon(
+          icon: const Icon(Icons.search),
+          label: const Text('Search'),
+          onPressed: onSearch,
+        ),
+      ],
+    );
+  }
+}

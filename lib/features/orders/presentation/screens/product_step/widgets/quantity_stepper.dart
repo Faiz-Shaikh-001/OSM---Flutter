@@ -1,36 +1,35 @@
 import 'package:flutter/material.dart';
+import 'package:osm/features/orders/domain/entities/order_item.dart';
+import 'package:osm/features/orders/presentation/blocs/order_draft/order_draft_bloc.dart';
 import 'package:provider/provider.dart';
 
 class QuantityStepper extends StatelessWidget {
-  final Product product;
-  final int quantity;
+  final OrderItem item;
   const QuantityStepper({
     super.key,
-    required this.product,
-    required this.quantity,
+    required this.item,
   });
 
   @override
   Widget build(BuildContext context) {
-    final orderViewModel = context.read<OrderViewModel>();
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         IconButton.filledTonal(
           icon: const Icon(Icons.remove),
-          onPressed: () => orderViewModel.removeProduct(product),
+          onPressed: () => context.read<OrderDraftBloc>().add(ItemQuantityDecreased(item.productID)),
         ),
         SizedBox(
           width: 40,
           child: Text(
-            '$quantity',
+            '${item.quantity}',
             textAlign: TextAlign.center,
             style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
         ),
         IconButton.filledTonal(
           icon: const Icon(Icons.add),
-          onPressed: () => orderViewModel.addProduct(product),
+          onPressed: () => context.read<OrderDraftBloc>().add(ItemQuantityIncreased(item.productID)),
         ),
       ],
     );

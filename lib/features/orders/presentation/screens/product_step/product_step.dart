@@ -12,6 +12,7 @@ import 'package:osm/features/orders/presentation/blocs/product_search/product_se
 import 'package:osm/features/orders/presentation/screens/product_step/product_search_screen.dart';
 import 'package:osm/features/orders/presentation/screens/product_step/widgets/empty_state_view.dart';
 import 'package:osm/features/orders/presentation/screens/product_step/widgets/product_list_view.dart';
+import 'package:osm/features/scanner/presentation/screens/scanner_screen.dart';
 import 'package:provider/provider.dart';
 
 class ProductStep extends StatelessWidget {
@@ -20,6 +21,8 @@ class ProductStep extends StatelessWidget {
   const ProductStep({super.key, required this.onNext});
 
   void onSearch(BuildContext context) {
+    final orderDraftBloc = context.read<OrderDraftBloc>();
+
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -44,11 +47,25 @@ class ProductStep extends StatelessWidget {
                 accessorySearch: context.read<AccessorySearchSource>(),
               ),
             ),
+            BlocProvider.value(value: orderDraftBloc),
           ],
           child: const ProductSearchScreen(),
         ),
       ),
     );
+  }
+
+  void onScan(BuildContext context) async {
+    final scannedCode = await Navigator.push<String>(
+      context,
+      MaterialPageRoute(builder: (_) => const ScannerScreen()),
+    );
+
+    if (scannedCode != null && context.mounted) {
+      context.read<ProductSearchBloc>().add(
+        ProductSearchQrScanned(scannedCode),
+      );
+    }
   }
 
   @override
@@ -60,7 +77,7 @@ class ProductStep extends StatelessWidget {
         if (items.isEmpty) {
           return EmptyStateView(
             onScan: () {
-              debugPrint("Scan pressed");
+              onScan(context);
             },
             onSearch: () {
               onSearch(context);
@@ -72,6 +89,12 @@ class ProductStep extends StatelessWidget {
           items: items,
           onSearch: () {
             onSearch(context);
+          },
+          onScan: () {
+            onScan(context);
+          },
+          onNext: () {
+            onNext();
           },
         );
       },

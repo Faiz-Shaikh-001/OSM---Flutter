@@ -16,18 +16,18 @@ class ProductSearchTile extends StatelessWidget {
       subtitle: Text(result.code),
       trailing: Text('₹${result.price.value.toStringAsFixed(0)}'),
       onTap: () {
-        context.read<OrderDraftBloc>().add(
-              ItemAdded(
-                OrderItem(
-                  productID: result.id,
-                  productCode: result.code,
-                  productName: result.name,
-                  type: result.type.toOrderItemType(),
-                  quantity: 1,
-                  unitPrice: result.price,
-                ),
-              ),
-            );
+        final orderItem = OrderItem(
+          productID: result.id,
+          productName: result.name,
+          productCode: result.code,
+          type: result.type.toOrderItemType(),
+          quantity: 1,
+          unitPrice: result.price,
+        );
+
+        context.read<OrderDraftBloc>().add(ItemAdded(orderItem));
+
+        Navigator.pop(context);
       },
     );
   }

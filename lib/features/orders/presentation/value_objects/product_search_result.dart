@@ -18,6 +18,7 @@ extension ProductSearchTypeX on ProductSearchType {
 
 class ProductSearchResult {
   final String id;
+  final String sku;
   final String name;
   final String code;
   final ProductSearchType type;
@@ -26,11 +27,13 @@ class ProductSearchResult {
 
   const ProductSearchResult({
     required this.id,
+    required this.sku,
     required this.name,
     required this.code,
     required this.type,
     required this.price,
     required this.raw,
   });
+
 }
 

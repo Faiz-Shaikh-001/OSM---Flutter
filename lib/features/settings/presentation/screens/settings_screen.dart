@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:isar/isar.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -8,7 +7,6 @@ import 'accounts_screen.dart';
 import 'package:osm/core/services/isar_service.dart';
 import 'select_store_screen.dart';
 import 'package:osm/core/theme_provider.dart'; // Import the new provider
-import '../../../store/data/model/store_model.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});

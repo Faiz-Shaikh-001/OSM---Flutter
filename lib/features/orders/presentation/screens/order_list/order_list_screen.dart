@@ -2,9 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:isar/isar.dart';
+import 'package:osm/core/value_objects/id.dart';
 import 'package:osm/features/orders/domain/entities/order.dart';
-import 'package:osm/features/orders/presentation/blocs/order/order_bloc.dart';
-import 'package:osm/features/orders/presentation/screens/add_order/add_order_screen.dart';
 import 'package:osm/features/orders/presentation/screens/order_detail_screen/order_detail_screen.dart';
 
 class OrderListScreen extends StatelessWidget {
@@ -97,8 +96,8 @@ class _OrdersListView extends StatelessWidget {
             subtitle: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Total: ₹${order.totalAmount.toStringAsFixed(2)}'),
-                Text('Date: ${DateFormat.yMMMd().format(order.orderDate)}'),
+                Text('Total: ₹${order.totalAmount}'),
+                Text('Date: ${DateFormat.yMMMd().format(order.createdAt)}'),
                 Text('Status: ${order.status.name}'),
               ],
             ),
@@ -131,7 +130,7 @@ class _OrdersListView extends StatelessWidget {
 
   Future<bool> _showDeleteConfirmationDialog(
     BuildContext context,
-    Id orderId,
+    OrderId orderId,
   ) async {
     return await showDialog<bool>(
           context: context,

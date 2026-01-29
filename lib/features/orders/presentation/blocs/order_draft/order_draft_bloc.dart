@@ -1,5 +1,6 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:flutter/material.dart';
 import 'package:meta/meta.dart';
 import 'package:osm/core/value_objects/id.dart';
 import 'package:osm/features/orders/domain/entities/order_item.dart';
@@ -18,7 +19,8 @@ class OrderDraftBloc extends Bloc<OrderDraftEvent, OrderDraftState> {
     on<StoreSelected>(_onStoreSelected);
     on<ItemAdded>(_onItemAdded);
     on<ItemRemoved>(_onItemRemoved);
-    on<ItemQuantityUpdated>(_onItemQuantityUpdated);
+    on<ItemQuantityIncreased>(_onItemQuantityIncreased);
+    on<ItemQuantityDecreased>(_onItemQuantityDecreased);
     on<PaymentAdded>(_onPaymentAdded);
     on<OrderDraftReset>(_onOrderDraftReset);
   }
@@ -72,11 +74,29 @@ class OrderDraftBloc extends Bloc<OrderDraftEvent, OrderDraftState> {
   }
 
   void _onItemAdded(ItemAdded event, Emitter<OrderDraftState> emit) {
-    final updatedDraft = state.draft.withItems([
-      ...state.draft.items,
-      event.item,
-    ]);
-    emit(OrderDraftState(updatedDraft));
+    final items = [...state.draft.items];
+
+    final index = items.indexWhere(
+      (i) => i.productID == event.item.productID && i.type == event.item.type,
+    );
+
+    if (index == -1) {
+      items.add(event.item);
+    } else {
+      final existing = items[index];
+      final updated = OrderItem(
+        productID: existing.productID,
+        productName: existing.productName,
+        productCode: existing.productCode,
+        type: existing.type,
+        quantity: existing.quantity + 1,
+        unitPrice: existing.unitPrice,
+      );
+
+      items[index] = updated;
+    }
+
+    emit(OrderDraftState(state.draft.withItems(items)));
   }
 
   void _onItemRemoved(ItemRemoved event, Emitter<OrderDraftState> emit) {
@@ -86,26 +106,55 @@ class OrderDraftBloc extends Bloc<OrderDraftEvent, OrderDraftState> {
     emit(OrderDraftState(updatedDraft));
   }
 
-  void _onItemQuantityUpdated(
-    ItemQuantityUpdated event,
+  void _onItemQuantityIncreased(
+    ItemQuantityIncreased event,
     Emitter<OrderDraftState> emit,
   ) {
-    final items = [...state.draft.items];
+    final updatedItems = state.draft.items.map((item) {
+      if (item.productID == event.productId) {
+        final updated = OrderItem(
+          productID: item.productID,
+          productName: item.productName,
+          productCode: item.productCode,
+          type: item.type,
+          quantity: item.quantity + 1,
+          unitPrice: item.unitPrice,
+        );
+        return updated;
+      }
 
-    final old = items[event.index];
+      return item;
+    }).toList();
 
-    final updated = OrderItem(
-      productID: old.productID,
-      productName: old.productName,
-      productCode: old.productCode,
-      type: old.type,
-      quantity: event.quantity,
-      unitPrice: old.unitPrice,
-    );
+    emit(OrderDraftState(state.draft.withItems(updatedItems)));
+  }
 
-    items[event.index] = updated;
+  void _onItemQuantityDecreased(
+    ItemQuantityDecreased event,
+    Emitter<OrderDraftState> emit,
+  ) {
+    final updatedItems = <OrderItem>[];
 
-    emit(OrderDraftState(state.draft.withItems(items)));
+    for (final item in state.draft.items) {
+      if (item.productID == event.productId) {
+        final updated = OrderItem(
+          productID: item.productID,
+          productName: item.productName,
+          productCode: item.productCode,
+          type: item.type,
+          quantity: item.quantity - 1,
+          unitPrice: item.unitPrice,
+        );
+
+        if (updated.quantity > 0) {
+          updatedItems.add(updated);
+        }
+      } else {
+        return updatedItems.add(item);
+      }
+    }
+
+    emit(OrderDraftState(state.draft.withItems(updatedItems)));
   }
 
   void _onPaymentAdded(PaymentAdded event, Emitter<OrderDraftState> emit) {
