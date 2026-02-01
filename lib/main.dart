@@ -18,7 +18,7 @@ import 'package:osm/features/store/data/repositories/store_location_local_reposi
 import 'package:osm/features/store/data/repositories/store_location_repository_impl.dart';
 import 'package:osm/features/store/domain/usecases/ensure_active_store_location.dart';
 import 'package:provider/provider.dart';
-
+import 'main_settings.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -64,7 +64,8 @@ class MyApp extends StatelessWidget {
       // home: CustomerListScreen(),
       // home: DashboardScreen(),
       // home: InventoryScreen(),
-      home: CreateOrderFlowScreen()
+      // home: CreateOrderFlowScreen()
+      home: SettingsBootstrap(),
     );
   }
 }
