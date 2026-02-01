@@ -2,10 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:osm/core/either.dart';
 import 'package:osm/core/services/isar_service.dart';
 import 'package:osm/core/value_objects/id.dart';
+import 'package:osm/features/customer/data/models/customer_model.dart';
+import 'package:osm/features/customer/data/repositories/customer_local_repository.dart';
+import 'package:osm/features/orders/data/mappers/order_item_mapper.dart';
 import 'package:osm/features/orders/data/mappers/order_mapper.dart';
 import 'package:osm/features/orders/data/mappers/order_status_mapper.dart';
 import 'package:osm/features/orders/data/mappers/payment_mapper.dart';
 import 'package:osm/features/orders/data/models/order/order_model.dart';
+import 'package:osm/features/orders/data/repositories/order_item_local_repository.dart';
 import 'package:osm/features/orders/data/repositories/order_local_repository.dart';
 import 'package:osm/features/orders/data/repositories/payment_local_repository.dart';
 import 'package:osm/features/orders/domain/entities/order.dart';
@@ -13,13 +17,28 @@ import 'package:osm/features/orders/domain/entities/order_enums.dart';
 import 'package:osm/features/orders/domain/entities/payment.dart';
 import 'package:osm/features/orders/domain/failures/order_failure.dart';
 import 'package:osm/features/orders/domain/repositories/order_repository.dart';
+import 'package:osm/features/prescription/data/models/prescription_model.dart';
+import 'package:osm/features/prescription/data/repositories/prescription_local_repository.dart';
+import 'package:osm/features/store/data/repositories/store_location_local_repository.dart';
 
 class OrderRepositoryImpl implements OrderRepository {
   final IsarService _isarService;
   final OrderLocalRepository orderLocal;
   final PaymentLocalRepository paymentLocal;
+  final CustomerLocalRepository customerLocal;
+  final StoreLocationLocalRepository storeLocal;
+  final PrescriptionLocalRepository prescriptionLocal;
+  final OrderItemLocalRepository orderItemLocal;
 
-  OrderRepositoryImpl(this._isarService, this.orderLocal, this.paymentLocal);
+  OrderRepositoryImpl(
+    this._isarService,
+    this.orderLocal,
+    this.paymentLocal,
+    this.customerLocal,
+    this.storeLocal,
+    this.prescriptionLocal,
+    this.orderItemLocal,
+  );
   @override
   Future<Either<OrderFailure, Order>> getById(OrderId id) async {
     try {
@@ -100,7 +119,58 @@ class OrderRepositoryImpl implements OrderRepository {
       final isar = await _isarService.db;
       final model = OrderMapper.toModel(order);
 
-      final id = await orderLocal.insert(model, isar);
+      final customer = await customerLocal.getById(
+        int.parse(order.customerId.value),
+        isar,
+      );
+
+      if (customer == null) {
+        return Left(OrderStorageFailure("Customer not found to attach order"));
+      }
+
+      final store = await storeLocal.getById(
+        int.parse(order.storeLocationId.value),
+        isar,
+      );
+
+      if (store == null) {
+        return Left(OrderStorageFailure("Store not found to attach order"));
+      }
+
+      PrescriptionModel? prescription;
+      if (order.prescriptionId != null) {
+        prescription = await prescriptionLocal.getById(
+          int.parse(order.prescriptionId!.value),
+          isar: isar,
+        );
+
+        if (prescription == null) {
+          return Left(
+            OrderStorageFailure("Prescription not found to attach order"),
+          );
+        }
+      }
+
+      final items = order.items.map(OrderItemMapper.toModel).toList();
+
+      final payments = order.payments.map(PaymentMapper.toModel).toList();
+
+      final id = await isar.writeTxn(() async {
+        final id = await orderLocal.insert(
+          model,
+          customer,
+          prescription,
+          items,
+          payments,
+          store,
+          isar,
+        );
+
+        await isar.customerModels.put(customer);
+
+        return id;
+      });
+
       debugPrint("Order added with id $id");
       return Right(OrderId(id.toString()));
     } catch (e) {
@@ -159,7 +229,11 @@ class OrderRepositoryImpl implements OrderRepository {
 
       final paymentModel = PaymentMapper.toModel(payment);
 
-      await paymentLocal.insert(payment: paymentModel, order: order, isar: isar);
+      await paymentLocal.insert(
+        payment: paymentModel,
+        order: order,
+        isar: isar,
+      );
 
       await _loadRelations(order);
 
