@@ -9,6 +9,7 @@ import 'package:osm/features/orders/presentation/screens/customer_step/customer_
 import 'package:osm/features/orders/presentation/screens/payment_step/payment_step.dart';
 import 'package:osm/features/orders/presentation/screens/product_step/product_step.dart';
 import 'package:osm/features/orders/presentation/widgets/order_stepper.dart';
+import 'package:osm/features/store/presentation/bloc/store_location_bloc.dart';
 
 class CreateOrderFlowScreen extends StatefulWidget {
   const CreateOrderFlowScreen({super.key});
@@ -26,6 +27,19 @@ class _CreateOrderFlowScreenState extends State<CreateOrderFlowScreen> {
     });
   }
 
+  bool _handleBack() {
+    switch (_currentStep) {
+      case OrderStep.customer:
+        return true;
+      case OrderStep.product:
+        _goTo(OrderStep.customer);
+        return false;
+      case OrderStep.payment:
+        _goTo(OrderStep.product);
+        return false;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final orderRepository = context.read<OrderRepository>();
@@ -39,23 +53,59 @@ class _CreateOrderFlowScreenState extends State<CreateOrderFlowScreen> {
           ),
         ),
       ],
-      child: Scaffold(
-        appBar: AppBar(title: Text('Create Order')),
-        body: Column(
-          children: [
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 8),
-              child: OrderStepper(currentStep: _currentStep),
-            ),
-            const Divider(height: 1),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8.0),
-                child: _buildStep(),
+      child: Builder(
+        builder: (context) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            final storeState = context.read<StoreLocationBloc>().state;
+
+            if (storeState is StoreLocationLoaded &&
+                storeState.activeStore != null) {
+              context.read<OrderDraftBloc>().add(
+                StoreSelected(storeState.activeStore!.id!),
+              );
+            }
+          });
+
+          return PopScope(
+            canPop: false,
+            onPopInvokedWithResult: (didPop, result) {
+              if (didPop) return;
+              final shouldExit = _handleBack();
+              if (shouldExit && Navigator.canPop(context)) {
+                Navigator.pop(context, result);
+              }
+            },
+            child: Scaffold(
+              appBar: AppBar(
+                title: Text('Create Order'),
+                leading: IconButton(
+                  onPressed: () {
+                    final shouldPop = _handleBack();
+                    if (shouldPop && Navigator.canPop(context)) {
+                      Navigator.pop(context);
+                    }
+                  },
+                  icon: const Icon(Icons.chevron_left),
+                ),
+              ),
+              body: Column(
+                children: [
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 8),
+                    child: OrderStepper(currentStep: _currentStep),
+                  ),
+                  const Divider(height: 1),
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8.0),
+                      child: _buildStep(),
+                    ),
+                  ),
+                ],
               ),
             ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }

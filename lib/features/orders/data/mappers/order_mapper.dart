@@ -21,6 +21,8 @@ class OrderMapper {
       createdAt: model.createdAt,
       status: OrderEnumsMapper.toOrderStatus(model.status),
       customerId: CustomerId(model.customer.value!.id.toString()),
+      prescriptionId: PrescriptionId(model.prescription.value!.id.toString()),
+      storeLocationId: StoreLocationId(model.storeLocation.value!.id.toString()),
 
       items: items.map(OrderItemMapper.toEntity).toList(),
       payments: payments.map(PaymentMapper.toEntity).toList(),
@@ -28,12 +30,14 @@ class OrderMapper {
   }
 
   static OrderModel toModel(Order order) {
-    return OrderModel(
+    final model = OrderModel(
       createdAt: order.createdAt,
       completedAt: order.status == OrderStatus.completed
           ? DateTime.now()
           : null,
       status: OrderEnumsMapper.toOrderStatusModel(order.status),
     );
+
+    return model;
   }
 }

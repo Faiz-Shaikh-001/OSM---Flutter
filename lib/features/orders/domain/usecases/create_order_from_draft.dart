@@ -28,6 +28,8 @@ class CreateOrderFromDraft {
         createdAt: DateTime.now(),
         status: status,
         customerId: draft.customerId!,
+        prescriptionId: draft.prescriptionId,
+        storeLocationId: draft.storeLocationId!,
         items: draft.items,
         payments: draft.payment != null ? [draft.payment!] : [],
       );

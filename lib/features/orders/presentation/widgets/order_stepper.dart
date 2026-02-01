@@ -20,14 +20,12 @@ class OrderStepper extends StatelessWidget {
         _buildStep(stepNumber: 2, label: 'Products'),
         _buildStepConnector(2),
         _buildStep(stepNumber: 3, label: 'Payment'),
-
-        _buildStepConnector(3),
       ],
     );
   }
 
   Widget _buildStep({required int stepNumber, required String label}) {
-    bool isCompleted = stepNumber < _index;
+    bool isCompleted = stepNumber <= _index;
     bool isCurrent = stepNumber == _index + 1;
 
     Color stepColor = isCurrent

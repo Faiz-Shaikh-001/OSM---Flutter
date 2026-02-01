@@ -11,6 +11,8 @@ class Order {
   final DateTime createdAt;
   final OrderStatus status;
   final CustomerId customerId;
+  final PrescriptionId? prescriptionId;
+  final StoreLocationId storeLocationId;
   final List<OrderItem> items;
   final List<Payment> payments;
 
@@ -19,6 +21,8 @@ class Order {
     required this.createdAt,
     required this.status,
     required this.customerId,
+    this.prescriptionId,
+    required this.storeLocationId,
     required this.items,
     required this.payments,
   });
@@ -27,6 +31,8 @@ class Order {
     required DateTime createdAt,
     required OrderStatus status,
     required CustomerId customerId,
+    PrescriptionId? prescriptionId,
+    required StoreLocationId storeLocationId,
     required List<OrderItem> items,
     required List<Payment> payments,
   }) {
@@ -35,6 +41,8 @@ class Order {
       createdAt: createdAt,
       status: status,
       customerId: customerId,
+      prescriptionId: prescriptionId,
+      storeLocationId: storeLocationId,
       items: items,
       payments: payments,
     );
