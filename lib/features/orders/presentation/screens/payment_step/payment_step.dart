@@ -52,9 +52,9 @@ class _PaymentStepState extends State<PaymentStep> {
         builder: (context, state) {
           return Column(
             children: [
-              _OrderSummary(state),
-              const Divider(),
               _paymentMethodSelector(),
+              const Divider(),
+              _OrderSummary(state),
               const Spacer(),
               _confirmButton(state),
             ],
@@ -65,30 +65,59 @@ class _PaymentStepState extends State<PaymentStep> {
   }
 
   Widget _paymentMethodSelector() {
-    return Column(
-      children: PaymentMethod.values.map((method) {
-        return RadioListTile<PaymentMethod>(
-          value: method,
-          groupValue: _selectedMethod,
-          title: Text(method.name.toUpperCase()),
-          onChanged: (value) {
-            setState(() => _selectedMethod = value);
-          },
-        );
-      }).toList(),
+    final theme = Theme.of(context);
+
+    return Padding(
+      padding: const EdgeInsets.all(8),
+      child: Card(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        child: Padding(
+          padding: const EdgeInsets.all(8),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: EdgeInsets.all(8),
+                child: Text(
+                  "Payment Method",
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              ...PaymentMethod.values.map((method) {
+                return RadioListTile<PaymentMethod>(
+                  value: method,
+                  groupValue: _selectedMethod,
+                  title: Text(method.name.toUpperCase()),
+                  dense: true,
+                  onChanged: (value) {
+                    setState(() => _selectedMethod = value);
+                  },
+                );
+              }),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
   Widget _confirmButton(OrderDraftState state) {
     final canPay = state.canSubmit && _selectedMethod != null;
 
-    return Padding(
-      padding: EdgeInsets.all(16),
-      child: FilledButton(
-        onPressed: canPay
-            ? () => _confirmPayment(state)
-            : () => debugPrint("Payment Cannot be made yet canPay=$canPay"),
-        child: const Text('Confirm & Pay'),
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: SizedBox(
+          width: double.infinity,
+          height: 48,
+          child: FilledButton.icon(
+            icon: const Icon(Icons.check_circle_outline),
+            onPressed: canPay ? () => _confirmPayment(state) : null,
+            label: const Text("Confirm & Pay"),
+          ),
+        ),
       ),
     );
   }
@@ -104,7 +133,7 @@ class _PaymentStepState extends State<PaymentStep> {
     context.read<OrderDraftBloc>().add(PaymentAdded(payment));
 
     context.read<OrderSubmissionBloc>().add(
-      SubmitOrderDraft(state.draft.withPayment(payment)),
+      SubmitOrderDraft(state.draft.withPayment([payment])),
     );
   }
 }
@@ -116,19 +145,121 @@ class _OrderSummary extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Padding(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(8.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            '${state.draft.items.length} items',
-            style: Theme.of(context).textTheme.titleMedium,
+            "Order Summary",
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.bold,
+            ),
           ),
+
           const SizedBox(height: 8),
-          Text(
-            'Total: ₹${state.draft.totalAmount.value}',
-            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+
+          Card(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadiusGeometry.circular(5),
+            ),
+            child: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 8.0,
+                    horizontal: 5,
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      SizedBox(
+                        width: 30,
+                        child: Center(
+                          child: Text("#", style: theme.textTheme.bodySmall),
+                        ),
+                      ),
+                      Expanded(
+                        child: Text(
+                          "Product",
+                          style: theme.textTheme.bodySmall,
+                        ),
+                      ),
+                      SizedBox(
+                        width: 40,
+                        child: Text(
+                          "Qty",
+                          textAlign: TextAlign.center,
+                          style: theme.textTheme.bodySmall,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                const Divider(),
+
+                ...state.draft.items.indexed.map((entry) {
+                  final index = entry.$1 + 1;
+                  final item = entry.$2;
+
+                  return Row(
+                    children: [
+                      SizedBox(
+                        width: 30,
+                        child: Center(
+                          child: Text(
+                            index.toString(),
+                            style: TextStyle(fontWeight: FontWeight.w600),
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        child: Text(
+                          item.productName,
+                          softWrap: true,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(fontWeight: FontWeight.w600),
+                        ),
+                      ),
+                      SizedBox(
+                        width: 40,
+                        child: Text(
+                          item.quantity.toString(),
+                          textAlign: TextAlign.center,
+                          style: TextStyle(fontWeight: FontWeight.w600),
+                        ),
+                      ),
+                    ],
+                  );
+                }),
+
+                const Divider(),
+
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12.0,
+                    vertical: 8,
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text("Total Amount"),
+                      Text(
+                        "₹${state.draft.totalAmount.value}",
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),
