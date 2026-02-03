@@ -39,8 +39,8 @@ class OrderDraftBloc extends Bloc<OrderDraftEvent, OrderDraftState> {
   ) {
     final updatedDraft = OrderDraft(
       storeLocationId: state.draft.storeLocationId,
-      items: state.draft.items,
-      payment: state.draft.payment,
+      items: [],
+      payments: [],
     );
 
     emit(OrderDraftState(updatedDraft));
@@ -62,7 +62,7 @@ class OrderDraftBloc extends Bloc<OrderDraftEvent, OrderDraftState> {
       customerId: state.draft.customerId,
       storeLocationId: state.draft.storeLocationId,
       items: state.draft.items,
-      payment: state.draft.payment,
+      payments: state.draft.payments,
     );
 
     emit(OrderDraftState(updatedDraft));

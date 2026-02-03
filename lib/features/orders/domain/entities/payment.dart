@@ -6,11 +6,13 @@ class Payment {
   final Money amountPaid;
   final PaymentMethod method;
   final PaymentStatus status;
+  final String? transactionId;
 
   const Payment({
     required this.paymentDate,
     required this.amountPaid,
     required this.method,
     required this.status,
+    this.transactionId,
   });
 }

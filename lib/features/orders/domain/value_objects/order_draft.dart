@@ -8,7 +8,7 @@ class OrderDraft {
   final PrescriptionId? prescriptionId;
   final StoreLocationId? storeLocationId;
   final List<OrderItem> items;
-  final List<Payment>? payments;
+  final List<Payment> payments;
 
   const OrderDraft({
     this.customerId,
@@ -33,6 +33,12 @@ class OrderDraft {
 
   Money get totalAmount =>
       items.fold(Money(0), (sum, item) => sum + item.total);
+
+  Money get totalPaid => payments.fold(Money(0), (sum, p) => sum + p.amountPaid);
+
+  Money get remainingAmount => totalAmount - totalPaid;
+
+  bool get isFullyPaid => remainingAmount.isZero;
 
   // Immutable builders
 
@@ -76,13 +82,13 @@ class OrderDraft {
     );
   }
 
-  OrderDraft withPayment(List<Payment> payment) {
+  OrderDraft withPayment(Payment payment) {
     return OrderDraft(
       customerId: customerId,
       prescriptionId: prescriptionId,
       storeLocationId: storeLocationId,
       items: items,
-      payments: payment,
+      payments: [...payments, payment],
     );
   }
 }
