@@ -21,7 +21,7 @@ class CreateOrderFromDraft {
 
     try {
       debugPrint("Order in create Order from draft");
-      final status = draft.payment == null ? OrderStatus.pendingPayment : OrderStatus.completed;
+      final status = draft.payments == null ? OrderStatus.pendingPayment : OrderStatus.completed;
 
       debugPrint("status: $status");
       final order = Order.newOrder(
@@ -31,7 +31,7 @@ class CreateOrderFromDraft {
         prescriptionId: draft.prescriptionId,
         storeLocationId: draft.storeLocationId!,
         items: draft.items,
-        payments: draft.payment != null ? [draft.payment!] : [],
+        payments: draft.payments ?? [],
       );
 
       debugPrint("Order created");
