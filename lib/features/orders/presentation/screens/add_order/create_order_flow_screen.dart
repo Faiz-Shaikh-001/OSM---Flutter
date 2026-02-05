@@ -21,16 +21,17 @@ class CreateOrderFlowScreen extends StatefulWidget {
 class _CreateOrderFlowScreenState extends State<CreateOrderFlowScreen> {
   OrderStep _currentStep = OrderStep.customer;
 
+  // Navigation logic
   void _goTo(OrderStep step) {
-    setState(() {
-      _currentStep = step;
-    });
+    setState(() => _currentStep = step);
   }
 
-  bool _handleBack() {
+  // Handles back navigation
+  Future<bool> _handleBack() async {
     switch (_currentStep) {
       case OrderStep.customer:
-        return true;
+        final shouldDiscard = await _showDiscardDialog();
+        return shouldDiscard;
       case OrderStep.product:
         _goTo(OrderStep.customer);
         return false;
@@ -40,72 +41,122 @@ class _CreateOrderFlowScreenState extends State<CreateOrderFlowScreen> {
     }
   }
 
+  Future<bool> _showDiscardDialog() async {
+    return await showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text("Discard Order?"),
+            content: const Text(
+              "You have unsaved changes. Are you sure you want to leave?",
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text("Cancel"),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: const Text(
+                  "Discard",
+                  style: TextStyle(color: Colors.red),
+                ),
+              ),
+            ],
+          ),
+        ) ??
+        false;
+  }
+
   @override
   Widget build(BuildContext context) {
     final orderRepository = context.read<OrderRepository>();
 
     return MultiBlocProvider(
       providers: [
-        BlocProvider(create: (_) => OrderDraftBloc()),
+        BlocProvider(
+          create: (context) {
+            final bloc = OrderDraftBloc();
+
+            // Initialize draft with active store immediately
+            final storeState = context.read<StoreLocationBloc>().state;
+
+            if (storeState is StoreLocationLoaded &&
+                storeState.activeStore?.id != null) {
+              bloc.add(StoreSelected(storeState.activeStore!.id!));
+            }
+            return bloc;
+          },
+        ),
         BlocProvider(
           create: (context) => OrderSubmissionBloc(
             createOrderFromDraft: CreateOrderFromDraft(orderRepository),
           ),
         ),
       ],
-      child: Builder(
-        builder: (context) {
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            final storeState = context.read<StoreLocationBloc>().state;
-
-            if (storeState is StoreLocationLoaded &&
-                storeState.activeStore != null) {
-              context.read<OrderDraftBloc>().add(
-                StoreSelected(storeState.activeStore!.id!),
-              );
-            }
-          });
-
-          return PopScope(
-            canPop: false,
-            onPopInvokedWithResult: (didPop, result) {
-              if (didPop) return;
-              final shouldExit = _handleBack();
-              if (shouldExit && Navigator.canPop(context)) {
-                Navigator.pop(context, result);
-              }
-            },
-            child: Scaffold(
-              appBar: AppBar(
-                title: Text('Create Order'),
-                leading: IconButton(
-                  onPressed: () {
-                    final shouldPop = _handleBack();
-                    if (shouldPop && Navigator.canPop(context)) {
-                      Navigator.pop(context);
-                    }
-                  },
-                  icon: const Icon(Icons.chevron_left),
+      child: BlocListener<StoreLocationBloc, StoreLocationState>(
+        listener: (context, storeState) {
+          if (storeState is StoreLocationLoaded &&
+              storeState.activeStore != null) {
+            context.read<OrderDraftBloc>().add(
+              StoreSelected(storeState.activeStore!.id!),
+            );
+          }
+        },
+        child: Builder(
+          builder: (context) {
+            return PopScope(
+              canPop: false,
+              onPopInvokedWithResult: (didPop, result) async {
+                if (didPop) return;
+                final shouldExit = await _handleBack();
+                if (shouldExit && context.mounted) {
+                  Navigator.pop(context, result);
+                }
+              },
+              child: Scaffold(
+                appBar: AppBar(
+                  title: Text('Create Order'),
+                  centerTitle: true,
+                  leading: IconButton(
+                    onPressed: () async {
+                      final shouldExit = await _handleBack();
+                      if (shouldExit && context.mounted) {
+                        Navigator.pop(context);
+                      }
+                    },
+                    icon: _currentStep == OrderStep.customer
+                        ? const Icon(Icons.close)
+                        : const Icon(Icons.chevron_left),
+                  ),
+                ),
+                body: Column(
+                  children: [
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 8),
+                      child: OrderStepper(currentStep: _currentStep),
+                    ),
+                    const Divider(height: 1),
+                    Expanded(
+                      child: AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 300),
+                        transitionBuilder: (child, animation) {
+                          return FadeTransition(
+                            opacity: animation,
+                            child: child,
+                          );
+                        },
+                        child: KeyedSubtree(
+                          key: ValueKey(_currentStep),
+                          child: _buildStep(),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              body: Column(
-                children: [
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 8),
-                    child: OrderStepper(currentStep: _currentStep),
-                  ),
-                  const Divider(height: 1),
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8.0),
-                      child: _buildStep(),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          );
-        },
+            );
+          },
+        ),
       ),
     );
   }

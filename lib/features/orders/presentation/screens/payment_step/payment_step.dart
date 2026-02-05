@@ -21,6 +21,7 @@ class _PaymentStepState extends State<PaymentStep> {
   final _formKey = GlobalKey<FormState>();
   final _advancePaymentCtrl = TextEditingController();
   final _discountCtrl = TextEditingController();
+  final _transactionIdCtrl = TextEditingController();
 
   double _discountVal = 0.0;
   double _advanceVal = 0.0;
@@ -44,6 +45,7 @@ class _PaymentStepState extends State<PaymentStep> {
   void dispose() {
     _discountCtrl.dispose();
     _advancePaymentCtrl.dispose();
+    _transactionIdCtrl.dispose();
     super.dispose();
   }
 
@@ -110,7 +112,7 @@ class _PaymentStepState extends State<PaymentStep> {
                   children: [
                     _OrderSummaryCard(state),
 
-                    const SizedBox(height: 24,),
+                    const SizedBox(height: 24),
                     _sectionTitle("Payment Method"),
                     const SizedBox(height: 10),
                     _buildPaymentGrid(),
@@ -119,6 +121,36 @@ class _PaymentStepState extends State<PaymentStep> {
                     _sectionTitle("Order Details"),
                     const SizedBox(height: 10),
 
+                    if (_selectedMethod != PaymentMethod.cash)
+                      Row(
+                        children: [
+                          Expanded(
+                            child: TextFormField(
+                              controller: _transactionIdCtrl,
+                              keyboardType: TextInputType.number,
+                              decoration: InputDecoration(
+                                labelText: "Transaction Id",
+                                fillColor: Colors.white,
+                                filled: true,
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                  borderSide: BorderSide(
+                                    color: Colors.grey.shade300,
+                                  ),
+                                ),
+                              ),
+                              validator: (value) {
+                                if (value == null) return "Transaction Id required";
+                                return null;
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                    const SizedBox(height: 10),
                     _buildAdjustmentsForm(totalAmount),
                     const SizedBox(height: 24),
                     _buildMathBreakdown(totalAmount, finalTotal, balanceDue),
@@ -408,7 +440,7 @@ class _PaymentStepState extends State<PaymentStep> {
           : Money(state.draft.totalAmount.value - _discountVal),
       method: _selectedMethod!,
       status: PaymentStatus.completed,
-      transactionId: '',
+      transactionId: _transactionIdCtrl.text,
     );
 
     context.read<OrderDraftBloc>().add(PaymentAdded(payment));
@@ -450,9 +482,9 @@ class _OrderSummaryCard extends StatelessWidget {
             fontWeight: FontWeight.bold,
           ),
         ),
-    
+
         const SizedBox(height: 8),
-    
+
         Card(
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadiusGeometry.circular(5),
@@ -475,10 +507,7 @@ class _OrderSummaryCard extends StatelessWidget {
                       ),
                     ),
                     Expanded(
-                      child: Text(
-                        "Product",
-                        style: theme.textTheme.bodySmall,
-                      ),
+                      child: Text("Product", style: theme.textTheme.bodySmall),
                     ),
                     SizedBox(
                       width: 40,
@@ -491,13 +520,13 @@ class _OrderSummaryCard extends StatelessWidget {
                   ],
                 ),
               ),
-    
+
               const Divider(),
-    
+
               ...state.draft.items.indexed.map((entry) {
                 final index = entry.$1 + 1;
                 final item = entry.$2;
-    
+
                 return Row(
                   children: [
                     SizedBox(
@@ -529,9 +558,9 @@ class _OrderSummaryCard extends StatelessWidget {
                   ],
                 );
               }),
-    
+
               const Divider(),
-    
+
               Padding(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 12.0,
