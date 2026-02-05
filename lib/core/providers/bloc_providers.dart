@@ -5,11 +5,13 @@ import 'package:osm/core/usecases/resolve_qr_scan.dart';
 import 'package:osm/features/customer/domain/repositories/customer_repository.dart';
 import 'package:osm/features/customer/domain/usecases/add_customer.dart';
 import 'package:osm/features/customer/domain/usecases/delete_customer.dart';
+import 'package:osm/features/customer/domain/usecases/get_customer_details.dart';
 import 'package:osm/features/customer/domain/usecases/get_customers.dart';
 import 'package:osm/features/customer/domain/usecases/search_customers.dart';
 import 'package:osm/features/customer/domain/usecases/update_customer.dart';
 import 'package:osm/features/customer/domain/usecases/watch_customers_stream.dart';
 import 'package:osm/features/customer/presentation/bloc/customer/customer_bloc.dart';
+import 'package:osm/features/customer/presentation/bloc/customer_details/customer_details_bloc.dart';
 import 'package:osm/features/dashboard/domain/repositories/activity_repository.dart';
 import 'package:osm/features/dashboard/domain/usecases/save_activity.dart';
 import 'package:osm/features/dashboard/domain/usecases/watch_recent_activities.dart';
@@ -47,6 +49,7 @@ import 'package:osm/features/inventory/presentation/blocs/frames/frame_list/fram
 import 'package:osm/features/inventory/presentation/blocs/lens/lens_detail/lens_detail_bloc.dart';
 import 'package:osm/features/inventory/presentation/blocs/lens/lens_list/lens_list_bloc.dart';
 import 'package:osm/features/inventory/presentation/blocs/qr_scan/qr_scan_bloc.dart';
+import 'package:osm/features/orders/domain/repositories/order_repository.dart';
 import 'package:osm/features/prescription/domain/repositories/prescription_repository.dart';
 import 'package:osm/features/prescription/domain/usecases/add_prescription.dart';
 import 'package:osm/features/prescription/domain/usecases/get_prescription_history.dart';
@@ -67,6 +70,7 @@ List<BlocProvider> buildBlocProviders(BuildContext context) {
   final accessoryRepository = context.read<AccessoryRepository>();
   final prescriptionRepository = context.read<PrescriptionRepository>();
   final activityReposistory = context.read<ActivityRepository>();
+  final orderRepository = context.read<OrderRepository>();
 
   return [
     // BlocProviders
@@ -94,6 +98,17 @@ List<BlocProvider> buildBlocProviders(BuildContext context) {
         searchCustomers: SearchCustomers(customerRepository),
         watchCustomersStream: WatchCustomersStream(customerRepository),
       )..add(const LoadCustomers()),
+    ),
+
+    BlocProvider<CustomerDetailsBloc>(
+      create: (_) => CustomerDetailsBloc(
+        getCustomerDetails: GetCustomerDetails(
+          customerRepository,
+          orderRepository,
+          prescriptionRepository,
+        ),
+        deleteCustomer: DeleteCustomer(customerRepository),
+      ),
     ),
 
     BlocProvider<FrameListBloc>(

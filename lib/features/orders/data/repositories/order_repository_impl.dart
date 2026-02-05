@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:osm/core/either.dart';
 import 'package:osm/core/services/isar_service.dart';
 import 'package:osm/core/value_objects/id.dart';
@@ -115,7 +114,6 @@ class OrderRepositoryImpl implements OrderRepository {
   @override
   Future<Either<OrderFailure, OrderId>> create(Order order) async {
     try {
-      debugPrint("Order in repository impl");
       final isar = await _isarService.db;
       final model = OrderMapper.toModel(order);
 
@@ -171,7 +169,6 @@ class OrderRepositoryImpl implements OrderRepository {
         return id;
       });
 
-      debugPrint("Order added with id $id");
       return Right(OrderId(id.toString()));
     } catch (e) {
       return Left(OrderStorageFailure(e.toString()));

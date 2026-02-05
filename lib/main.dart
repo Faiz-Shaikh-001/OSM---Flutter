@@ -14,6 +14,7 @@ import 'package:osm/features/inventory/presentation/screens/inventory_screen.dar
 // import 'package:osm/features/inventory/presentation/screens/inventory_screen.dart';
 // ignore: unused_import
 import 'package:osm/features/orders/presentation/screens/add_order/create_order_flow_screen.dart';
+import 'package:osm/features/orders/presentation/screens/order_list/order_list_screen.dart';
 import 'package:osm/features/store/data/repositories/store_location_local_repository.dart';
 import 'package:osm/features/store/data/repositories/store_location_repository_impl.dart';
 import 'package:osm/features/store/domain/usecases/ensure_active_store_location.dart';
@@ -64,7 +65,8 @@ class MyApp extends StatelessWidget {
       // home: CustomerListScreen(),
       // home: DashboardScreen(),
       // home: InventoryScreen(),
-      home: CreateOrderFlowScreen()
+      // home: CreateOrderFlowScreen()
+      home: OrderListScreen(),
     );
   }
 }
