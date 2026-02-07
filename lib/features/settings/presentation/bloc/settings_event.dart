@@ -6,8 +6,8 @@ abstract class SettingsEvent {}
 class LoadSettings extends SettingsEvent {}
 
 /// When user updates any setting
-class SettingsUpdated extends SettingsEvent {
+class UpdateSettings extends SettingsEvent {
   final AppSettings settings;
 
-  SettingsUpdated(this.settings);
+  UpdateSettings(this.settings);
 }
