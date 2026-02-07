@@ -353,7 +353,7 @@ class _SettingsView extends StatelessWidget {
     AppSettings updatedSettings,
   ) {
     context.read<SettingsBloc>().add(
-          SettingsUpdated(updatedSettings),
+          UpdateSettings(updatedSettings),
         );
   }
 }

@@ -65,7 +65,7 @@ class MyApp extends StatelessWidget {
       // home: DashboardScreen(),
       // home: InventoryScreen(),
       // home: CreateOrderFlowScreen()
-      home: SettingsBootstrap(),
+      home: SettingsBootstrap(),     
     );
   }
 }
