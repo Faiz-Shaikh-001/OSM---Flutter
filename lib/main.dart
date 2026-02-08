@@ -54,18 +54,35 @@ Future<void> main() async {
   );
 }
 
+// class MyApp extends StatelessWidget {
+//   const MyApp({super.key});
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return const MaterialApp(
+//       debugShowCheckedModeBanner: false,
+//       // home: CustomerListScreen(),
+//       //home: DashboardScreen(),
+//       // home: InventoryScreen(),
+//       // home: CreateOrderFlowScreen()
+//       home: SettingsBootstrap(),     
+//     );
+//   }
+// }
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
+    final themeProvider = context.watch<ThemeProvider>();
+
+    return MaterialApp(
       debugShowCheckedModeBanner: false,
-      // home: CustomerListScreen(),
-      // home: DashboardScreen(),
-      // home: InventoryScreen(),
-      // home: CreateOrderFlowScreen()
-      home: SettingsBootstrap(),     
+      themeMode: themeProvider.themeMode,
+      theme: ThemeData.light(),
+      darkTheme: ThemeData.dark(),
+      home: SettingsBootstrap(),
     );
   }
 }
+

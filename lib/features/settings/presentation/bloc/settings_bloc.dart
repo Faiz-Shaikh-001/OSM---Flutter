@@ -1,44 +1,40 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+
 import '../../domain/usecases/get_settings.dart';
-import '../../domain/usecases/save_settings.dart';
+import '../../domain/usecases/update_settings.dart';
 import 'settings_event.dart';
 import 'settings_state.dart';
 
 class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
   final GetSettings getSettings;
-  final SaveSettings saveSettings;
+  final UpdateSettings updateSettings;
 
   SettingsBloc({
     required this.getSettings,
-    required this.saveSettings,
-  }) : super(SettingsState.initial()) {
+    required this.updateSettings,
+  }) : super(SettingsInitial()) {
+    on<LoadSettings>(_onLoadSettings);
+    on<ToggleDarkMode>(_onToggleDarkMode);
+  }
 
-    /// Load settings when screen opens
-    on<LoadSettings>((event, emit) async {
-      emit(state.copyWith(isLoading: true));
+  Future<void> _onLoadSettings(
+    LoadSettings event,
+    Emitter<SettingsState> emit,
+  ) async {
+    final settings = await getSettings();
+    emit(SettingsLoaded(settings));
+  }
 
-      final settings = await getSettings();
+  Future<void> _onToggleDarkMode(
+    ToggleDarkMode event,
+    Emitter<SettingsState> emit,
+  ) async {
+    if (state is! SettingsLoaded) return;
 
-      emit(
-        state.copyWith(
-          settings: settings,
-          isLoading: false,
-        ),
-      );
-    });
+    final current = (state as SettingsLoaded).settings;
+    final updated = current.copyWith(darkMode: event.value);
 
-    /// Save updated settings
-    on<UpdateSettings>((event, emit) async {
-      emit(state.copyWith(isLoading: true));
-
-      await saveSettings(event.settings);
-
-      emit(
-        state.copyWith(
-          settings: event.settings,
-          isLoading: false,
-        ),
-      );
-    });
+    await updateSettings(updated);
+    emit(SettingsLoaded(updated));
   }
 }
