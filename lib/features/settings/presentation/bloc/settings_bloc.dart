@@ -8,8 +8,10 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
   final GetSettings getSettings;
   final UpdateSettings updateSettings;
 
-  SettingsBloc({required this.getSettings, required this.updateSettings})
-    : super(SettingsInitial()) {
+  SettingsBloc({
+    required this.getSettings,
+    required this.updateSettings,
+  }) : super(SettingsInitial()) {
     on<LoadSettings>(_onLoadSettings);
     on<ToggleDarkMode>(_onToggleDarkMode);
     on<TogglePushNotifications>(_onTogglePushNotifications);
@@ -38,63 +40,70 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
     await updateSettings(updated);
     emit(SettingsLoaded(updated));
   }
+
+  /// 🔥 MASTER SWITCH (FIXED)
   Future<void> _onTogglePushNotifications(
-  TogglePushNotifications event,
-  Emitter<SettingsState> emit,
-) async {
-  if (state is! SettingsLoaded) return;
+    TogglePushNotifications event,
+    Emitter<SettingsState> emit,
+  ) async {
+    if (state is! SettingsLoaded) return;
 
-  final current = (state as SettingsLoaded).settings;
-  final updated = current.copyWith(
-    pushNotifications: event.value,
-  );
+    final current = (state as SettingsLoaded).settings;
 
-  await updateSettings(updated);
-  emit(SettingsLoaded(updated));
-}
+    final updated = event.value
+        ? current.copyWith(
+            pushNotifications: true,
+            lowStockAlerts: true,
+            newOrderNotifications: true,
+            dailySummary: true,
+          )
+        : current.copyWith(
+            pushNotifications: false,
+            lowStockAlerts: false,
+            newOrderNotifications: false,
+            dailySummary: false,
+          );
 
-Future<void> _onToggleLowStockAlerts(
-  ToggleLowStockAlerts event,
-  Emitter<SettingsState> emit,
-) async {
-  if (state is! SettingsLoaded) return;
+    await updateSettings(updated);
+    emit(SettingsLoaded(updated));
+  }
 
-  final current = (state as SettingsLoaded).settings;
-  final updated = current.copyWith(
-    lowStockAlerts: event.value,
-  );
+  Future<void> _onToggleLowStockAlerts(
+    ToggleLowStockAlerts event,
+    Emitter<SettingsState> emit,
+  ) async {
+    if (state is! SettingsLoaded) return;
 
-  await updateSettings(updated);
-  emit(SettingsLoaded(updated));
-}
+    final current = (state as SettingsLoaded).settings;
+    final updated = current.copyWith(lowStockAlerts: event.value);
 
-Future<void> _onToggleNewOrderNotifications(
-  ToggleNewOrderNotifications event,
-  Emitter<SettingsState> emit,
-) async {
-  if (state is! SettingsLoaded) return;
+    await updateSettings(updated);
+    emit(SettingsLoaded(updated));
+  }
 
-  final current = (state as SettingsLoaded).settings;
-  final updated = current.copyWith(
-    newOrderNotifications: event.value,
-  );
+  Future<void> _onToggleNewOrderNotifications(
+    ToggleNewOrderNotifications event,
+    Emitter<SettingsState> emit,
+  ) async {
+    if (state is! SettingsLoaded) return;
 
-  await updateSettings(updated);
-  emit(SettingsLoaded(updated));
-}
+    final current = (state as SettingsLoaded).settings;
+    final updated = current.copyWith(newOrderNotifications: event.value);
 
-Future<void> _onToggleDailySummary(
-  ToggleDailySummary event,
-  Emitter<SettingsState> emit,
-) async {
-  if (state is! SettingsLoaded) return;
+    await updateSettings(updated);
+    emit(SettingsLoaded(updated));
+  }
 
-  final current = (state as SettingsLoaded).settings;
-  final updated = current.copyWith(
-    dailySummary: event.value,
-  );
+  Future<void> _onToggleDailySummary(
+    ToggleDailySummary event,
+    Emitter<SettingsState> emit,
+  ) async {
+    if (state is! SettingsLoaded) return;
 
-  await updateSettings(updated);
-  emit(SettingsLoaded(updated));
-}
+    final current = (state as SettingsLoaded).settings;
+    final updated = current.copyWith(dailySummary: event.value);
+
+    await updateSettings(updated);
+    emit(SettingsLoaded(updated));
+  }
 }
