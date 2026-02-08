@@ -31,3 +31,8 @@ class UpdateStockThreshold extends SettingsEvent {
   final int value;
   UpdateStockThreshold(this.value);
 }
+
+class UpdateDefaultTaxRate extends SettingsEvent {
+  final double value;
+  UpdateDefaultTaxRate(this.value);
+}

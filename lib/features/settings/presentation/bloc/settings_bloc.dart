@@ -19,6 +19,7 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
     on<ToggleNewOrderNotifications>(_onToggleNewOrderNotifications);
     on<ToggleDailySummary>(_onToggleDailySummary);
     on<UpdateStockThreshold>(_onUpdateStockThreshold);
+    on<UpdateDefaultTaxRate>(_onUpdateDefaultTaxRate);
   }
 
   Future<void> _onLoadSettings(
@@ -111,4 +112,17 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
     await updateSettings(updated);
     emit(SettingsLoaded(updated));
   }
+  Future<void> _onUpdateDefaultTaxRate(
+  UpdateDefaultTaxRate event,
+  Emitter<SettingsState> emit,
+) async {
+  if (state is! SettingsLoaded) return;
+
+  final current = (state as SettingsLoaded).settings;
+  final updated = current.copyWith(defaultTaxRate: event.value);
+
+  await updateSettings(updated);
+  emit(SettingsLoaded(updated));
+}
+
 }
