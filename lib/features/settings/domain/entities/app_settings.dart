@@ -4,6 +4,8 @@ class AppSettings {
   final bool lowStockAlerts;
   final bool newOrderNotifications;
   final bool dailySummary;
+
+  // Inventory
   final int stockWarningThreshold;
   final double defaultTaxRate;
   final double discountRate;
@@ -35,11 +37,26 @@ class AppSettings {
       invoiceFooterMessage: 'Thank you',
     );
   }
+
+  /// Master notification switch (derived)
   bool get allowNotifications =>
       pushNotifications ||
       lowStockAlerts ||
       newOrderNotifications ||
       dailySummary;
+
+  /// UX helpers (SAFE & OPTIONAL)
+  String get stockThresholdLabel =>
+      'Alert when quantity is less than $stockWarningThreshold';
+
+  String get taxRateLabel =>
+      'Current: ${defaultTaxRate.toStringAsFixed(1)}%';
+
+  String get discountRateLabel =>
+      'Current: ${discountRate.toStringAsFixed(1)}%';
+
+  String get footerMessageLabel =>
+      invoiceFooterMessage.isEmpty ? 'Not set' : invoiceFooterMessage;
 
   /// Creates a new copy with updated values
   AppSettings copyWith({
