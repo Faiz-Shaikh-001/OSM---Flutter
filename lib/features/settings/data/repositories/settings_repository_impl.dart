@@ -10,6 +10,8 @@ class SettingsRepositoryImpl implements SettingsRepository {
   static const _dailySummaryKey = 'daily_summary';
   static const _stockWarningThresholdKey = 'stock_warning_threshold';
   static const _defaultTaxRateKey = 'default_tax_rate';
+  static const _discountRateKey = 'discount_rate';
+  static const _invoiceFooterMessageKey = 'invoice_footer_message';
 
   @override
   Future<AppSettings> getSettings() async {
@@ -25,6 +27,9 @@ class SettingsRepositoryImpl implements SettingsRepository {
       stockWarningThreshold:
           prefs.getInt(_stockWarningThresholdKey) ?? 5,
       defaultTaxRate: prefs.getDouble(_defaultTaxRateKey) ?? 0.0,
+      discountRate: prefs.getDouble(_discountRateKey) ?? 0.0,
+      invoiceFooterMessage:
+          prefs.getString(_invoiceFooterMessageKey) ?? 'Thank you',
     );
   }
 
@@ -45,5 +50,9 @@ class SettingsRepositoryImpl implements SettingsRepository {
         _stockWarningThresholdKey, settings.stockWarningThreshold);
     await prefs.setDouble(
         _defaultTaxRateKey, settings.defaultTaxRate);
+    await prefs.setDouble(
+        _discountRateKey, settings.discountRate);
+    await prefs.setString(
+        _invoiceFooterMessageKey, settings.invoiceFooterMessage); 
   }
 }

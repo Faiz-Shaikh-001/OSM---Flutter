@@ -36,3 +36,11 @@ class UpdateDefaultTaxRate extends SettingsEvent {
   final double value;
   UpdateDefaultTaxRate(this.value);
 }
+class UpdateDiscountRate extends SettingsEvent {
+  final double value;
+  UpdateDiscountRate(this.value);
+}
+class UpdateInvoiceFooterMessage extends SettingsEvent {
+  final String value;
+  UpdateInvoiceFooterMessage(this.value);
+}
