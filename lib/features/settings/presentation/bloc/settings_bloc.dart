@@ -8,10 +8,8 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
   final GetSettings getSettings;
   final UpdateSettings updateSettings;
 
-  SettingsBloc({
-    required this.getSettings,
-    required this.updateSettings,
-  }) : super(SettingsInitial()) {
+  SettingsBloc({required this.getSettings, required this.updateSettings})
+    : super(SettingsInitial()) {
     on<LoadSettings>(_onLoadSettings);
     on<ToggleDarkMode>(_onToggleDarkMode);
     on<TogglePushNotifications>(_onTogglePushNotifications);
@@ -20,6 +18,8 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
     on<ToggleDailySummary>(_onToggleDailySummary);
     on<UpdateStockThreshold>(_onUpdateStockThreshold);
     on<UpdateDefaultTaxRate>(_onUpdateDefaultTaxRate);
+    on<UpdateDiscountRate>(_onUpdateDiscountRate);
+    on<UpdateInvoiceFooterMessage>(_onUpdateInvoiceFooterMessage);
   }
 
   Future<void> _onLoadSettings(
@@ -50,9 +50,7 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
     if (state is! SettingsLoaded) return;
 
     final current = (state as SettingsLoaded).settings;
-    final updated = current.copyWith(
-      pushNotifications: event.value,
-    );
+    final updated = current.copyWith(pushNotifications: event.value);
 
     await updateSettings(updated);
     emit(SettingsLoaded(updated));
@@ -78,8 +76,7 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
     if (state is! SettingsLoaded) return;
 
     final current = (state as SettingsLoaded).settings;
-    final updated =
-        current.copyWith(newOrderNotifications: event.value);
+    final updated = current.copyWith(newOrderNotifications: event.value);
 
     await updateSettings(updated);
     emit(SettingsLoaded(updated));
@@ -105,24 +102,48 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
     if (state is! SettingsLoaded) return;
 
     final current = (state as SettingsLoaded).settings;
-    final updated = current.copyWith(
-      stockWarningThreshold: event.value,
-    );
+    final updated = current.copyWith(stockWarningThreshold: event.value);
 
     await updateSettings(updated);
     emit(SettingsLoaded(updated));
   }
+
   Future<void> _onUpdateDefaultTaxRate(
-  UpdateDefaultTaxRate event,
-  Emitter<SettingsState> emit,
-) async {
-  if (state is! SettingsLoaded) return;
+    UpdateDefaultTaxRate event,
+    Emitter<SettingsState> emit,
+  ) async {
+    if (state is! SettingsLoaded) return;
 
-  final current = (state as SettingsLoaded).settings;
-  final updated = current.copyWith(defaultTaxRate: event.value);
+    final current = (state as SettingsLoaded).settings;
+    final updated = current.copyWith(defaultTaxRate: event.value);
 
-  await updateSettings(updated);
-  emit(SettingsLoaded(updated));
-}
+    await updateSettings(updated);
+    emit(SettingsLoaded(updated));
+  }
 
+  Future<void> _onUpdateDiscountRate(
+    UpdateDiscountRate event,
+    Emitter<SettingsState> emit,
+  ) async {
+    if (state is! SettingsLoaded) return;
+
+    final current = (state as SettingsLoaded).settings;
+    final updated = current.copyWith(discountRate: event.value);
+
+    await updateSettings(updated);
+    emit(SettingsLoaded(updated));
+  }
+
+  Future<void> _onUpdateInvoiceFooterMessage(
+    UpdateInvoiceFooterMessage event,
+    Emitter<SettingsState> emit,
+  ) async {
+    if (state is! SettingsLoaded) return;
+
+    final current = (state as SettingsLoaded).settings;
+    final updated = current.copyWith(invoiceFooterMessage: event.value);
+
+    await updateSettings(updated);
+    emit(SettingsLoaded(updated));
+  }
 }

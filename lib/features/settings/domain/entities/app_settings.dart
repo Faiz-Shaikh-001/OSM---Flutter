@@ -6,6 +6,8 @@ class AppSettings {
   final bool dailySummary;
   final int stockWarningThreshold;
   final double defaultTaxRate;
+  final double discountRate;
+  final String invoiceFooterMessage;
 
   const AppSettings({
     required this.darkMode,
@@ -15,7 +17,8 @@ class AppSettings {
     required this.dailySummary,
     required this.stockWarningThreshold,
     required this.defaultTaxRate,
-
+    required this.discountRate,
+    required this.invoiceFooterMessage,
   });
 
   /// Default settings when app runs for the first time
@@ -28,6 +31,8 @@ class AppSettings {
       dailySummary: false,
       stockWarningThreshold: 5,
       defaultTaxRate: 0.0,
+      discountRate: 0.0,
+      invoiceFooterMessage: 'Thank you',
     );
   }
   bool get allowNotifications =>
@@ -35,7 +40,6 @@ class AppSettings {
       lowStockAlerts ||
       newOrderNotifications ||
       dailySummary;
-    
 
   /// Creates a new copy with updated values
   AppSettings copyWith({
@@ -46,6 +50,8 @@ class AppSettings {
     bool? dailySummary,
     int? stockWarningThreshold,
     double? defaultTaxRate,
+    double? discountRate,
+    String? invoiceFooterMessage,
   }) {
     return AppSettings(
       darkMode: darkMode ?? this.darkMode,
@@ -57,6 +63,8 @@ class AppSettings {
       stockWarningThreshold:
           stockWarningThreshold ?? this.stockWarningThreshold,
       defaultTaxRate: defaultTaxRate ?? this.defaultTaxRate,
+      discountRate: discountRate ?? this.discountRate,
+      invoiceFooterMessage: invoiceFooterMessage ?? this.invoiceFooterMessage,
     );
   }
 }
