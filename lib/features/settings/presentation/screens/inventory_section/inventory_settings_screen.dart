@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../bloc/settings_bloc.dart';
-import '../bloc/settings_state.dart';
+import '../../bloc/settings_bloc.dart';
+import '../../bloc/settings_state.dart';
 
 import 'stock_threshold_screen.dart';
 import 'default_tax_rate_screen.dart';

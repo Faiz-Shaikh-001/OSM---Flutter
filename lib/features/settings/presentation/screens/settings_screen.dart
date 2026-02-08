@@ -9,8 +9,9 @@ import '../widgets/settings_tile.dart';
 import '../widgets/settings_switch_tile.dart';
 import '../widgets/store_selector_tile.dart';
 import 'package:osm/core/theme_provider.dart';
-import 'notification_settings_screen.dart';
-import 'inventory_settings_screen.dart';
+import 'notification_section/notification_settings_screen.dart';
+import 'inventory_section/inventory_settings_screen.dart';
+import 'about_section/about_screen.dart';
 
 /// ─────────────────────────────────────────────────────────────
 /// Entry point for Settings feature (DI boundary)
@@ -163,26 +164,16 @@ class SettingsScreen extends StatelessWidget {
               const Divider(height: 32),
 
               // ─────────────────────── About ───────────────────────
-              const SettingsSectionTitle(
+              SettingsTile(
                 icon: Icons.info_outline,
                 title: 'About',
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const AboutScreen()),
+                  );
+                },
               ),
-              const SettingsTile(
-                icon: Icons.info_outline,
-                title: 'App Version',
-                subtitle: 'v1.0.0',
-              ),
-              const SettingsTile(
-                icon: Icons.description_outlined,
-                title: 'Terms & Conditions',
-              ),
-              const SettingsTile(
-                icon: Icons.privacy_tip_outlined,
-                title: 'Privacy Policy',
-              ),
-              const SettingsTile(icon: Icons.code_outlined, title: 'Licenses'),
-
-              const SizedBox(height: 24),
             ],
           );
         },
