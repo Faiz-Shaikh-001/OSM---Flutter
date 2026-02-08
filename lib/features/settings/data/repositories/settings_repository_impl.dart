@@ -1,5 +1,4 @@
 import 'package:shared_preferences/shared_preferences.dart';
-
 import '../../domain/entities/app_settings.dart';
 import '../../domain/repositories/settings_repository.dart';
 
@@ -9,6 +8,7 @@ class SettingsRepositoryImpl implements SettingsRepository {
   static const _lowStockAlertsKey = 'low_stock_alerts';
   static const _newOrderNotificationsKey = 'new_order_notifications';
   static const _dailySummaryKey = 'daily_summary';
+  static const _stockWarningThresholdKey = 'stock_warning_threshold';
 
   @override
   Future<AppSettings> getSettings() async {
@@ -21,6 +21,8 @@ class SettingsRepositoryImpl implements SettingsRepository {
       newOrderNotifications:
           prefs.getBool(_newOrderNotificationsKey) ?? true,
       dailySummary: prefs.getBool(_dailySummaryKey) ?? false,
+      stockWarningThreshold:
+          prefs.getInt(_stockWarningThresholdKey) ?? 5,
     );
   }
 
@@ -37,5 +39,7 @@ class SettingsRepositoryImpl implements SettingsRepository {
         _newOrderNotificationsKey, settings.newOrderNotifications);
     await prefs.setBool(
         _dailySummaryKey, settings.dailySummary);
+    await prefs.setInt(
+        _stockWarningThresholdKey, settings.stockWarningThreshold);
   }
 }

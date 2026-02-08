@@ -4,6 +4,8 @@ class AppSettings {
   final bool lowStockAlerts;
   final bool newOrderNotifications;
   final bool dailySummary;
+  final int stockWarningThreshold;
+
 
   const AppSettings({
     required this.darkMode,
@@ -11,6 +13,7 @@ class AppSettings {
     required this.lowStockAlerts,
     required this.newOrderNotifications,
     required this.dailySummary,
+    required this.stockWarningThreshold,
   });
 
   /// Default settings when app runs for the first time
@@ -21,6 +24,7 @@ class AppSettings {
       lowStockAlerts: true,
       newOrderNotifications: true,
       dailySummary: false,
+      stockWarningThreshold: 5,
     );
   }
   bool get allowNotifications =>
@@ -36,6 +40,7 @@ class AppSettings {
     bool? lowStockAlerts,
     bool? newOrderNotifications,
     bool? dailySummary,
+    int? stockWarningThreshold,
   }) {
     return AppSettings(
       darkMode: darkMode ?? this.darkMode,
@@ -44,6 +49,8 @@ class AppSettings {
       newOrderNotifications:
           newOrderNotifications ?? this.newOrderNotifications,
       dailySummary: dailySummary ?? this.dailySummary,
+      stockWarningThreshold:
+          stockWarningThreshold ?? this.stockWarningThreshold,
     );
   }
 }

@@ -26,3 +26,8 @@ class ToggleDailySummary extends SettingsEvent {
   final bool value;
   ToggleDailySummary(this.value);
 }
+
+class UpdateStockThreshold extends SettingsEvent {
+  final int value;
+  UpdateStockThreshold(this.value);
+}
