@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../bloc/settings_bloc.dart';
+import '../bloc/settings_state.dart';
+
 import 'stock_threshold_screen.dart';
 import 'default_tax_rate_screen.dart';
 import 'default_discount_rate_screen.dart';
@@ -16,79 +18,92 @@ class InventorySettingsScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Inventory Configuration'),
       ),
-      body: ListView(
-        children: [
-          _InventoryTile(
-            icon: Icons.shopping_cart_outlined,
-            title: 'Stock Warning Threshold',
-            subtitle: 'Alert when stock is low below threshold',
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => BlocProvider.value(
-                    value: context.read<SettingsBloc>(),
-                    child: const StockThresholdScreen(),
-                  ),
-                ),
-              );
-            },
-          ),
-          const Divider(height: 1),
+      body: BlocBuilder<SettingsBloc, SettingsState>(
+        builder: (context, state) {
+          if (state is! SettingsLoaded) {
+            return const Center(child: CircularProgressIndicator());
+          }
 
-          _InventoryTile(
-            icon: Icons.percent_outlined,
-            title: 'Default Tax Rate (GST)',
-            subtitle: 'Current: 0.0%',
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => BlocProvider.value(
-                    value: context.read<SettingsBloc>(),
-                    child: const DefaultTaxRateScreen(),
-                  ),
-                ),
-              );
-            },
-          ),
-          const Divider(height: 1),
+          final settings = state.settings;
 
-          _InventoryTile(
-            icon: Icons.discount_outlined,
-            title: 'Default Discount Rate',
-            subtitle: 'Current: 0.0%',
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => BlocProvider.value(
-                    value: context.read<SettingsBloc>(),
-                    child: const DefaultDiscountRateScreen(),
-                  ),
-                ),
-              );
-            },
-          ),
-          const Divider(height: 1),
+          return ListView(
+            children: [
+              _InventoryTile(
+                icon: Icons.shopping_cart_outlined,
+                title: 'Stock Warning Threshold',
+                subtitle: settings.stockThresholdLabel,
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => BlocProvider.value(
+                        value: context.read<SettingsBloc>(),
+                        child: const StockThresholdScreen(),
+                      ),
+                    ),
+                  );
+                },
+              ),
 
-          _InventoryTile(
-            icon: Icons.receipt_long_outlined,
-            title: 'Invoice Footer Message',
-            subtitle: 'Not set',
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => BlocProvider.value(
-                    value: context.read<SettingsBloc>(),
-                    child: const InvoiceFooterMessageScreen(),
-                  ),
-                ),
-              );
-            },
-          ),
-        ],
+              const Divider(height: 1),
+
+              _InventoryTile(
+                icon: Icons.percent_outlined,
+                title: 'Default Tax Rate (GST)',
+                subtitle: settings.taxRateLabel,
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => BlocProvider.value(
+                        value: context.read<SettingsBloc>(),
+                        child: const DefaultTaxRateScreen(),
+                      ),
+                    ),
+                  );
+                },
+              ),
+
+              const Divider(height: 1),
+
+              _InventoryTile(
+                icon: Icons.discount_outlined,
+                title: 'Default Discount Rate',
+                subtitle: settings.discountRateLabel,
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => BlocProvider.value(
+                        value: context.read<SettingsBloc>(),
+                        child: const DefaultDiscountRateScreen(),
+                      ),
+                    ),
+                  );
+                },
+              ),
+
+              const Divider(height: 1),
+
+              _InventoryTile(
+                icon: Icons.receipt_long_outlined,
+                title: 'Invoice Footer Message',
+                subtitle: settings.footerMessageLabel,
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => BlocProvider.value(
+                        value: context.read<SettingsBloc>(),
+                        child: const InvoiceFooterMessageScreen(),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ],
+          );
+        },
       ),
     );
   }
