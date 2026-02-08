@@ -88,6 +88,44 @@ class SettingsScreen extends StatelessWidget {
                 icon: Icons.notifications_outlined,
                 title: 'Notifications',
               ),
+              SettingsSwitchTile(
+                icon: Icons.notifications_active_outlined,
+                title: 'Push Notifications',
+                value: settings.pushNotifications,
+                onChanged: (value) {
+                  context.read<SettingsBloc>().add(
+                    TogglePushNotifications(value),
+                  );
+                },
+              ),
+              SettingsSwitchTile(
+                icon: Icons.warning_amber_rounded,
+                title: 'Low Stock Alerts',
+                value: settings.lowStockAlerts,
+                onChanged: (value) {
+                  context.read<SettingsBloc>().add(ToggleLowStockAlerts(value));
+                },
+              ),
+              SettingsSwitchTile(
+                icon: Icons.inventory_2_outlined,
+                title: 'New Order Notifications',
+                value: settings.newOrderNotifications,
+                onChanged: (value) {
+                  context.read<SettingsBloc>().add(
+                    ToggleNewOrderNotifications(value),
+                  );
+                },
+              ),
+              SettingsSwitchTile(
+                icon: Icons.today_outlined,
+                title: 'Daily Summary',
+                value: settings.dailySummary,
+                onChanged: (value) {
+                  context.read<SettingsBloc>().add(ToggleDailySummary(value));
+                },
+              ),
+              const Divider(height: 32),
+
               const SettingsTile(
                 icon: Icons.notifications_active_outlined,
                 title: 'Manage Notifications',
