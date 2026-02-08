@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../bloc/settings_bloc.dart';
-import '../bloc/settings_state.dart';
-import '../bloc/settings_event.dart';
+import '../../bloc/settings_bloc.dart';
+import '../../bloc/settings_state.dart';
+import '../../bloc/settings_event.dart';
 
 class DefaultTaxRateScreen extends StatefulWidget {
   const DefaultTaxRateScreen({super.key});

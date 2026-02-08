@@ -1,20 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../bloc/settings_bloc.dart';
-import '../bloc/settings_state.dart';
-import '../bloc/settings_event.dart';
+import '../../bloc/settings_bloc.dart';
+import '../../bloc/settings_state.dart';
+import '../../bloc/settings_event.dart';
 
-class DefaultDiscountRateScreen extends StatefulWidget {
-  const DefaultDiscountRateScreen({super.key});
+class InvoiceFooterMessageScreen extends StatefulWidget {
+  const InvoiceFooterMessageScreen({super.key});
 
   @override
-  State<DefaultDiscountRateScreen> createState() =>
-      _DefaultDiscountRateScreenState();
+  State<InvoiceFooterMessageScreen> createState() =>
+      _InvoiceFooterMessageScreenState();
 }
 
-class _DefaultDiscountRateScreenState
-    extends State<DefaultDiscountRateScreen> {
+class _InvoiceFooterMessageScreenState
+    extends State<InvoiceFooterMessageScreen> {
   final _controller = TextEditingController();
 
   @override
@@ -22,15 +22,14 @@ class _DefaultDiscountRateScreenState
     super.initState();
     final state = context.read<SettingsBloc>().state;
     if (state is SettingsLoaded) {
-      _controller.text = state.settings.discountRate.toString();
+      _controller.text = state.settings.invoiceFooterMessage;
     }
   }
 
   void _save() {
-    final value = double.tryParse(_controller.text);
-    if (value == null) return;
-
-    context.read<SettingsBloc>().add(UpdateDiscountRate(value));
+    context
+        .read<SettingsBloc>()
+        .add(UpdateInvoiceFooterMessage(_controller.text));
     Navigator.pop(context);
   }
 
@@ -38,7 +37,7 @@ class _DefaultDiscountRateScreenState
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Default Discount Rate'),
+        title: const Text('Invoice Footer Message'),
         actions: [
           IconButton(
             icon: const Icon(Icons.check),
@@ -50,9 +49,9 @@ class _DefaultDiscountRateScreenState
         padding: const EdgeInsets.all(16),
         child: TextField(
           controller: _controller,
-          keyboardType: TextInputType.number,
+          maxLines: 4,
           decoration: const InputDecoration(
-            labelText: 'Discount (%)',
+            labelText: 'Footer Message',
             border: OutlineInputBorder(),
           ),
         ),
