@@ -23,6 +23,11 @@ class AppSettings {
       dailySummary: false,
     );
   }
+  bool get allowNotifications =>
+      pushNotifications ||
+      lowStockAlerts ||
+      newOrderNotifications ||
+      dailySummary;
 
   /// Creates a new copy with updated values
   AppSettings copyWith({

@@ -9,6 +9,7 @@ import '../widgets/settings_tile.dart';
 import '../widgets/settings_switch_tile.dart';
 import '../widgets/store_selector_tile.dart';
 import 'package:osm/core/theme_provider.dart';
+import 'notification_settings_screen.dart';
 
 /// ─────────────────────────────────────────────────────────────
 /// Entry point for Settings feature (DI boundary)
@@ -88,6 +89,23 @@ class SettingsScreen extends StatelessWidget {
                 icon: Icons.notifications_outlined,
                 title: 'Notifications',
               ),
+              SettingsTile(
+                icon: Icons.notifications_active_outlined,
+                title: 'Manage Notifications',
+                subtitle: 'Push alerts, Stock warnings, Daily summaries',
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => BlocProvider.value(
+                        value: context.read<SettingsBloc>(),
+                        child: const NotificationSettingsScreen(),
+                      ),
+                    ),
+                  );
+                },
+              ),
+              const Divider(height: 32),
+
               SettingsSwitchTile(
                 icon: Icons.notifications_active_outlined,
                 title: 'Push Notifications',
