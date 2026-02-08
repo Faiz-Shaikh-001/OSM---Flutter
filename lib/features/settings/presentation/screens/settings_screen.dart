@@ -10,6 +10,7 @@ import '../widgets/settings_switch_tile.dart';
 import '../widgets/store_selector_tile.dart';
 import 'package:osm/core/theme_provider.dart';
 import 'notification_settings_screen.dart';
+import 'inventory_settings_screen.dart';
 
 /// ─────────────────────────────────────────────────────────────
 /// Entry point for Settings feature (DI boundary)
@@ -106,61 +107,28 @@ class SettingsScreen extends StatelessWidget {
               ),
               const Divider(height: 32),
 
-              SettingsSwitchTile(
-                icon: Icons.notifications_active_outlined,
-                title: 'Push Notifications',
-                value: settings.pushNotifications,
-                onChanged: (value) {
-                  context.read<SettingsBloc>().add(
-                    TogglePushNotifications(value),
-                  );
-                },
-              ),
-              SettingsSwitchTile(
-                icon: Icons.warning_amber_rounded,
-                title: 'Low Stock Alerts',
-                value: settings.lowStockAlerts,
-                onChanged: (value) {
-                  context.read<SettingsBloc>().add(ToggleLowStockAlerts(value));
-                },
-              ),
-              SettingsSwitchTile(
-                icon: Icons.inventory_2_outlined,
-                title: 'New Order Notifications',
-                value: settings.newOrderNotifications,
-                onChanged: (value) {
-                  context.read<SettingsBloc>().add(
-                    ToggleNewOrderNotifications(value),
-                  );
-                },
-              ),
-              SettingsSwitchTile(
-                icon: Icons.today_outlined,
-                title: 'Daily Summary',
-                value: settings.dailySummary,
-                onChanged: (value) {
-                  context.read<SettingsBloc>().add(ToggleDailySummary(value));
-                },
-              ),
-              const Divider(height: 32),
-
-              const SettingsTile(
-                icon: Icons.notifications_active_outlined,
-                title: 'Manage Notifications',
-                subtitle: 'Push alerts, Stock warnings, Daily summaries',
-              ),
-              const Divider(height: 32),
-
               // ─────────────────────── Inventory Settings ───────────────────────
               const SettingsSectionTitle(
                 icon: Icons.inventory_2_outlined,
                 title: 'Inventory Settings',
               ),
-              const SettingsTile(
+              SettingsTile(
                 icon: Icons.tune_outlined,
                 title: 'General Configuration',
                 subtitle: 'Stock Threshold, Tax Rate, Footer Message',
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => BlocProvider.value(
+                        value: context.read<SettingsBloc>(),
+                        child: const InventorySettingsScreen(),
+                      ),
+                    ),
+                  );
+                },
               ),
+
               const Divider(height: 32),
 
               // ─────────────────────── Security & Support ───────────────────────

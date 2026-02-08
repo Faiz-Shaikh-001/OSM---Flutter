@@ -18,6 +18,7 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
     on<ToggleLowStockAlerts>(_onToggleLowStockAlerts);
     on<ToggleNewOrderNotifications>(_onToggleNewOrderNotifications);
     on<ToggleDailySummary>(_onToggleDailySummary);
+    on<UpdateStockThreshold>(_onUpdateStockThreshold);
   }
 
   Future<void> _onLoadSettings(
@@ -41,7 +42,6 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
     emit(SettingsLoaded(updated));
   }
 
-  /// 🔥 MASTER SWITCH (FIXED)
   Future<void> _onTogglePushNotifications(
     TogglePushNotifications event,
     Emitter<SettingsState> emit,
@@ -49,20 +49,9 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
     if (state is! SettingsLoaded) return;
 
     final current = (state as SettingsLoaded).settings;
-
-    final updated = event.value
-        ? current.copyWith(
-            pushNotifications: true,
-            lowStockAlerts: true,
-            newOrderNotifications: true,
-            dailySummary: true,
-          )
-        : current.copyWith(
-            pushNotifications: false,
-            lowStockAlerts: false,
-            newOrderNotifications: false,
-            dailySummary: false,
-          );
+    final updated = current.copyWith(
+      pushNotifications: event.value,
+    );
 
     await updateSettings(updated);
     emit(SettingsLoaded(updated));
@@ -88,7 +77,8 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
     if (state is! SettingsLoaded) return;
 
     final current = (state as SettingsLoaded).settings;
-    final updated = current.copyWith(newOrderNotifications: event.value);
+    final updated =
+        current.copyWith(newOrderNotifications: event.value);
 
     await updateSettings(updated);
     emit(SettingsLoaded(updated));
@@ -102,6 +92,21 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
 
     final current = (state as SettingsLoaded).settings;
     final updated = current.copyWith(dailySummary: event.value);
+
+    await updateSettings(updated);
+    emit(SettingsLoaded(updated));
+  }
+
+  Future<void> _onUpdateStockThreshold(
+    UpdateStockThreshold event,
+    Emitter<SettingsState> emit,
+  ) async {
+    if (state is! SettingsLoaded) return;
+
+    final current = (state as SettingsLoaded).settings;
+    final updated = current.copyWith(
+      stockWarningThreshold: event.value,
+    );
 
     await updateSettings(updated);
     emit(SettingsLoaded(updated));
