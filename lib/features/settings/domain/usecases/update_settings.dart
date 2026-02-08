@@ -1,10 +1,10 @@
 import '../entities/app_settings.dart';
 import '../repositories/settings_repository.dart';
 
-class SaveSettings {
+class UpdateSettings {
   final SettingsRepository repository;
 
-  SaveSettings(this.repository);
+  UpdateSettings(this.repository);
 
   Future<void> call(AppSettings settings) {
     return repository.saveSettings(settings);

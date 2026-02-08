@@ -1,36 +1,41 @@
+import 'package:shared_preferences/shared_preferences.dart';
+
 import '../../domain/entities/app_settings.dart';
 import '../../domain/repositories/settings_repository.dart';
-import '../models/app_settings_model.dart';
-import '../sources/settings_local_source.dart';
 
 class SettingsRepositoryImpl implements SettingsRepository {
-  final SettingsLocalSource localSource;
-
-  SettingsRepositoryImpl(this.localSource);
+  static const _darkModeKey = 'dark_mode';
+  static const _pushNotificationsKey = 'push_notifications';
+  static const _lowStockAlertsKey = 'low_stock_alerts';
+  static const _newOrderNotificationsKey = 'new_order_notifications';
+  static const _dailySummaryKey = 'daily_summary';
 
   @override
   Future<AppSettings> getSettings() async {
-    final model = await localSource.loadSettings();
+    final prefs = await SharedPreferences.getInstance();
 
     return AppSettings(
-      darkMode: model.darkMode,
-      pushNotifications: model.pushNotifications,
-      lowStockAlerts: model.lowStockAlerts,
-      newOrderNotifications: model.newOrderNotifications,
-      dailySummary: model.dailySummary,
+      darkMode: prefs.getBool(_darkModeKey) ?? false,
+      pushNotifications: prefs.getBool(_pushNotificationsKey) ?? true,
+      lowStockAlerts: prefs.getBool(_lowStockAlertsKey) ?? true,
+      newOrderNotifications:
+          prefs.getBool(_newOrderNotificationsKey) ?? true,
+      dailySummary: prefs.getBool(_dailySummaryKey) ?? false,
     );
   }
 
   @override
   Future<void> saveSettings(AppSettings settings) async {
-    final model = AppSettingsModel(
-      darkMode: settings.darkMode,
-      pushNotifications: settings.pushNotifications,
-      lowStockAlerts: settings.lowStockAlerts,
-      newOrderNotifications: settings.newOrderNotifications,
-      dailySummary: settings.dailySummary,
-    );
+    final prefs = await SharedPreferences.getInstance();
 
-    await localSource.saveSettings(model);
+    await prefs.setBool(_darkModeKey, settings.darkMode);
+    await prefs.setBool(
+        _pushNotificationsKey, settings.pushNotifications);
+    await prefs.setBool(
+        _lowStockAlertsKey, settings.lowStockAlerts);
+    await prefs.setBool(
+        _newOrderNotificationsKey, settings.newOrderNotifications);
+    await prefs.setBool(
+        _dailySummaryKey, settings.dailySummary);
   }
 }
