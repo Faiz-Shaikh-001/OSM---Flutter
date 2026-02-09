@@ -1,9 +1,15 @@
+// ignore_for_file: deprecated_member_use
+
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 
 // Domain & Core
 import 'package:osm/core/value_objects/id.dart';
+import 'package:osm/features/customer/domain/repositories/customer_repository.dart';
+import 'package:osm/features/customer/domain/usecases/search_customers.dart';
 import 'package:osm/features/orders/domain/entities/order.dart';
 import 'package:osm/features/orders/domain/entities/order_enums.dart';
 import 'package:osm/features/orders/domain/repositories/order_repository.dart';
@@ -27,21 +33,61 @@ class OrderListScreen extends StatefulWidget {
 class _OrderListScreenState extends State<OrderListScreen> {
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
+  List<String> _matchingCustomerIds = [];
+  Timer? _debounce;
 
   @override
   void initState() {
     super.initState();
-    _searchController.addListener(() {
-      setState(() {
-        _searchQuery = _searchController.text.trim().toLowerCase();
-      });
-    });
+    _searchController.addListener(_onSearchChanged);
   }
 
   @override
   void dispose() {
+    _searchController.removeListener(_onSearchChanged);
     _searchController.dispose();
+    _debounce?.cancel();
     super.dispose();
+  }
+
+  void _onSearchChanged() {
+    if (_debounce?.isActive ?? false) _debounce!.cancel();
+
+    _debounce = Timer(const Duration(milliseconds: 300), () async {
+      final query = _searchController.text.trim().toLowerCase();
+      if (query.isEmpty) {
+        setState(() {
+          _searchQuery = '';
+          _matchingCustomerIds = [];
+        });
+        return;
+      }
+
+      try {
+        final searchCustomers = SearchCustomers(
+          context.read<CustomerRepository>(),
+        );
+        final result = await searchCustomers(query);
+
+        result.fold(
+          (failure) {
+            setState(() {
+              _searchQuery = query;
+              _matchingCustomerIds = [];
+            });
+          },
+          (customers) {
+            final ids = customers.map((c) => c.id!.value).toList();
+            setState(() {
+              _searchQuery = query;
+              _matchingCustomerIds = ids;
+            });
+          },
+        );
+      } catch (e) {
+        setState(() => _searchQuery = query);
+      }
+    });
   }
 
   List<Order> _filterAndSortOrders(List<Order> orders) {
@@ -51,7 +97,10 @@ class _OrderListScreenState extends State<OrderListScreen> {
 
     return orders.where((order) {
       final idMatch = order.id.value.toLowerCase().contains(_searchQuery);
-      return idMatch; 
+      final customerMatch = _matchingCustomerIds.contains(
+        order.customerId.value,
+      );
+      return idMatch || customerMatch;
     }).toList();
   }
 
@@ -66,7 +115,7 @@ class _OrderListScreenState extends State<OrderListScreen> {
         )..add(OrderListStarted());
       },
       child: Scaffold(
-        backgroundColor: Colors.grey[50], 
+        backgroundColor: Colors.grey[50],
         appBar: AppBar(
           title: const Text('Orders'),
           centerTitle: true,
@@ -77,14 +126,16 @@ class _OrderListScreenState extends State<OrderListScreen> {
         floatingActionButton: Builder(
           builder: (context) => FloatingActionButton.extended(
             onPressed: () => _navigateToCreateOrder(context),
-            label: const Text("New Order", style: TextStyle(color: Colors.white),),
-            icon: const Icon(Icons.add, color: Colors.white,),
+            label: const Text(
+              "New Order",
+              style: TextStyle(color: Colors.white),
+            ),
+            icon: const Icon(Icons.add, color: Colors.white),
             backgroundColor: Colors.black87,
           ),
         ),
         body: Column(
           children: [
-            // --- SEARCH BAR ---
             Container(
               color: Colors.white,
               padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
@@ -209,10 +260,7 @@ class _OrdersListView extends StatelessWidget {
       itemBuilder: (context, index) {
         final order = orders[index];
 
-        // SAFE ID DISPLAY LOGIC
-        final displayId = order.id.value.length >= 8
-            ? order.id.value.substring(0, 8)
-            : order.id.value;
+        final displayId = order.id.value;
 
         return Card(
           elevation: 0,

@@ -1,3 +1,5 @@
+// ignore_for_file: deprecated_member_use
+
 import 'package:flutter/material.dart';
 import 'package:osm/features/customer/domain/entities/customer.dart';
 import 'package:osm/features/customer/services/build_customer_image.dart';
