@@ -28,29 +28,54 @@ const StoreLocationModelSchema = CollectionSchema(
       name: r'city',
       type: IsarType.string,
     ),
-    r'createdAt': PropertySchema(
+    r'country': PropertySchema(
       id: 2,
+      name: r'country',
+      type: IsarType.string,
+    ),
+    r'createdAt': PropertySchema(
+      id: 3,
       name: r'createdAt',
       type: IsarType.dateTime,
     ),
     r'isActive': PropertySchema(
-      id: 3,
+      id: 4,
       name: r'isActive',
       type: IsarType.bool,
     ),
+    r'licenseNumber': PropertySchema(
+      id: 5,
+      name: r'licenseNumber',
+      type: IsarType.string,
+    ),
     r'name': PropertySchema(
-      id: 4,
+      id: 6,
       name: r'name',
       type: IsarType.string,
     ),
     r'operatingHours': PropertySchema(
-      id: 5,
+      id: 7,
       name: r'operatingHours',
       type: IsarType.string,
     ),
     r'phoneNumber': PropertySchema(
-      id: 6,
+      id: 8,
       name: r'phoneNumber',
+      type: IsarType.string,
+    ),
+    r'postalCode': PropertySchema(
+      id: 9,
+      name: r'postalCode',
+      type: IsarType.string,
+    ),
+    r'state': PropertySchema(
+      id: 10,
+      name: r'state',
+      type: IsarType.string,
+    ),
+    r'storeLogoUrl': PropertySchema(
+      id: 11,
+      name: r'storeLogoUrl',
       type: IsarType.string,
     )
   },
@@ -105,9 +130,19 @@ int _storeLocationModelEstimateSize(
   var bytesCount = offsets.last;
   bytesCount += 3 + object.address.length * 3;
   bytesCount += 3 + object.city.length * 3;
+  bytesCount += 3 + object.country.length * 3;
+  bytesCount += 3 + object.licenseNumber.length * 3;
   bytesCount += 3 + object.name.length * 3;
   bytesCount += 3 + object.operatingHours.length * 3;
   bytesCount += 3 + object.phoneNumber.length * 3;
+  bytesCount += 3 + object.postalCode.length * 3;
+  bytesCount += 3 + object.state.length * 3;
+  {
+    final value = object.storeLogoUrl;
+    if (value != null) {
+      bytesCount += 3 + value.length * 3;
+    }
+  }
   return bytesCount;
 }
 
@@ -119,11 +154,16 @@ void _storeLocationModelSerialize(
 ) {
   writer.writeString(offsets[0], object.address);
   writer.writeString(offsets[1], object.city);
-  writer.writeDateTime(offsets[2], object.createdAt);
-  writer.writeBool(offsets[3], object.isActive);
-  writer.writeString(offsets[4], object.name);
-  writer.writeString(offsets[5], object.operatingHours);
-  writer.writeString(offsets[6], object.phoneNumber);
+  writer.writeString(offsets[2], object.country);
+  writer.writeDateTime(offsets[3], object.createdAt);
+  writer.writeBool(offsets[4], object.isActive);
+  writer.writeString(offsets[5], object.licenseNumber);
+  writer.writeString(offsets[6], object.name);
+  writer.writeString(offsets[7], object.operatingHours);
+  writer.writeString(offsets[8], object.phoneNumber);
+  writer.writeString(offsets[9], object.postalCode);
+  writer.writeString(offsets[10], object.state);
+  writer.writeString(offsets[11], object.storeLogoUrl);
 }
 
 StoreLocationModel _storeLocationModelDeserialize(
@@ -135,11 +175,16 @@ StoreLocationModel _storeLocationModelDeserialize(
   final object = StoreLocationModel(
     address: reader.readString(offsets[0]),
     city: reader.readString(offsets[1]),
-    createdAt: reader.readDateTime(offsets[2]),
-    isActive: reader.readBoolOrNull(offsets[3]) ?? true,
-    name: reader.readString(offsets[4]),
-    operatingHours: reader.readString(offsets[5]),
-    phoneNumber: reader.readString(offsets[6]),
+    country: reader.readString(offsets[2]),
+    createdAt: reader.readDateTime(offsets[3]),
+    isActive: reader.readBoolOrNull(offsets[4]) ?? true,
+    licenseNumber: reader.readString(offsets[5]),
+    name: reader.readString(offsets[6]),
+    operatingHours: reader.readString(offsets[7]),
+    phoneNumber: reader.readString(offsets[8]),
+    postalCode: reader.readString(offsets[9]),
+    state: reader.readString(offsets[10]),
+    storeLogoUrl: reader.readStringOrNull(offsets[11]),
   );
   object.id = id;
   return object;
@@ -157,15 +202,25 @@ P _storeLocationModelDeserializeProp<P>(
     case 1:
       return (reader.readString(offset)) as P;
     case 2:
-      return (reader.readDateTime(offset)) as P;
-    case 3:
-      return (reader.readBoolOrNull(offset) ?? true) as P;
-    case 4:
       return (reader.readString(offset)) as P;
+    case 3:
+      return (reader.readDateTime(offset)) as P;
+    case 4:
+      return (reader.readBoolOrNull(offset) ?? true) as P;
     case 5:
       return (reader.readString(offset)) as P;
     case 6:
       return (reader.readString(offset)) as P;
+    case 7:
+      return (reader.readString(offset)) as P;
+    case 8:
+      return (reader.readString(offset)) as P;
+    case 9:
+      return (reader.readString(offset)) as P;
+    case 10:
+      return (reader.readString(offset)) as P;
+    case 11:
+      return (reader.readStringOrNull(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
   }
@@ -588,6 +643,142 @@ extension StoreLocationModelQueryFilter
   }
 
   QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterFilterCondition>
+      countryEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'country',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterFilterCondition>
+      countryGreaterThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'country',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterFilterCondition>
+      countryLessThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'country',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterFilterCondition>
+      countryBetween(
+    String lower,
+    String upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'country',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterFilterCondition>
+      countryStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'country',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterFilterCondition>
+      countryEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'country',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterFilterCondition>
+      countryContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'country',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterFilterCondition>
+      countryMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'country',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterFilterCondition>
+      countryIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'country',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterFilterCondition>
+      countryIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'country',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterFilterCondition>
       createdAtEqualTo(DateTime value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
@@ -705,6 +896,142 @@ extension StoreLocationModelQueryFilter
       return query.addFilterCondition(FilterCondition.equalTo(
         property: r'isActive',
         value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterFilterCondition>
+      licenseNumberEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'licenseNumber',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterFilterCondition>
+      licenseNumberGreaterThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'licenseNumber',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterFilterCondition>
+      licenseNumberLessThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'licenseNumber',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterFilterCondition>
+      licenseNumberBetween(
+    String lower,
+    String upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'licenseNumber',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterFilterCondition>
+      licenseNumberStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'licenseNumber',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterFilterCondition>
+      licenseNumberEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'licenseNumber',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterFilterCondition>
+      licenseNumberContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'licenseNumber',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterFilterCondition>
+      licenseNumberMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'licenseNumber',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterFilterCondition>
+      licenseNumberIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'licenseNumber',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterFilterCondition>
+      licenseNumberIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'licenseNumber',
+        value: '',
       ));
     });
   }
@@ -1116,6 +1443,432 @@ extension StoreLocationModelQueryFilter
       ));
     });
   }
+
+  QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterFilterCondition>
+      postalCodeEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'postalCode',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterFilterCondition>
+      postalCodeGreaterThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'postalCode',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterFilterCondition>
+      postalCodeLessThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'postalCode',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterFilterCondition>
+      postalCodeBetween(
+    String lower,
+    String upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'postalCode',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterFilterCondition>
+      postalCodeStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'postalCode',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterFilterCondition>
+      postalCodeEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'postalCode',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterFilterCondition>
+      postalCodeContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'postalCode',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterFilterCondition>
+      postalCodeMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'postalCode',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterFilterCondition>
+      postalCodeIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'postalCode',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterFilterCondition>
+      postalCodeIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'postalCode',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterFilterCondition>
+      stateEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'state',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterFilterCondition>
+      stateGreaterThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'state',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterFilterCondition>
+      stateLessThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'state',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterFilterCondition>
+      stateBetween(
+    String lower,
+    String upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'state',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterFilterCondition>
+      stateStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'state',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterFilterCondition>
+      stateEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'state',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterFilterCondition>
+      stateContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'state',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterFilterCondition>
+      stateMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'state',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterFilterCondition>
+      stateIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'state',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterFilterCondition>
+      stateIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'state',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterFilterCondition>
+      storeLogoUrlIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'storeLogoUrl',
+      ));
+    });
+  }
+
+  QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterFilterCondition>
+      storeLogoUrlIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'storeLogoUrl',
+      ));
+    });
+  }
+
+  QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterFilterCondition>
+      storeLogoUrlEqualTo(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'storeLogoUrl',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterFilterCondition>
+      storeLogoUrlGreaterThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'storeLogoUrl',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterFilterCondition>
+      storeLogoUrlLessThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'storeLogoUrl',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterFilterCondition>
+      storeLogoUrlBetween(
+    String? lower,
+    String? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'storeLogoUrl',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterFilterCondition>
+      storeLogoUrlStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'storeLogoUrl',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterFilterCondition>
+      storeLogoUrlEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'storeLogoUrl',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterFilterCondition>
+      storeLogoUrlContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'storeLogoUrl',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterFilterCondition>
+      storeLogoUrlMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'storeLogoUrl',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterFilterCondition>
+      storeLogoUrlIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'storeLogoUrl',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterFilterCondition>
+      storeLogoUrlIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'storeLogoUrl',
+        value: '',
+      ));
+    });
+  }
 }
 
 extension StoreLocationModelQueryObject
@@ -1277,6 +2030,20 @@ extension StoreLocationModelQuerySortBy
   }
 
   QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterSortBy>
+      sortByCountry() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'country', Sort.asc);
+    });
+  }
+
+  QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterSortBy>
+      sortByCountryDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'country', Sort.desc);
+    });
+  }
+
+  QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterSortBy>
       sortByCreatedAt() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'createdAt', Sort.asc);
@@ -1301,6 +2068,20 @@ extension StoreLocationModelQuerySortBy
       sortByIsActiveDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'isActive', Sort.desc);
+    });
+  }
+
+  QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterSortBy>
+      sortByLicenseNumber() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'licenseNumber', Sort.asc);
+    });
+  }
+
+  QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterSortBy>
+      sortByLicenseNumberDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'licenseNumber', Sort.desc);
     });
   }
 
@@ -1345,6 +2126,48 @@ extension StoreLocationModelQuerySortBy
       return query.addSortBy(r'phoneNumber', Sort.desc);
     });
   }
+
+  QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterSortBy>
+      sortByPostalCode() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'postalCode', Sort.asc);
+    });
+  }
+
+  QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterSortBy>
+      sortByPostalCodeDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'postalCode', Sort.desc);
+    });
+  }
+
+  QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterSortBy>
+      sortByState() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'state', Sort.asc);
+    });
+  }
+
+  QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterSortBy>
+      sortByStateDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'state', Sort.desc);
+    });
+  }
+
+  QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterSortBy>
+      sortByStoreLogoUrl() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'storeLogoUrl', Sort.asc);
+    });
+  }
+
+  QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterSortBy>
+      sortByStoreLogoUrlDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'storeLogoUrl', Sort.desc);
+    });
+  }
 }
 
 extension StoreLocationModelQuerySortThenBy
@@ -1374,6 +2197,20 @@ extension StoreLocationModelQuerySortThenBy
       thenByCityDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'city', Sort.desc);
+    });
+  }
+
+  QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterSortBy>
+      thenByCountry() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'country', Sort.asc);
+    });
+  }
+
+  QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterSortBy>
+      thenByCountryDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'country', Sort.desc);
     });
   }
 
@@ -1420,6 +2257,20 @@ extension StoreLocationModelQuerySortThenBy
   }
 
   QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterSortBy>
+      thenByLicenseNumber() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'licenseNumber', Sort.asc);
+    });
+  }
+
+  QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterSortBy>
+      thenByLicenseNumberDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'licenseNumber', Sort.desc);
+    });
+  }
+
+  QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterSortBy>
       thenByName() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'name', Sort.asc);
@@ -1460,6 +2311,48 @@ extension StoreLocationModelQuerySortThenBy
       return query.addSortBy(r'phoneNumber', Sort.desc);
     });
   }
+
+  QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterSortBy>
+      thenByPostalCode() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'postalCode', Sort.asc);
+    });
+  }
+
+  QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterSortBy>
+      thenByPostalCodeDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'postalCode', Sort.desc);
+    });
+  }
+
+  QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterSortBy>
+      thenByState() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'state', Sort.asc);
+    });
+  }
+
+  QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterSortBy>
+      thenByStateDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'state', Sort.desc);
+    });
+  }
+
+  QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterSortBy>
+      thenByStoreLogoUrl() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'storeLogoUrl', Sort.asc);
+    });
+  }
+
+  QueryBuilder<StoreLocationModel, StoreLocationModel, QAfterSortBy>
+      thenByStoreLogoUrlDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'storeLogoUrl', Sort.desc);
+    });
+  }
 }
 
 extension StoreLocationModelQueryWhereDistinct
@@ -1479,6 +2372,13 @@ extension StoreLocationModelQueryWhereDistinct
   }
 
   QueryBuilder<StoreLocationModel, StoreLocationModel, QDistinct>
+      distinctByCountry({bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'country', caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<StoreLocationModel, StoreLocationModel, QDistinct>
       distinctByCreatedAt() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'createdAt');
@@ -1489,6 +2389,14 @@ extension StoreLocationModelQueryWhereDistinct
       distinctByIsActive() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'isActive');
+    });
+  }
+
+  QueryBuilder<StoreLocationModel, StoreLocationModel, QDistinct>
+      distinctByLicenseNumber({bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'licenseNumber',
+          caseSensitive: caseSensitive);
     });
   }
 
@@ -1513,6 +2421,27 @@ extension StoreLocationModelQueryWhereDistinct
       return query.addDistinctBy(r'phoneNumber', caseSensitive: caseSensitive);
     });
   }
+
+  QueryBuilder<StoreLocationModel, StoreLocationModel, QDistinct>
+      distinctByPostalCode({bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'postalCode', caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<StoreLocationModel, StoreLocationModel, QDistinct>
+      distinctByState({bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'state', caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<StoreLocationModel, StoreLocationModel, QDistinct>
+      distinctByStoreLogoUrl({bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'storeLogoUrl', caseSensitive: caseSensitive);
+    });
+  }
 }
 
 extension StoreLocationModelQueryProperty
@@ -1535,6 +2464,12 @@ extension StoreLocationModelQueryProperty
     });
   }
 
+  QueryBuilder<StoreLocationModel, String, QQueryOperations> countryProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'country');
+    });
+  }
+
   QueryBuilder<StoreLocationModel, DateTime, QQueryOperations>
       createdAtProperty() {
     return QueryBuilder.apply(this, (query) {
@@ -1545,6 +2480,13 @@ extension StoreLocationModelQueryProperty
   QueryBuilder<StoreLocationModel, bool, QQueryOperations> isActiveProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'isActive');
+    });
+  }
+
+  QueryBuilder<StoreLocationModel, String, QQueryOperations>
+      licenseNumberProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'licenseNumber');
     });
   }
 
@@ -1565,6 +2507,26 @@ extension StoreLocationModelQueryProperty
       phoneNumberProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'phoneNumber');
+    });
+  }
+
+  QueryBuilder<StoreLocationModel, String, QQueryOperations>
+      postalCodeProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'postalCode');
+    });
+  }
+
+  QueryBuilder<StoreLocationModel, String, QQueryOperations> stateProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'state');
+    });
+  }
+
+  QueryBuilder<StoreLocationModel, String?, QQueryOperations>
+      storeLogoUrlProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'storeLogoUrl');
     });
   }
 }

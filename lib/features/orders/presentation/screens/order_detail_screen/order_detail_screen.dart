@@ -1,11 +1,16 @@
+// ignore_for_file: deprecated_member_use
+
 import 'package:flex_color_picker/flex_color_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:osm/features/customer/presentation/bloc/customer_details/customer_details_bloc.dart';
+import 'package:osm/features/store/domain/entities/store_location.dart';
+import 'package:osm/features/store/presentation/bloc/store_location_bloc.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
+import 'package:http/http.dart' as http;
 
 // Domain Imports
 import 'package:osm/core/value_objects/money.dart';
@@ -36,24 +41,19 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
   void initState() {
     super.initState();
     _currentOrder = widget.order;
-    // Trigger the global Bloc to load this customer's details
     context.read<CustomerDetailsBloc>().add(
       LoadCustomerDetails(_currentOrder.customerId),
     );
   }
 
-  /// Re-fetches the order from the repo to update the UI (e.g. after payment)
   Future<void> _refreshOrder() async {
     final repo = context.read<OrderRepository>();
     final result = await repo.getById(_currentOrder.id);
-    result.fold(
-      (failure) => null, // Handle error if needed
-      (updatedOrder) {
-        setState(() {
-          _currentOrder = updatedOrder;
-        });
-      },
-    );
+    result.fold((failure) => null, (updatedOrder) {
+      setState(() {
+        _currentOrder = updatedOrder;
+      });
+    });
   }
 
   @override
@@ -62,78 +62,82 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
       backgroundColor: Colors.grey[50],
       appBar: AppBar(title: const Text("Order Details"), centerTitle: true),
       body: BlocBuilder<CustomerDetailsBloc, CustomerDetailsState>(
-        builder: (context, state) {
-          // Determine the customer object to show
-          Customer? customer;
-          bool isLoadingCustomer = true;
+        builder: (context, customerState) {
+          return BlocBuilder<StoreLocationBloc, StoreLocationState>(
+            builder: (context, storeState) {
+              Customer? customer;
+              StoreLocation? store;
+              bool isLoading = true;
 
-          if (state is CustomerDetailsLoaded) {
-            customer = state.details.customer;
-            isLoadingCustomer = false;
-          } else if (state is CustomerDetailsError) {
-            isLoadingCustomer = false; // Stop loading, show basic info
-          }
+              if (customerState is CustomerDetailsLoaded &&
+                  storeState is StoreLocationLoaded) {
+                customer = customerState.details.customer;
+                store = storeState.activeStore;
+                isLoading = false;
+              } else if (customerState is CustomerDetailsError ||
+                  storeState is StoreLocationError) {
+                isLoading = false;
+              }
 
-          return Stack(
-            children: [
-              // Main Content
-              Column(
+              return Stack(
                 children: [
-                  Expanded(
-                    child: SingleChildScrollView(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          _StatusBanner(order: _currentOrder),
-                          const SizedBox(height: 16),
+                  Column(
+                    children: [
+                      Expanded(
+                        child: SingleChildScrollView(
+                          padding: const EdgeInsets.all(16),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _StatusBanner(order: _currentOrder),
+                              const SizedBox(height: 16),
 
-                          // Customer Section
-                          _CustomerSection(
-                            order: _currentOrder,
-                            customer: customer,
-                            isLoading: isLoadingCustomer,
-                          ),
+                              _CustomerSection(
+                                order: _currentOrder,
+                                customer: customer,
+                                isLoading: isLoading,
+                              ),
 
-                          const SizedBox(height: 16),
-                          _ItemsSection(items: _currentOrder.items),
-                          const SizedBox(height: 16),
-                          _PaymentSummarySection(order: _currentOrder),
-                          const SizedBox(height: 16),
-                          _PaymentHistorySection(
-                            payments: _currentOrder.payments,
+                              const SizedBox(height: 16),
+                              _ItemsSection(items: _currentOrder.items),
+                              const SizedBox(height: 16),
+                              _PaymentSummarySection(order: _currentOrder),
+                              const SizedBox(height: 16),
+                              _PaymentHistorySection(
+                                payments: _currentOrder.payments,
+                              ),
+                              const SizedBox(height: 40),
+                            ],
                           ),
-                          const SizedBox(height: 40),
-                        ],
+                        ),
+                      ),
+
+                      if (!_currentOrder.isFullyPaid)
+                        _PayPendingBar(
+                          pendingAmount: _currentOrder.pendingAmount,
+                          onPayPressed: () => _showPaymentModal(context),
+                        ),
+                    ],
+                  ),
+
+                  if (customer != null && store != null)
+                    Positioned(
+                      bottom: 0,
+                      right: 16,
+                      child: SafeArea(
+                        child: FloatingActionButton.small(
+                          heroTag: "print_btn",
+                          backgroundColor: Colors.white,
+                          foregroundColor: Colors.black,
+                          onPressed: () =>
+                              _generatePdf(_currentOrder, customer!, store!),
+                          child: const Icon(Icons.print),
+                        ),
                       ),
                     ),
-                  ),
-
-                  // Payment Bar
-                  if (!_currentOrder.isFullyPaid)
-                    _PayPendingBar(
-                      pendingAmount: _currentOrder.pendingAmount,
-                      onPayPressed: () => _showPaymentModal(context),
-                    ),
                 ],
-              ),
-
-              // Floating Print Button
-              if (customer != null)
-                Positioned(
-                  top: 0,
-                  right: 16,
-                  child: SafeArea(
-                    child: FloatingActionButton.small(
-                      heroTag: "print_btn",
-                      backgroundColor: Colors.white,
-                      foregroundColor: Colors.black,
-                      onPressed: () => _generatePdf(_currentOrder, customer!),
-                      child: const Icon(Icons.print),
-                    ),
-                  ),
-                ),
-            ],
+              );
+            },
           );
         },
       ),
@@ -159,7 +163,6 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
                 backgroundColor: Colors.green,
               ),
             );
-            // Refresh local order state to show new balance
             _refreshOrder();
           },
         ),
@@ -167,77 +170,253 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
     );
   }
 
-  Future<void> _generatePdf(Order order, Customer customer) async {
-    final pdf = pw.Document();
+  Future<void> _generatePdf(
+    Order order,
+    Customer customer,
+    StoreLocation store,
+  ) async {
+    try {
+      final pdf = pw.Document();
 
-    pdf.addPage(
-      pw.Page(
-        build: (context) {
-          return pw.Column(
-            crossAxisAlignment: pw.CrossAxisAlignment.start,
-            children: [
-              pw.Header(
-                level: 0,
-                child: pw.Text(
-                  "Order Receipt #${order.id.value.substring(0, 8)}",
-                ),
-              ),
-              pw.SizedBox(height: 10),
-              pw.Row(
-                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                children: [
-                  pw.Text(
-                    "Date: ${DateFormat('yyyy-MM-dd').format(order.createdAt)}",
-                  ),
-                  pw.Text("Customer: ${customer.fullName}"),
-                ],
-              ),
-              pw.Divider(),
-              pw.SizedBox(height: 10),
-              pw.TableHelper.fromTextArray(
-                headers: ["Item", "Qty", "Price", "Total"],
-                data: order.items
-                    .map(
-                      (item) => [
-                        item.productName,
-                        item.quantity,
-                        item.unitPrice.toString(),
-                        item.total.toString(),
-                      ],
-                    )
-                    .toList(),
-              ),
-              pw.Divider(),
-              pw.Align(
-                alignment: pw.Alignment.centerRight,
-                child: pw.Column(
-                  crossAxisAlignment: pw.CrossAxisAlignment.end,
+      pw.MemoryImage? logoImage;
+      if (store.storeLogoUrl != null && store.storeLogoUrl!.isNotEmpty) {
+        try {
+          final response = await http.get(Uri.parse(store.storeLogoUrl!));
+          if (response.statusCode == 200) {
+            logoImage = pw.MemoryImage(response.bodyBytes);
+          }
+        } catch (e) {
+          debugPrint("Could not load store logo: $e");
+        }
+      }
+
+      pdf.addPage(
+        pw.Page(
+          pageFormat: PdfPageFormat.a4,
+          margin: const pw.EdgeInsets.all(40), // Ensure margins are set
+          build: (pw.Context context) {
+            return pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: [
+                // --- HEADER SECTION ---
+                pw.Row(
+                  crossAxisAlignment: pw.CrossAxisAlignment.start,
                   children: [
-                    pw.Text("Total: ${order.totalAmount.toString()}"),
-                    pw.Text("Paid: ${order.paidAmount.toString()}"),
+                    if (logoImage != null)
+                      pw.Container(
+                        width: 80,
+                        height: 80,
+                        child: pw.Image(logoImage),
+                      )
+                    else
+                      pw.SizedBox(width: 80, height: 80),
+
+                    pw.SizedBox(width: 20),
+
+                    // Fixed the Expanded constraints by ensuring Row is in a Column
+                    pw.Expanded(
+                      child: pw.Column(
+                        crossAxisAlignment: pw.CrossAxisAlignment.start,
+                        children: [
+                          pw.Text(
+                            store.name.toUpperCase(),
+                            style: pw.TextStyle(
+                              fontSize: 16,
+                              fontWeight: pw.FontWeight.bold,
+                            ),
+                          ),
+                          pw.Text(
+                            store.address,
+                            style: const pw.TextStyle(fontSize: 10),
+                          ),
+                          pw.Text(
+                            "${store.city}, ${store.state}, ${store.postalCode}",
+                            style: const pw.TextStyle(fontSize: 10),
+                          ),
+                          pw.Text(
+                            "Phone: ${store.phoneNumber}",
+                            style: const pw.TextStyle(fontSize: 10),
+                          ),
+                          pw.Text(
+                            "License: ${store.licenseNumber}",
+                            style: const pw.TextStyle(fontSize: 10),
+                          ),
+                        ],
+                      ),
+                    ),
+
                     pw.Text(
-                      "Balance Due: ${order.pendingAmount.toString()}",
+                      "Optical Invoice",
                       style: pw.TextStyle(
+                        fontSize: 14,
                         fontWeight: pw.FontWeight.bold,
-                        color: PdfColors.red,
+                        color: PdfColors.grey700,
                       ),
                     ),
                   ],
                 ),
-              ),
-            ],
-          );
-        },
-      ),
-    );
 
-    await Printing.layoutPdf(onLayout: (format) => pdf.save());
+                pw.SizedBox(height: 15),
+                pw.Divider(thickness: 1, color: PdfColors.grey300),
+                pw.SizedBox(height: 15),
+
+                // --- BILL TO & INVOICE DETAILS ---
+                pw.Row(
+                  mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: pw.CrossAxisAlignment.start,
+                  children: [
+                    pw.Column(
+                      crossAxisAlignment: pw.CrossAxisAlignment.start,
+                      children: [
+                        pw.Text(
+                          "Bill To",
+                          style: pw.TextStyle(
+                            fontWeight: pw.FontWeight.bold,
+                            fontSize: 10,
+                          ),
+                        ),
+                        pw.Text(
+                          customer.fullName,
+                          style: const pw.TextStyle(fontSize: 11),
+                        ),
+                        if (customer.city != null)
+                          pw.Text(
+                            customer.city!,
+                            style: const pw.TextStyle(fontSize: 10),
+                          ),
+                        pw.Text(
+                          "Contact: ${customer.primaryPhoneNumber}",
+                          style: const pw.TextStyle(fontSize: 10),
+                        ),
+                      ],
+                    ),
+                    pw.Column(
+                      crossAxisAlignment: pw.CrossAxisAlignment.end,
+                      children: [
+                        pw.Text(
+                          "Invoice Number: ${order.id.value}",
+                          style: pw.TextStyle(
+                            fontWeight: pw.FontWeight.bold,
+                            fontSize: 10,
+                          ),
+                        ),
+                        pw.Text(
+                          "Date: ${DateFormat('dd/MM/yyyy').format(order.createdAt)}",
+                          style: const pw.TextStyle(fontSize: 10),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+
+                pw.SizedBox(height: 30),
+
+                // --- ITEMS TABLE ---
+                pw.TableHelper.fromTextArray(
+                  border: pw.TableBorder.all(
+                    color: PdfColors.grey400,
+                    width: 0.5,
+                  ),
+                  headerStyle: pw.TextStyle(
+                    fontWeight: pw.FontWeight.bold,
+                    fontSize: 10,
+                  ),
+                  headerDecoration: const pw.BoxDecoration(
+                    color: PdfColors.grey200,
+                  ),
+                  cellStyle: const pw.TextStyle(fontSize: 9),
+                  columnWidths: {
+                    0: const pw.FlexColumnWidth(4),
+                    1: const pw.FlexColumnWidth(1),
+                    2: const pw.FlexColumnWidth(1.5),
+                    3: const pw.FlexColumnWidth(1.5),
+                  },
+                  headers: ["Description", "Quantity", "Unit price", "Amount"],
+                  data: order.items.map((item) {
+                    return [
+                      item.productName,
+                      item.quantity.toString(),
+                      item.unitPrice.toString(),
+                      item.total.toString(),
+                    ];
+                  }).toList(),
+                ),
+
+                // --- TOTAL SECTION ---
+                pw.Row(
+                  children: [
+                    pw.Spacer(flex: 3),
+                    pw.Expanded(
+                      flex: 2,
+                      child: pw.Container(
+                        decoration: const pw.BoxDecoration(
+                          border: pw.Border(
+                            bottom: pw.BorderSide(width: 1),
+                            left: pw.BorderSide(
+                              width: 0.5,
+                              color: PdfColors.grey400,
+                            ),
+                            right: pw.BorderSide(
+                              width: 0.5,
+                              color: PdfColors.grey400,
+                            ),
+                          ),
+                        ),
+                        padding: const pw.EdgeInsets.all(5),
+                        child: pw.Row(
+                          mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                          children: [
+                            pw.Text(
+                              "Total",
+                              style: pw.TextStyle(
+                                fontWeight: pw.FontWeight.bold,
+                              ),
+                            ),
+                            pw.Text(order.totalAmount.toString()),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+
+                pw.SizedBox(height: 40),
+
+                // --- FOOTER NOTE ---
+                pw.Text(
+                  "Insurance copay due at order. Balance before pickup. Frame warranty: 1 year.",
+                  style: const pw.TextStyle(
+                    fontSize: 8,
+                    color: PdfColors.grey700,
+                  ),
+                ),
+                pw.Text(
+                  "Order Ref: #[${order.id.value}]",
+                  style: const pw.TextStyle(
+                    fontSize: 8,
+                    color: PdfColors.grey700,
+                  ),
+                ),
+              ],
+            );
+          },
+        ),
+      );
+
+      await Printing.layoutPdf(
+        onLayout: (PdfPageFormat format) async => pdf.save(),
+        name: 'receipt_${order.id.value}.pdf',
+      );
+    } catch (e) {
+      debugPrint("PDF Generation Error: $e");
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("Failed to generate PDF: $e")));
+      }
+    }
   }
 }
-
-// -----------------------------------------------------------------------------
-// SUB-WIDGETS
-// -----------------------------------------------------------------------------
 
 class _CustomerSection extends StatelessWidget {
   final Order order;
@@ -301,7 +480,7 @@ class _CustomerSection extends StatelessWidget {
             _buildRow(
               "Customer ID",
               order.customerId.value.length > 8
-                  ? "${order.customerId.value.substring(0, 8)}..."
+                  ? "${order.customerId.value}..."
                   : order.customerId.value,
             ),
           ],

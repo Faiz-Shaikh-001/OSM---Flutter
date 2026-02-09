@@ -19,7 +19,7 @@ class OrderItem extends Equatable {
   final LensMaterialType? materialType;
   final double? refractiveIndex;
 
-  OrderItem({
+  const OrderItem({
     required this.productID,
     required this.productName,
     required this.productCode,
