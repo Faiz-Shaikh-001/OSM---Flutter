@@ -13,6 +13,7 @@ import 'notification_section/notification_settings_screen.dart';
 import 'inventory_section/inventory_settings_screen.dart';
 import 'about_section/about_screen.dart';
 import 'help_support_section/help_support_screen.dart';
+import 'security_section/backup_restore_screen.dart';
 
 /// ─────────────────────────────────────────────────────────────
 /// Entry point for Settings feature (DI boundary)
@@ -138,10 +139,20 @@ class SettingsScreen extends StatelessWidget {
                 icon: Icons.security_outlined,
                 title: 'Security & Support',
               ),
-              const SettingsTile(
+              SettingsTile(
                 icon: Icons.cloud_sync_outlined,
                 title: 'Backup & Restore',
+                subtitle: 'Backup or restore your data',
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const BackupRestoreScreen(),
+                    ),
+                  );
+                },
               ),
+
               const Divider(height: 32),
 
               // ─────────────────────── Account ───────────────────────
