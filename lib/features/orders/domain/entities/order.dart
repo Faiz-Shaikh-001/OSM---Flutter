@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:osm/core/value_objects/id.dart';
 import 'package:osm/core/value_objects/money.dart';
 import 'package:osm/features/orders/domain/entities/order_enums.dart';
@@ -8,6 +9,7 @@ import 'package:osm/features/orders/domain/entities/payment.dart';
 class Order extends Equatable {
   final OrderId id;
   final DateTime createdAt;
+  final DateTime? completedAt;
   final OrderStatus status;
   final CustomerId customerId;
   final PrescriptionId? prescriptionId;
@@ -18,6 +20,7 @@ class Order extends Equatable {
   const Order._({
     required this.id,
     required this.createdAt,
+    this.completedAt,
     required this.status,
     required this.customerId,
     this.prescriptionId,
@@ -29,6 +32,7 @@ class Order extends Equatable {
   factory Order.rehydrate({
     required OrderId id,
     required DateTime createdAt,
+    DateTime? completedAt,
     required OrderStatus status,
     required CustomerId customerId,
     PrescriptionId? prescriptionId,
@@ -39,6 +43,7 @@ class Order extends Equatable {
     return Order._(
       id: id,
       createdAt: createdAt,
+      completedAt: completedAt,
       status: status,
       customerId: customerId,
       prescriptionId: prescriptionId,
@@ -57,12 +62,12 @@ class Order extends Equatable {
     List<Payment>? initialPayments,
   }) {
     final payments = initialPayments ?? [];
-    
+
     OrderStatus initialStatus = OrderStatus.draft;
-    
+
     final total = items.fold(Money(0), (sum, item) => sum + item.total);
     final paid = payments.fold(Money(0), (sum, p) => sum + p.amountPaid);
-    
+
     if (payments.isNotEmpty) {
       if (paid.value >= total.value) {
         initialStatus = OrderStatus.completed;
@@ -72,7 +77,7 @@ class Order extends Equatable {
     }
 
     return Order._(
-      id: OrderId.empty(), 
+      id: OrderId.empty(),
       createdAt: createdAt,
       status: initialStatus,
       customerId: customerId,
@@ -83,13 +88,15 @@ class Order extends Equatable {
     );
   }
 
-  Money get totalAmount => items.fold(Money(0), (sum, item) => sum + item.total);
+  Money get totalAmount =>
+      items.fold(Money(0), (sum, item) => sum + item.total);
 
-  Money get paidAmount => payments.fold(Money(0), (sum, p) => sum + p.amountPaid);
+  Money get paidAmount =>
+      payments.fold(Money(0), (sum, p) => sum + p.amountPaid);
 
   Money get pendingAmount {
     final pending = totalAmount - paidAmount;
-    return pending.value < 0 ? Money(0) : pending; // Prevent negative pending
+    return pending.value < 0 ? Money(0) : pending;
   }
 
   bool get isFullyPaid => pendingAmount.isZero;
@@ -98,19 +105,28 @@ class Order extends Equatable {
 
   Order addPayment(Payment payment) {
     final updatedPayments = List<Payment>.from(payments)..add(payment);
-    
-    final newPaidAmount = updatedPayments.fold(Money(0), (sum, p) => sum + p.amountPaid);
-    
+
+    final newPaidAmount = updatedPayments.fold(
+      Money(0),
+      (sum, p) => sum + p.amountPaid,
+    );
+
+    debugPrint("New Paid: ${newPaidAmount.value}, Total: ${totalAmount.value}");
+
     OrderStatus newStatus = status;
+    DateTime? completedAt;
     if (newPaidAmount.value >= totalAmount.value) {
-       newStatus = OrderStatus.completed; 
+      debugPrint("Order is completed");
+      newStatus = OrderStatus.completed;
+      completedAt = DateTime.now();
     } else {
-       newStatus = OrderStatus.pendingPayment;
+      newStatus = OrderStatus.pendingPayment;
     }
 
-    return Order._(
+    return Order.rehydrate(
       id: id,
       createdAt: createdAt,
+      completedAt: completedAt,
       status: newStatus,
       customerId: customerId,
       prescriptionId: prescriptionId,
@@ -122,6 +138,14 @@ class Order extends Equatable {
 
   @override
   List<Object?> get props => [
-        id, createdAt, status, customerId, prescriptionId, storeLocationId, items, payments
-      ];
+    id,
+    createdAt,
+    completedAt,
+    status,
+    customerId,
+    prescriptionId,
+    storeLocationId,
+    items,
+    payments,
+  ];
 }

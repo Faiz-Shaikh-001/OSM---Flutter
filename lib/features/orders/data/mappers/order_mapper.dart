@@ -19,10 +19,11 @@ class OrderMapper {
     return Order.rehydrate(
       id: OrderId(model.id.toString()),
       createdAt: model.createdAt,
+      completedAt: model.completedAt,
       status: OrderEnumsMapper.toOrderStatus(model.status),
-      customerId: CustomerId(model.customer.value!.id.toString()),
-      prescriptionId: PrescriptionId(model.prescription.value!.id.toString()),
-      storeLocationId: StoreLocationId(model.storeLocation.value!.id.toString()),
+      customerId: CustomerId(model.customer.value?.id.toString() ?? '0'),
+      prescriptionId: PrescriptionId(model.prescription.value?.id.toString() ?? '0'),
+      storeLocationId: StoreLocationId(model.storeLocation.value?.id.toString() ?? '0'),
 
       items: items.map(OrderItemMapper.toEntity).toList(),
       payments: payments.map(PaymentMapper.toEntity).toList(),

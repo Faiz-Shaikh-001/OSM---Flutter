@@ -1,5 +1,3 @@
-// ignore_for_file: deprecated_member_use
-
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -18,6 +16,7 @@ import 'package:osm/features/orders/domain/usecases/watch_orders.dart';
 
 // Blocs
 import 'package:osm/features/orders/presentation/blocs/order_list/order_list_bloc.dart';
+import 'package:osm/features/orders/presentation/blocs/order_submission/order_submission_bloc.dart';
 
 // Screens
 import 'package:osm/features/orders/presentation/screens/add_order/create_order_flow_screen.dart';
@@ -225,6 +224,7 @@ class _OrderListScreenState extends State<OrderListScreen> {
                   }
 
                   if (state is OrderListFailure) {
+                    debugPrint(state.message);
                     return _ErrorView(message: state.message);
                   }
 
@@ -271,10 +271,15 @@ class _OrdersListView extends StatelessWidget {
           child: InkWell(
             borderRadius: BorderRadius.circular(12),
             onTap: () {
+              final submissionBloc = context.read<OrderSubmissionBloc>();
+
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (_) => OrderDetailsScreen(order: order),
+                  builder: (_) => BlocProvider.value(
+                    value: submissionBloc,
+                    child: OrderDetailsScreen(order: order),
+                  ),
                 ),
               );
             },
@@ -384,9 +389,9 @@ class _StatusBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: color.withOpacity(0.3)),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Text(
         status,

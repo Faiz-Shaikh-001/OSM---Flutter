@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:osm/features/orders/domain/repositories/order_repository.dart';
+import 'package:osm/features/orders/domain/usecases/add_payment.dart';
 import 'package:osm/features/orders/domain/usecases/create_order_from_draft.dart';
 import 'package:osm/features/orders/presentation/blocs/order_draft/order_draft_bloc.dart';
 import 'package:osm/features/orders/presentation/blocs/order_submission/order_submission_bloc.dart';
@@ -8,7 +9,7 @@ import 'package:osm/features/orders/presentation/enum/order_step.dart';
 import 'package:osm/features/orders/presentation/screens/customer_step/customer_step.dart';
 import 'package:osm/features/orders/presentation/screens/payment_step/payment_step.dart';
 import 'package:osm/features/orders/presentation/screens/product_step/product_step.dart';
-import 'package:osm/features/orders/presentation/widgets/order_stepper.dart';
+import 'package:osm/features/orders/presentation/screens/add_order/widgets/order_stepper.dart';
 import 'package:osm/features/store/presentation/bloc/store_location_bloc.dart';
 
 class CreateOrderFlowScreen extends StatefulWidget {
@@ -90,6 +91,7 @@ class _CreateOrderFlowScreenState extends State<CreateOrderFlowScreen> {
         BlocProvider(
           create: (context) => OrderSubmissionBloc(
             createOrderFromDraft: CreateOrderFromDraft(orderRepository),
+            addPayment: AddPayment(orderRepository),
           ),
         ),
       ],

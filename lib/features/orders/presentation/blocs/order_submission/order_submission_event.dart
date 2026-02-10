@@ -17,3 +17,10 @@ final class SubmitOrderDraft extends OrderSubmissionEvent {
 }
 
 class ResetOrderSubmission extends OrderSubmissionEvent {}
+
+class AddOrderPayment extends OrderSubmissionEvent {
+  final Order order;
+  final Payment payment;
+
+  const AddOrderPayment({required this.order, required this.payment});
+}

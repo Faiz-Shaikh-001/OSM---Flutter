@@ -18,7 +18,7 @@ abstract class OrderRepository {
 
   Future<Either<OrderFailure, OrderId>> create(Order order);
 
-  Future<Either<OrderFailure, void>> addPayment(OrderId orderId, Payment payment);
+  Future<Either<OrderFailure, Order>> addPayment(OrderId orderId, Payment payment);
 
   Future<Either<OrderFailure, void>> updateStatus(
     OrderId orderId,
