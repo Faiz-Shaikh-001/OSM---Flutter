@@ -1,0 +1,1 @@
+enum PrescriptionSource { internal, external }

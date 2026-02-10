@@ -1,111 +1,56 @@
 import 'package:flutter/material.dart';
-import 'package:osm/viewmodels/prescription_viewmodel.dart';
-import 'package:osm/viewmodels/store_location_viewmodel.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:osm/core/providers/bloc_providers.dart';
+import 'package:osm/core/providers/local_repositories_providers.dart';
+import 'package:osm/core/providers/repositories_impl_providers.dart';
+import 'package:osm/core/services/isar_service.dart';
+import 'package:osm/core/theme_provider.dart';
+// ignore: unused_import
+import 'package:osm/features/inventory/presentation/screens/add_stock/screen/add_stock_screen.dart';
+// ignore: unused_import
+import 'package:osm/features/inventory/presentation/screens/inventory_screen.dart';
+// import 'package:osm/features/customer/presentation/screens/customer_list_screen.dart';
+// import 'package:osm/features/dashboard/presentation/screens/dashboard_screen.dart';
+// import 'package:osm/features/inventory/presentation/screens/inventory_screen.dart';
+// ignore: unused_import
+import 'package:osm/features/orders/presentation/screens/add_order/create_order_flow_screen.dart';
+import 'package:osm/features/orders/presentation/screens/order_list/order_list_screen.dart';
+import 'package:osm/features/store/data/repositories/store_location_local_repository.dart';
+import 'package:osm/features/store/data/repositories/store_location_repository_impl.dart';
+import 'package:osm/features/store/domain/usecases/ensure_active_store_location.dart';
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
-// Import your IsarService
-import 'package:osm/services/isar_service.dart';
-
-// Import all your repository files
-import 'package:osm/data/repositories/customer_repository.dart';
-import 'package:osm/data/repositories/doctor_repository.dart';
-import 'package:osm/data/repositories/order_repository.dart';
-import 'package:osm/data/repositories/prescription_repository.dart';
-import 'package:osm/data/repositories/payment_repository.dart';
-import 'package:osm/data/repositories/store_location_repository.dart';
-import 'package:osm/data/repositories/inventory_repository.dart';
-import 'package:osm/data/repositories/frame_repository.dart';
-import 'package:osm/data/repositories/lens_repository.dart';
-
-// Import your new ViewModel
-import 'package:osm/viewmodels/customer_viewmodel.dart'; // NEW IMPORT
-import 'package:osm/viewmodels/frame_viewmodel.dart'; // NEW IMPORT
-import 'package:osm/viewmodels/lens_viewmodel.dart'; // NEW IMPORT
-import 'viewmodels/order_viewmodel.dart';
-
-// Import your initial screen
-import 'screens/dashboard_screen.dart';
-
-// Import dummydatagenerator
-import 'utils/dummy_data_generator.dart';
-
-late SharedPreferences sharedPreferences;
-
-void main() async {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   final isarService = IsarService();
   await isarService.db;
-  sharedPreferences = await SharedPreferences.getInstance();
 
-  // Dummy data population call
-  await DummyDataGenerator.generate(isarService);
+  final storeLocalRepo = StoreLocationLocalRepository();
+  final storeRepo = StoreLocationRepositoryImpl(isarService, storeLocalRepo);
+
+  await storeRepo.seedStoreIfNeeded();
+  final ensureActiveStore = EnsureActiveStoreLocation(storeRepo);
+  await ensureActiveStore();
 
   runApp(
     MultiProvider(
       providers: [
-        // Core Services/Repositories (Provider<T> for immutable instances)
-        Provider<IsarService>(create: (_) => isarService),
-        Provider<CustomerRepository>(
-          create: (context) => CustomerRepository(context.read<IsarService>()),
-        ),
-        Provider<DoctorRepository>(
-          create: (context) => DoctorRepository(context.read<IsarService>()),
-        ),
-        Provider<OrderRepository>(
-          create: (context) => OrderRepository(context.read<IsarService>()),
-        ),
-        Provider<PrescriptionRepository>(
-          create: (context) =>
-              PrescriptionRepository(context.read<IsarService>()),
-        ),
-        Provider<PaymentRepository>(
-          create: (context) => PaymentRepository(context.read<IsarService>()),
-        ),
-        Provider<StoreLocationRepository>(
-          create: (context) =>
-              StoreLocationRepository(context.read<IsarService>()),
-        ),
-        Provider<InventoryRepository>(
-          create: (context) => InventoryRepository(context.read<IsarService>()),
-        ),
-        Provider<FrameRepository>(
-          create: (context) => FrameRepository(context.read<IsarService>()),
-        ),
-        Provider<LensRepository>(
-          create: (context) => LensRepository(context.read<IsarService>()),
-        ),
-
-        // ViewModels (ChangeNotifierProvider for mutable state)
-        ChangeNotifierProvider<CustomerViewModel>(
-          // NEW PROVIDER
-          create: (context) =>
-              CustomerViewModel(context.read<CustomerRepository>()),
-        ),
-        ChangeNotifierProvider<FrameViewmodel>(
-          create: (context) => FrameViewmodel(context.read<FrameRepository>()),
-        ),
-        ChangeNotifierProvider<LensViewmodel>(
-          create: (context) => LensViewmodel(context.read<LensRepository>()),
-        ),
-        ChangeNotifierProvider<OrderViewModel>(
-          create: (context) => OrderViewModel(
-            context.read<OrderRepository>(),
-            context.read<CustomerViewModel>(),
-          ),
-        ),
-        ChangeNotifierProvider<PrescriptionViewModel>(
-          create: (context) =>
-              PrescriptionViewModel(context.read<PrescriptionRepository>()),
-        ),
-        ChangeNotifierProvider<StoreLocationViewModel>(
-          create: (context) =>
-              StoreLocationViewModel(context.read<StoreLocationRepository>()),
-        ),
-        // Add other ViewModels here as you create them (e.g., DoctorViewModel)
+        // Isar Service
+        Provider<IsarService>.value(value: isarService),
+        ChangeNotifierProvider(create: (_) => ThemeProvider()),
+        ...localRepositoryProviders,
+        ...repositoryImplProviders,
       ],
-      child: const MyApp(),
+
+      child: Builder(
+        builder: (context) {
+          return MultiBlocProvider(
+            providers: buildBlocProviders(context),
+            child: const MyApp(),
+          );
+        },
+      ),
     ),
   );
 }
@@ -115,14 +60,13 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Optics Store Management',
-      debugShowCheckedModeBanner: true,
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-        visualDensity: VisualDensity.adaptivePlatformDensity,
-      ),
-      home: const DashboardScreen(),
+    return const MaterialApp(
+      debugShowCheckedModeBanner: false,
+      // home: CustomerListScreen(),
+      // home: DashboardScreen(),
+      // home: InventoryScreen(),
+      // home: CreateOrderFlowScreen()
+      home: OrderListScreen(),
     );
   }
 }

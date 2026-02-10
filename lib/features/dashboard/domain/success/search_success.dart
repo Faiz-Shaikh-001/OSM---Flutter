@@ -1,0 +1,3 @@
+class SearchSuccess {
+  const SearchSuccess();
+}
