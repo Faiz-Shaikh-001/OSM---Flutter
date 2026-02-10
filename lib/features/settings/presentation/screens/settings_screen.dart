@@ -12,6 +12,7 @@ import 'package:osm/core/theme_provider.dart';
 import 'notification_section/notification_settings_screen.dart';
 import 'inventory_section/inventory_settings_screen.dart';
 import 'about_section/about_screen.dart';
+import 'help_support_section/help_support_screen.dart';
 
 /// ─────────────────────────────────────────────────────────────
 /// Entry point for Settings feature (DI boundary)
@@ -152,14 +153,21 @@ class SettingsScreen extends StatelessWidget {
               const Divider(height: 32),
 
               // ─────────────────────── Help & Support ───────────────────────
-              const SettingsSectionTitle(
+              SettingsSectionTitle(
                 icon: Icons.help_outline,
                 title: 'Help & Support',
               ),
-              const SettingsTile(icon: Icons.quiz_outlined, title: 'FAQs'),
-              const SettingsTile(
-                icon: Icons.support_agent_outlined,
-                title: 'Contact Support',
+              SettingsTile(
+                icon: Icons.help_outline,
+                title: 'Help & Support',
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const HelpSupportScreen(),
+                    ),
+                  );
+                },
               ),
               const Divider(height: 32),
 

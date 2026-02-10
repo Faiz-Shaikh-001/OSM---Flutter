@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 't&c_screen.dart';
+import 't_n_c_screen.dart';
 import 'privacy_policy_screen.dart';
 import 'licenses_screen.dart';
 
