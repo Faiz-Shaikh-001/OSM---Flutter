@@ -3,6 +3,7 @@ import 'package:osm/core/services/isar_service.dart';
 import 'package:osm/core/value_objects/id.dart';
 import 'package:osm/features/customer/data/models/customer_model.dart';
 import 'package:osm/features/customer/data/repositories/customer_local_repository.dart';
+import 'package:osm/features/orders/data/mappers/order_enums_mapper.dart';
 import 'package:osm/features/orders/data/mappers/order_item_mapper.dart';
 import 'package:osm/features/orders/data/mappers/order_mapper.dart';
 import 'package:osm/features/orders/data/mappers/order_status_mapper.dart';
@@ -219,28 +220,43 @@ class OrderRepositoryImpl implements OrderRepository {
   ) async {
     try {
       final isar = await _isarService.db;
-      final order = await orderLocal.getById(int.parse(orderId.value), isar);
-      if (order == null) {
+      final orderModel = await orderLocal.getById(
+        int.parse(orderId.value),
+        isar,
+      );
+      
+      if (orderModel == null) {
         return const Left(OrderNotFoundFailure());
       }
 
-      final paymentModel = PaymentMapper.toModel(payment);
+      await _loadRelations(orderModel);
 
-      await paymentLocal.insert(
-        payment: paymentModel,
-        order: order,
-        isar: isar,
+      final orderEntity = OrderMapper.toEntity(
+        orderModel,
+        items: orderModel.items.toList(),
+        payments: orderModel.payments.toList(),
       );
 
-      await _loadRelations(order);
+      final updatedOrderEntity = orderEntity.addPayment(payment);
 
-      return Right(
-        OrderMapper.toEntity(
-          order,
-          items: order.items.toList(),
-          payments: order.payments.toList(),
-        ),
-      );
+      await isar.writeTxn(() async {
+        final newPaymentModel = PaymentMapper.toModel(payment);
+        await paymentLocal.insert(
+          payment: newPaymentModel,
+          order: orderModel,
+          isar: isar,
+        );
+
+        orderModel.status = OrderEnumsMapper.toOrderStatusModel(
+          updatedOrderEntity.status,
+        );
+
+        orderModel.completedAt = updatedOrderEntity.completedAt;
+
+        await orderLocal.save(orderModel, isar);
+      });
+
+      return Right(updatedOrderEntity);
     } catch (e) {
       return Left(PaymentFailure(e.toString()));
     }

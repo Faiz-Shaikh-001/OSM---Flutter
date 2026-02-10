@@ -50,6 +50,9 @@ import 'package:osm/features/inventory/presentation/blocs/lens/lens_detail/lens_
 import 'package:osm/features/inventory/presentation/blocs/lens/lens_list/lens_list_bloc.dart';
 import 'package:osm/features/inventory/presentation/blocs/qr_scan/qr_scan_bloc.dart';
 import 'package:osm/features/orders/domain/repositories/order_repository.dart';
+import 'package:osm/features/orders/domain/usecases/add_payment.dart';
+import 'package:osm/features/orders/domain/usecases/create_order_from_draft.dart';
+import 'package:osm/features/orders/presentation/blocs/order_submission/order_submission_bloc.dart';
 import 'package:osm/features/prescription/domain/repositories/prescription_repository.dart';
 import 'package:osm/features/prescription/domain/usecases/add_prescription.dart';
 import 'package:osm/features/prescription/domain/usecases/get_prescription_history.dart';
@@ -182,6 +185,13 @@ List<BlocProvider> buildBlocProviders(BuildContext context) {
     BlocProvider<AddPrescriptionBloc>(
       create: (_) => AddPrescriptionBloc(
         addPrescription: AddPrescription(prescriptionRepository),
+      ),
+    ),
+
+    BlocProvider<OrderSubmissionBloc>(
+      create: (_) => OrderSubmissionBloc(
+        createOrderFromDraft: CreateOrderFromDraft(orderRepository),
+        addPayment: AddPayment(orderRepository),
       ),
     ),
   ];
