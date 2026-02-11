@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:osm/features/settings/presentation/screens/account_section/account_screen.dart';
 import 'package:osm/features/settings/settings_di.dart';
 import '../bloc/settings_bloc.dart';
 import '../bloc/settings_event.dart';
 import '../bloc/settings_state.dart';
+import '../bloc/account_bloc.dart';
 import '../widgets/settings_section_title.dart';
 import '../widgets/settings_tile.dart';
 import '../widgets/settings_switch_tile.dart';
@@ -155,13 +157,23 @@ class SettingsScreen extends StatelessWidget {
 
               const Divider(height: 32),
 
-              // ─────────────────────── Account ───────────────────────
-              const SettingsSectionTitle(
+              
+              // ─────────────────────── ACCOUNT ───────────────────────
+              SettingsTile(
                 icon: Icons.person_outline,
                 title: 'Account',
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => BlocProvider.value(
+                        value: context.read<AccountBloc>(),
+                        child: const AccountScreen(),
+                      ),
+                    ),
+                  );
+                },
               ),
-              const SettingsTile(icon: Icons.person_outline, title: 'Account'),
-              const Divider(height: 32),
 
               // ─────────────────────── Help & Support ───────────────────────
               SettingsSectionTitle(
