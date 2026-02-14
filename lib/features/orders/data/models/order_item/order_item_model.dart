@@ -19,15 +19,28 @@ class OrderItemModel {
 
   final int unitPrice;
 
-  final double? spherical;
-  final double? cylindrical;
-  final int? axis;
-  final double? addPower;
+  late double? rightSphere;
+  double? rightCylinder;
+  int? rightAxis;
+  double? rightAdd;
+
+  late double? leftSphere;
+  double? leftCylinder;
+  int? leftAxis;
+  double? leftAdd;
+
+  // Pupillary distance
+  double? pdRight;
+  double? pdLeft;
 
   @Enumerated(EnumType.name)
   final LensMaterialTypeModel? materialType;
 
-  final double? refractiveIndex;
+  final List<String>? coatings;
+
+  final int basePrice;
+  final int materialSurcharge;
+  final int coatingSurcharges;
 
   // ---- Relations ----
   final IsarLink<OrderModel> order;
@@ -39,13 +52,21 @@ class OrderItemModel {
     required this.quantity,
     required this.unitPrice,
 
-    this.spherical,
-    this.cylindrical,
-    this.axis,
-    this.addPower,
+    this.rightAdd,
+    this.rightAxis,
+    this.rightCylinder,
+    this.rightSphere,
+    this.pdRight,
+    this.leftAdd,
+    this.leftAxis,
+    this.leftCylinder,
+    this.leftSphere,
+    this.pdLeft,
     this.materialType,
-    this.refractiveIndex,
-
+    required this.basePrice,
+    this.materialSurcharge = 0,
+    this.coatingSurcharges = 0,
+    this.coatings = const [],
     IsarLink<OrderModel>? order,
   }) : order = order ?? IsarLink<OrderModel>();
 }

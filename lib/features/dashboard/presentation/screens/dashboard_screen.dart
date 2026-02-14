@@ -6,10 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:osm/features/customer/presentation/screens/customer_list_screen.dart';
 import 'package:osm/features/dashboard/presentation/screens/dashboard_body.dart';
 import 'package:osm/features/inventory/presentation/screens/inventory_screen.dart';
-// import 'package:osm/features/inventory/presentation/screens/inventory_screen.dart';
-// import 'package:osm/features/orders/presentation/screens/add_order/create_order_flow_screen.dart';
-// import 'package:osm/features/orders/presentation/screens/order_list/order_list_screen.dart';
-// import 'package:osm/features/settings/presentation/screens/settings_screen.dart';
+import 'package:osm/features/orders/presentation/screens/order_list/order_list_screen.dart';
+import 'package:osm/features/settings/presentation/screens/settings_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -23,11 +21,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
   bool _isDialOpen = false;
 
   final List<Widget> _pages = [
-    // const OrderListScreen(),
+    const OrderListScreen(),
     const InventoryScreen(),
     const SizedBox(),
     const CustomerListScreen(),
-    // const SettingsPage(),
+    const SettingsScreen(),
   ];
 
   @override

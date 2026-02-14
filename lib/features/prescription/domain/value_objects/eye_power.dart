@@ -10,4 +10,7 @@ class EyePower {
     this.axis,
     this.add
   });
+
+  @override
+  String toString() => "Sphere: $sphere\nCylinder: $cylinder\nAxis: $axis\nAdd: $add";
 }

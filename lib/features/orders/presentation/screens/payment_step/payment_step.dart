@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:osm/core/value_objects/money.dart';
+import 'package:osm/features/orders/domain/entities/order_item_type.dart';
 import 'package:osm/features/orders/domain/entities/payment.dart';
 import 'package:osm/features/orders/domain/entities/payment_enums.dart';
 import 'package:osm/features/orders/presentation/blocs/order_draft/order_draft_bloc.dart';
@@ -482,32 +483,25 @@ class _OrderSummaryCard extends StatelessWidget {
             fontWeight: FontWeight.bold,
           ),
         ),
-
         const SizedBox(height: 8),
-
         Card(
+          elevation: 0,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadiusGeometry.circular(5),
+            borderRadius: BorderRadius.circular(12),
+            side: BorderSide(color: Colors.grey.shade200),
           ),
           child: Column(
             children: [
+              // Header
               Padding(
-                padding: const EdgeInsets.symmetric(
-                  vertical: 8.0,
-                  horizontal: 5,
-                ),
+                padding: const EdgeInsets.all(12),
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    SizedBox(
-                      width: 30,
-                      child: Center(
-                        child: Text("#", style: theme.textTheme.bodySmall),
-                      ),
-                    ),
                     Expanded(
-                      child: Text("Product", style: theme.textTheme.bodySmall),
+                      child: Text(
+                        "Product Details",
+                        style: theme.textTheme.bodySmall,
+                      ),
                     ),
                     SizedBox(
                       width: 40,
@@ -517,63 +511,114 @@ class _OrderSummaryCard extends StatelessWidget {
                         style: theme.textTheme.bodySmall,
                       ),
                     ),
+                    SizedBox(
+                      width: 80,
+                      child: Text(
+                        "Amount",
+                        textAlign: TextAlign.right,
+                        style: theme.textTheme.bodySmall,
+                      ),
+                    ),
                   ],
                 ),
               ),
+              const Divider(height: 1),
 
-              const Divider(),
+              // Item List
+              ListView.separated(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: state.draft.items.length,
+                separatorBuilder: (_, _) =>
+                    const Divider(height: 1, indent: 12, endIndent: 12),
+                itemBuilder: (context, index) {
+                  final item = state.draft.items[index];
+                  final isLens = item.type == OrderItemType.lens;
 
-              ...state.draft.items.indexed.map((entry) {
-                final index = entry.$1 + 1;
-                final item = entry.$2;
+                  return Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    item.productName,
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  if (isLens) ...[
+                                    const SizedBox(height: 4),
+                                    // Display the Base Price
+                                    _priceBreakdownText(
+                                      "Base Price",
+                                      item.basePrice.value,
+                                    ),
 
-                return Row(
-                  children: [
-                    SizedBox(
-                      width: 30,
-                      child: Center(
-                        child: Text(
-                          index.toString(),
-                          style: TextStyle(fontWeight: FontWeight.w600),
+                                    // Display Material with its specific surcharge
+                                    if (item.materialType != null)
+                                      _priceBreakdownText(
+                                        "Material: ${item.materialType!.name.toUpperCase()}",
+                                        item.materialSurcharge,
+                                      ),
+
+                                    // Display Coatings with their total surcharge
+                                    if (item.coatings?.isNotEmpty ?? false)
+                                      _priceBreakdownText(
+                                        "Coatings: ${item.coatings!.join(', ')}",
+                                        item.coatingSurcharges,
+                                      ),
+                                  ],
+                                ],
+                              ),
+                            ),
+                            SizedBox(
+                              width: 40,
+                              child: Text(
+                                item.quantity.toString(),
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+                            SizedBox(
+                              width: 80,
+                              child: Text(
+                                "₹${item.unitPrice.value.toStringAsFixed(0)}",
+                                textAlign: TextAlign.right,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
-                      ),
+                      ],
                     ),
-                    Expanded(
-                      child: Text(
-                        item.productName,
-                        softWrap: true,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(fontWeight: FontWeight.w600),
-                      ),
-                    ),
-                    SizedBox(
-                      width: 40,
-                      child: Text(
-                        item.quantity.toString(),
-                        textAlign: TextAlign.center,
-                        style: TextStyle(fontWeight: FontWeight.w600),
-                      ),
-                    ),
-                  ],
-                );
-              }),
+                  );
+                },
+              ),
 
-              const Divider(),
-
+              const Divider(height: 1),
+              // Footer Total
               Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12.0,
-                  vertical: 8,
-                ),
+                padding: const EdgeInsets.all(12),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text("Total Amount"),
+                    const Text(
+                      "Subtotal",
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
                     Text(
-                      "₹${state.draft.totalAmount.value}",
-                      style: theme.textTheme.bodyMedium?.copyWith(
+                      "₹${state.draft.totalAmount.value.toStringAsFixed(2)}",
+                      style: theme.textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.bold,
+                        color: theme.primaryColor,
                       ),
                     ),
                   ],
@@ -583,6 +628,22 @@ class _OrderSummaryCard extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _priceBreakdownText(String label, double price) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 2),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label, style: TextStyle(fontSize: 12, color: Colors.grey[600])),
+          Text(
+            "+₹${price.toStringAsFixed(0)}",
+            style: TextStyle(fontSize: 11, color: Colors.blueGrey[400]),
+          ),
+        ],
+      ),
     );
   }
 }

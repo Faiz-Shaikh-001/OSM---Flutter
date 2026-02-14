@@ -17,20 +17,20 @@ const OrderItemModelSchema = CollectionSchema(
   name: r'OrderItemModel',
   id: 3320497907544385651,
   properties: {
-    r'addPower': PropertySchema(
+    r'basePrice': PropertySchema(
       id: 0,
-      name: r'addPower',
-      type: IsarType.double,
-    ),
-    r'axis': PropertySchema(
-      id: 1,
-      name: r'axis',
+      name: r'basePrice',
       type: IsarType.long,
     ),
-    r'cylindrical': PropertySchema(
+    r'coatingSurcharges': PropertySchema(
+      id: 1,
+      name: r'coatingSurcharges',
+      type: IsarType.long,
+    ),
+    r'coatings': PropertySchema(
       id: 2,
-      name: r'cylindrical',
-      type: IsarType.double,
+      name: r'coatings',
+      type: IsarType.stringList,
     ),
     r'itemType': PropertySchema(
       id: 3,
@@ -38,39 +38,84 @@ const OrderItemModelSchema = CollectionSchema(
       type: IsarType.string,
       enumMap: _OrderItemModelitemTypeEnumValueMap,
     ),
-    r'materialType': PropertySchema(
+    r'leftAdd': PropertySchema(
       id: 4,
+      name: r'leftAdd',
+      type: IsarType.double,
+    ),
+    r'leftAxis': PropertySchema(
+      id: 5,
+      name: r'leftAxis',
+      type: IsarType.long,
+    ),
+    r'leftCylinder': PropertySchema(
+      id: 6,
+      name: r'leftCylinder',
+      type: IsarType.double,
+    ),
+    r'leftSphere': PropertySchema(
+      id: 7,
+      name: r'leftSphere',
+      type: IsarType.double,
+    ),
+    r'materialSurcharge': PropertySchema(
+      id: 8,
+      name: r'materialSurcharge',
+      type: IsarType.long,
+    ),
+    r'materialType': PropertySchema(
+      id: 9,
       name: r'materialType',
       type: IsarType.string,
       enumMap: _OrderItemModelmaterialTypeEnumValueMap,
     ),
+    r'pdLeft': PropertySchema(
+      id: 10,
+      name: r'pdLeft',
+      type: IsarType.double,
+    ),
+    r'pdRight': PropertySchema(
+      id: 11,
+      name: r'pdRight',
+      type: IsarType.double,
+    ),
     r'productCode': PropertySchema(
-      id: 5,
+      id: 12,
       name: r'productCode',
       type: IsarType.string,
     ),
     r'productName': PropertySchema(
-      id: 6,
+      id: 13,
       name: r'productName',
       type: IsarType.string,
     ),
     r'quantity': PropertySchema(
-      id: 7,
+      id: 14,
       name: r'quantity',
       type: IsarType.long,
     ),
-    r'refractiveIndex': PropertySchema(
-      id: 8,
-      name: r'refractiveIndex',
+    r'rightAdd': PropertySchema(
+      id: 15,
+      name: r'rightAdd',
       type: IsarType.double,
     ),
-    r'spherical': PropertySchema(
-      id: 9,
-      name: r'spherical',
+    r'rightAxis': PropertySchema(
+      id: 16,
+      name: r'rightAxis',
+      type: IsarType.long,
+    ),
+    r'rightCylinder': PropertySchema(
+      id: 17,
+      name: r'rightCylinder',
+      type: IsarType.double,
+    ),
+    r'rightSphere': PropertySchema(
+      id: 18,
+      name: r'rightSphere',
       type: IsarType.double,
     ),
     r'unitPrice': PropertySchema(
-      id: 10,
+      id: 19,
       name: r'unitPrice',
       type: IsarType.long,
     )
@@ -102,6 +147,18 @@ int _orderItemModelEstimateSize(
   Map<Type, List<int>> allOffsets,
 ) {
   var bytesCount = offsets.last;
+  {
+    final list = object.coatings;
+    if (list != null) {
+      bytesCount += 3 + list.length * 3;
+      {
+        for (var i = 0; i < list.length; i++) {
+          final value = list[i];
+          bytesCount += value.length * 3;
+        }
+      }
+    }
+  }
   bytesCount += 3 + object.itemType.name.length * 3;
   {
     final value = object.materialType;
@@ -120,17 +177,26 @@ void _orderItemModelSerialize(
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
 ) {
-  writer.writeDouble(offsets[0], object.addPower);
-  writer.writeLong(offsets[1], object.axis);
-  writer.writeDouble(offsets[2], object.cylindrical);
+  writer.writeLong(offsets[0], object.basePrice);
+  writer.writeLong(offsets[1], object.coatingSurcharges);
+  writer.writeStringList(offsets[2], object.coatings);
   writer.writeString(offsets[3], object.itemType.name);
-  writer.writeString(offsets[4], object.materialType?.name);
-  writer.writeString(offsets[5], object.productCode);
-  writer.writeString(offsets[6], object.productName);
-  writer.writeLong(offsets[7], object.quantity);
-  writer.writeDouble(offsets[8], object.refractiveIndex);
-  writer.writeDouble(offsets[9], object.spherical);
-  writer.writeLong(offsets[10], object.unitPrice);
+  writer.writeDouble(offsets[4], object.leftAdd);
+  writer.writeLong(offsets[5], object.leftAxis);
+  writer.writeDouble(offsets[6], object.leftCylinder);
+  writer.writeDouble(offsets[7], object.leftSphere);
+  writer.writeLong(offsets[8], object.materialSurcharge);
+  writer.writeString(offsets[9], object.materialType?.name);
+  writer.writeDouble(offsets[10], object.pdLeft);
+  writer.writeDouble(offsets[11], object.pdRight);
+  writer.writeString(offsets[12], object.productCode);
+  writer.writeString(offsets[13], object.productName);
+  writer.writeLong(offsets[14], object.quantity);
+  writer.writeDouble(offsets[15], object.rightAdd);
+  writer.writeLong(offsets[16], object.rightAxis);
+  writer.writeDouble(offsets[17], object.rightCylinder);
+  writer.writeDouble(offsets[18], object.rightSphere);
+  writer.writeLong(offsets[19], object.unitPrice);
 }
 
 OrderItemModel _orderItemModelDeserialize(
@@ -140,20 +206,29 @@ OrderItemModel _orderItemModelDeserialize(
   Map<Type, List<int>> allOffsets,
 ) {
   final object = OrderItemModel(
-    addPower: reader.readDoubleOrNull(offsets[0]),
-    axis: reader.readLongOrNull(offsets[1]),
-    cylindrical: reader.readDoubleOrNull(offsets[2]),
+    basePrice: reader.readLong(offsets[0]),
+    coatingSurcharges: reader.readLongOrNull(offsets[1]) ?? 0,
+    coatings: reader.readStringList(offsets[2]),
     itemType: _OrderItemModelitemTypeValueEnumMap[
             reader.readStringOrNull(offsets[3])] ??
         OrderItemTypeModel.frame,
+    leftAdd: reader.readDoubleOrNull(offsets[4]),
+    leftAxis: reader.readLongOrNull(offsets[5]),
+    leftCylinder: reader.readDoubleOrNull(offsets[6]),
+    leftSphere: reader.readDoubleOrNull(offsets[7]),
+    materialSurcharge: reader.readLongOrNull(offsets[8]) ?? 0,
     materialType: _OrderItemModelmaterialTypeValueEnumMap[
-        reader.readStringOrNull(offsets[4])],
-    productCode: reader.readString(offsets[5]),
-    productName: reader.readString(offsets[6]),
-    quantity: reader.readLong(offsets[7]),
-    refractiveIndex: reader.readDoubleOrNull(offsets[8]),
-    spherical: reader.readDoubleOrNull(offsets[9]),
-    unitPrice: reader.readLong(offsets[10]),
+        reader.readStringOrNull(offsets[9])],
+    pdLeft: reader.readDoubleOrNull(offsets[10]),
+    pdRight: reader.readDoubleOrNull(offsets[11]),
+    productCode: reader.readString(offsets[12]),
+    productName: reader.readString(offsets[13]),
+    quantity: reader.readLong(offsets[14]),
+    rightAdd: reader.readDoubleOrNull(offsets[15]),
+    rightAxis: reader.readLongOrNull(offsets[16]),
+    rightCylinder: reader.readDoubleOrNull(offsets[17]),
+    rightSphere: reader.readDoubleOrNull(offsets[18]),
+    unitPrice: reader.readLong(offsets[19]),
   );
   object.id = id;
   return object;
@@ -167,29 +242,47 @@ P _orderItemModelDeserializeProp<P>(
 ) {
   switch (propertyId) {
     case 0:
-      return (reader.readDoubleOrNull(offset)) as P;
+      return (reader.readLong(offset)) as P;
     case 1:
-      return (reader.readLongOrNull(offset)) as P;
+      return (reader.readLongOrNull(offset) ?? 0) as P;
     case 2:
-      return (reader.readDoubleOrNull(offset)) as P;
+      return (reader.readStringList(offset)) as P;
     case 3:
       return (_OrderItemModelitemTypeValueEnumMap[
               reader.readStringOrNull(offset)] ??
           OrderItemTypeModel.frame) as P;
     case 4:
+      return (reader.readDoubleOrNull(offset)) as P;
+    case 5:
+      return (reader.readLongOrNull(offset)) as P;
+    case 6:
+      return (reader.readDoubleOrNull(offset)) as P;
+    case 7:
+      return (reader.readDoubleOrNull(offset)) as P;
+    case 8:
+      return (reader.readLongOrNull(offset) ?? 0) as P;
+    case 9:
       return (_OrderItemModelmaterialTypeValueEnumMap[
           reader.readStringOrNull(offset)]) as P;
-    case 5:
-      return (reader.readString(offset)) as P;
-    case 6:
-      return (reader.readString(offset)) as P;
-    case 7:
-      return (reader.readLong(offset)) as P;
-    case 8:
-      return (reader.readDoubleOrNull(offset)) as P;
-    case 9:
-      return (reader.readDoubleOrNull(offset)) as P;
     case 10:
+      return (reader.readDoubleOrNull(offset)) as P;
+    case 11:
+      return (reader.readDoubleOrNull(offset)) as P;
+    case 12:
+      return (reader.readString(offset)) as P;
+    case 13:
+      return (reader.readString(offset)) as P;
+    case 14:
+      return (reader.readLong(offset)) as P;
+    case 15:
+      return (reader.readDoubleOrNull(offset)) as P;
+    case 16:
+      return (reader.readLongOrNull(offset)) as P;
+    case 17:
+      return (reader.readDoubleOrNull(offset)) as P;
+    case 18:
+      return (reader.readDoubleOrNull(offset)) as P;
+    case 19:
       return (reader.readLong(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -319,155 +412,53 @@ extension OrderItemModelQueryWhere
 extension OrderItemModelQueryFilter
     on QueryBuilder<OrderItemModel, OrderItemModel, QFilterCondition> {
   QueryBuilder<OrderItemModel, OrderItemModel, QAfterFilterCondition>
-      addPowerIsNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'addPower',
-      ));
-    });
-  }
-
-  QueryBuilder<OrderItemModel, OrderItemModel, QAfterFilterCondition>
-      addPowerIsNotNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'addPower',
-      ));
-    });
-  }
-
-  QueryBuilder<OrderItemModel, OrderItemModel, QAfterFilterCondition>
-      addPowerEqualTo(
-    double? value, {
-    double epsilon = Query.epsilon,
-  }) {
+      basePriceEqualTo(int value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'addPower',
-        value: value,
-        epsilon: epsilon,
-      ));
-    });
-  }
-
-  QueryBuilder<OrderItemModel, OrderItemModel, QAfterFilterCondition>
-      addPowerGreaterThan(
-    double? value, {
-    bool include = false,
-    double epsilon = Query.epsilon,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'addPower',
-        value: value,
-        epsilon: epsilon,
-      ));
-    });
-  }
-
-  QueryBuilder<OrderItemModel, OrderItemModel, QAfterFilterCondition>
-      addPowerLessThan(
-    double? value, {
-    bool include = false,
-    double epsilon = Query.epsilon,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'addPower',
-        value: value,
-        epsilon: epsilon,
-      ));
-    });
-  }
-
-  QueryBuilder<OrderItemModel, OrderItemModel, QAfterFilterCondition>
-      addPowerBetween(
-    double? lower,
-    double? upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-    double epsilon = Query.epsilon,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'addPower',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        epsilon: epsilon,
-      ));
-    });
-  }
-
-  QueryBuilder<OrderItemModel, OrderItemModel, QAfterFilterCondition>
-      axisIsNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'axis',
-      ));
-    });
-  }
-
-  QueryBuilder<OrderItemModel, OrderItemModel, QAfterFilterCondition>
-      axisIsNotNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'axis',
-      ));
-    });
-  }
-
-  QueryBuilder<OrderItemModel, OrderItemModel, QAfterFilterCondition>
-      axisEqualTo(int? value) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'axis',
+        property: r'basePrice',
         value: value,
       ));
     });
   }
 
   QueryBuilder<OrderItemModel, OrderItemModel, QAfterFilterCondition>
-      axisGreaterThan(
-    int? value, {
+      basePriceGreaterThan(
+    int value, {
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
         include: include,
-        property: r'axis',
+        property: r'basePrice',
         value: value,
       ));
     });
   }
 
   QueryBuilder<OrderItemModel, OrderItemModel, QAfterFilterCondition>
-      axisLessThan(
-    int? value, {
+      basePriceLessThan(
+    int value, {
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.lessThan(
         include: include,
-        property: r'axis',
+        property: r'basePrice',
         value: value,
       ));
     });
   }
 
   QueryBuilder<OrderItemModel, OrderItemModel, QAfterFilterCondition>
-      axisBetween(
-    int? lower,
-    int? upper, {
+      basePriceBetween(
+    int lower,
+    int upper, {
     bool includeLower = true,
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.between(
-        property: r'axis',
+        property: r'basePrice',
         lower: lower,
         includeLower: includeLower,
         upper: upper,
@@ -477,86 +468,301 @@ extension OrderItemModelQueryFilter
   }
 
   QueryBuilder<OrderItemModel, OrderItemModel, QAfterFilterCondition>
-      cylindricalIsNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'cylindrical',
-      ));
-    });
-  }
-
-  QueryBuilder<OrderItemModel, OrderItemModel, QAfterFilterCondition>
-      cylindricalIsNotNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'cylindrical',
-      ));
-    });
-  }
-
-  QueryBuilder<OrderItemModel, OrderItemModel, QAfterFilterCondition>
-      cylindricalEqualTo(
-    double? value, {
-    double epsilon = Query.epsilon,
-  }) {
+      coatingSurchargesEqualTo(int value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'cylindrical',
+        property: r'coatingSurcharges',
         value: value,
-        epsilon: epsilon,
       ));
     });
   }
 
   QueryBuilder<OrderItemModel, OrderItemModel, QAfterFilterCondition>
-      cylindricalGreaterThan(
-    double? value, {
+      coatingSurchargesGreaterThan(
+    int value, {
     bool include = false,
-    double epsilon = Query.epsilon,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
         include: include,
-        property: r'cylindrical',
+        property: r'coatingSurcharges',
         value: value,
-        epsilon: epsilon,
       ));
     });
   }
 
   QueryBuilder<OrderItemModel, OrderItemModel, QAfterFilterCondition>
-      cylindricalLessThan(
-    double? value, {
+      coatingSurchargesLessThan(
+    int value, {
     bool include = false,
-    double epsilon = Query.epsilon,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.lessThan(
         include: include,
-        property: r'cylindrical',
+        property: r'coatingSurcharges',
         value: value,
-        epsilon: epsilon,
       ));
     });
   }
 
   QueryBuilder<OrderItemModel, OrderItemModel, QAfterFilterCondition>
-      cylindricalBetween(
-    double? lower,
-    double? upper, {
+      coatingSurchargesBetween(
+    int lower,
+    int upper, {
     bool includeLower = true,
     bool includeUpper = true,
-    double epsilon = Query.epsilon,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.between(
-        property: r'cylindrical',
+        property: r'coatingSurcharges',
         lower: lower,
         includeLower: includeLower,
         upper: upper,
         includeUpper: includeUpper,
-        epsilon: epsilon,
       ));
+    });
+  }
+
+  QueryBuilder<OrderItemModel, OrderItemModel, QAfterFilterCondition>
+      coatingsIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'coatings',
+      ));
+    });
+  }
+
+  QueryBuilder<OrderItemModel, OrderItemModel, QAfterFilterCondition>
+      coatingsIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'coatings',
+      ));
+    });
+  }
+
+  QueryBuilder<OrderItemModel, OrderItemModel, QAfterFilterCondition>
+      coatingsElementEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'coatings',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<OrderItemModel, OrderItemModel, QAfterFilterCondition>
+      coatingsElementGreaterThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'coatings',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<OrderItemModel, OrderItemModel, QAfterFilterCondition>
+      coatingsElementLessThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'coatings',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<OrderItemModel, OrderItemModel, QAfterFilterCondition>
+      coatingsElementBetween(
+    String lower,
+    String upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'coatings',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<OrderItemModel, OrderItemModel, QAfterFilterCondition>
+      coatingsElementStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'coatings',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<OrderItemModel, OrderItemModel, QAfterFilterCondition>
+      coatingsElementEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'coatings',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<OrderItemModel, OrderItemModel, QAfterFilterCondition>
+      coatingsElementContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'coatings',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<OrderItemModel, OrderItemModel, QAfterFilterCondition>
+      coatingsElementMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'coatings',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<OrderItemModel, OrderItemModel, QAfterFilterCondition>
+      coatingsElementIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'coatings',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<OrderItemModel, OrderItemModel, QAfterFilterCondition>
+      coatingsElementIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'coatings',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<OrderItemModel, OrderItemModel, QAfterFilterCondition>
+      coatingsLengthEqualTo(int length) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'coatings',
+        length,
+        true,
+        length,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<OrderItemModel, OrderItemModel, QAfterFilterCondition>
+      coatingsIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'coatings',
+        0,
+        true,
+        0,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<OrderItemModel, OrderItemModel, QAfterFilterCondition>
+      coatingsIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'coatings',
+        0,
+        false,
+        999999,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<OrderItemModel, OrderItemModel, QAfterFilterCondition>
+      coatingsLengthLessThan(
+    int length, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'coatings',
+        0,
+        true,
+        length,
+        include,
+      );
+    });
+  }
+
+  QueryBuilder<OrderItemModel, OrderItemModel, QAfterFilterCondition>
+      coatingsLengthGreaterThan(
+    int length, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'coatings',
+        length,
+        include,
+        999999,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<OrderItemModel, OrderItemModel, QAfterFilterCondition>
+      coatingsLengthBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'coatings',
+        lower,
+        includeLower,
+        upper,
+        includeUpper,
+      );
     });
   }
 
@@ -752,6 +958,388 @@ extension OrderItemModelQueryFilter
   }
 
   QueryBuilder<OrderItemModel, OrderItemModel, QAfterFilterCondition>
+      leftAddIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'leftAdd',
+      ));
+    });
+  }
+
+  QueryBuilder<OrderItemModel, OrderItemModel, QAfterFilterCondition>
+      leftAddIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'leftAdd',
+      ));
+    });
+  }
+
+  QueryBuilder<OrderItemModel, OrderItemModel, QAfterFilterCondition>
+      leftAddEqualTo(
+    double? value, {
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'leftAdd',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<OrderItemModel, OrderItemModel, QAfterFilterCondition>
+      leftAddGreaterThan(
+    double? value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'leftAdd',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<OrderItemModel, OrderItemModel, QAfterFilterCondition>
+      leftAddLessThan(
+    double? value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'leftAdd',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<OrderItemModel, OrderItemModel, QAfterFilterCondition>
+      leftAddBetween(
+    double? lower,
+    double? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'leftAdd',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<OrderItemModel, OrderItemModel, QAfterFilterCondition>
+      leftAxisIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'leftAxis',
+      ));
+    });
+  }
+
+  QueryBuilder<OrderItemModel, OrderItemModel, QAfterFilterCondition>
+      leftAxisIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'leftAxis',
+      ));
+    });
+  }
+
+  QueryBuilder<OrderItemModel, OrderItemModel, QAfterFilterCondition>
+      leftAxisEqualTo(int? value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'leftAxis',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<OrderItemModel, OrderItemModel, QAfterFilterCondition>
+      leftAxisGreaterThan(
+    int? value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'leftAxis',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<OrderItemModel, OrderItemModel, QAfterFilterCondition>
+      leftAxisLessThan(
+    int? value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'leftAxis',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<OrderItemModel, OrderItemModel, QAfterFilterCondition>
+      leftAxisBetween(
+    int? lower,
+    int? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'leftAxis',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
+
+  QueryBuilder<OrderItemModel, OrderItemModel, QAfterFilterCondition>
+      leftCylinderIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'leftCylinder',
+      ));
+    });
+  }
+
+  QueryBuilder<OrderItemModel, OrderItemModel, QAfterFilterCondition>
+      leftCylinderIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'leftCylinder',
+      ));
+    });
+  }
+
+  QueryBuilder<OrderItemModel, OrderItemModel, QAfterFilterCondition>
+      leftCylinderEqualTo(
+    double? value, {
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'leftCylinder',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<OrderItemModel, OrderItemModel, QAfterFilterCondition>
+      leftCylinderGreaterThan(
+    double? value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'leftCylinder',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<OrderItemModel, OrderItemModel, QAfterFilterCondition>
+      leftCylinderLessThan(
+    double? value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'leftCylinder',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<OrderItemModel, OrderItemModel, QAfterFilterCondition>
+      leftCylinderBetween(
+    double? lower,
+    double? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'leftCylinder',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<OrderItemModel, OrderItemModel, QAfterFilterCondition>
+      leftSphereIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'leftSphere',
+      ));
+    });
+  }
+
+  QueryBuilder<OrderItemModel, OrderItemModel, QAfterFilterCondition>
+      leftSphereIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'leftSphere',
+      ));
+    });
+  }
+
+  QueryBuilder<OrderItemModel, OrderItemModel, QAfterFilterCondition>
+      leftSphereEqualTo(
+    double? value, {
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'leftSphere',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<OrderItemModel, OrderItemModel, QAfterFilterCondition>
+      leftSphereGreaterThan(
+    double? value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'leftSphere',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<OrderItemModel, OrderItemModel, QAfterFilterCondition>
+      leftSphereLessThan(
+    double? value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'leftSphere',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<OrderItemModel, OrderItemModel, QAfterFilterCondition>
+      leftSphereBetween(
+    double? lower,
+    double? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'leftSphere',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<OrderItemModel, OrderItemModel, QAfterFilterCondition>
+      materialSurchargeEqualTo(int value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'materialSurcharge',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<OrderItemModel, OrderItemModel, QAfterFilterCondition>
+      materialSurchargeGreaterThan(
+    int value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'materialSurcharge',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<OrderItemModel, OrderItemModel, QAfterFilterCondition>
+      materialSurchargeLessThan(
+    int value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'materialSurcharge',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<OrderItemModel, OrderItemModel, QAfterFilterCondition>
+      materialSurchargeBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'materialSurcharge',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
+
+  QueryBuilder<OrderItemModel, OrderItemModel, QAfterFilterCondition>
       materialTypeIsNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNull(
@@ -901,6 +1489,174 @@ extension OrderItemModelQueryFilter
       return query.addFilterCondition(FilterCondition.greaterThan(
         property: r'materialType',
         value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<OrderItemModel, OrderItemModel, QAfterFilterCondition>
+      pdLeftIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'pdLeft',
+      ));
+    });
+  }
+
+  QueryBuilder<OrderItemModel, OrderItemModel, QAfterFilterCondition>
+      pdLeftIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'pdLeft',
+      ));
+    });
+  }
+
+  QueryBuilder<OrderItemModel, OrderItemModel, QAfterFilterCondition>
+      pdLeftEqualTo(
+    double? value, {
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'pdLeft',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<OrderItemModel, OrderItemModel, QAfterFilterCondition>
+      pdLeftGreaterThan(
+    double? value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'pdLeft',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<OrderItemModel, OrderItemModel, QAfterFilterCondition>
+      pdLeftLessThan(
+    double? value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'pdLeft',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<OrderItemModel, OrderItemModel, QAfterFilterCondition>
+      pdLeftBetween(
+    double? lower,
+    double? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'pdLeft',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<OrderItemModel, OrderItemModel, QAfterFilterCondition>
+      pdRightIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'pdRight',
+      ));
+    });
+  }
+
+  QueryBuilder<OrderItemModel, OrderItemModel, QAfterFilterCondition>
+      pdRightIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'pdRight',
+      ));
+    });
+  }
+
+  QueryBuilder<OrderItemModel, OrderItemModel, QAfterFilterCondition>
+      pdRightEqualTo(
+    double? value, {
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'pdRight',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<OrderItemModel, OrderItemModel, QAfterFilterCondition>
+      pdRightGreaterThan(
+    double? value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'pdRight',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<OrderItemModel, OrderItemModel, QAfterFilterCondition>
+      pdRightLessThan(
+    double? value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'pdRight',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<OrderItemModel, OrderItemModel, QAfterFilterCondition>
+      pdRightBetween(
+    double? lower,
+    double? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'pdRight',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        epsilon: epsilon,
       ));
     });
   }
@@ -1234,31 +1990,31 @@ extension OrderItemModelQueryFilter
   }
 
   QueryBuilder<OrderItemModel, OrderItemModel, QAfterFilterCondition>
-      refractiveIndexIsNull() {
+      rightAddIsNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'refractiveIndex',
+        property: r'rightAdd',
       ));
     });
   }
 
   QueryBuilder<OrderItemModel, OrderItemModel, QAfterFilterCondition>
-      refractiveIndexIsNotNull() {
+      rightAddIsNotNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'refractiveIndex',
+        property: r'rightAdd',
       ));
     });
   }
 
   QueryBuilder<OrderItemModel, OrderItemModel, QAfterFilterCondition>
-      refractiveIndexEqualTo(
+      rightAddEqualTo(
     double? value, {
     double epsilon = Query.epsilon,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'refractiveIndex',
+        property: r'rightAdd',
         value: value,
         epsilon: epsilon,
       ));
@@ -1266,7 +2022,7 @@ extension OrderItemModelQueryFilter
   }
 
   QueryBuilder<OrderItemModel, OrderItemModel, QAfterFilterCondition>
-      refractiveIndexGreaterThan(
+      rightAddGreaterThan(
     double? value, {
     bool include = false,
     double epsilon = Query.epsilon,
@@ -1274,7 +2030,7 @@ extension OrderItemModelQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
         include: include,
-        property: r'refractiveIndex',
+        property: r'rightAdd',
         value: value,
         epsilon: epsilon,
       ));
@@ -1282,7 +2038,7 @@ extension OrderItemModelQueryFilter
   }
 
   QueryBuilder<OrderItemModel, OrderItemModel, QAfterFilterCondition>
-      refractiveIndexLessThan(
+      rightAddLessThan(
     double? value, {
     bool include = false,
     double epsilon = Query.epsilon,
@@ -1290,7 +2046,7 @@ extension OrderItemModelQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.lessThan(
         include: include,
-        property: r'refractiveIndex',
+        property: r'rightAdd',
         value: value,
         epsilon: epsilon,
       ));
@@ -1298,7 +2054,7 @@ extension OrderItemModelQueryFilter
   }
 
   QueryBuilder<OrderItemModel, OrderItemModel, QAfterFilterCondition>
-      refractiveIndexBetween(
+      rightAddBetween(
     double? lower,
     double? upper, {
     bool includeLower = true,
@@ -1307,7 +2063,7 @@ extension OrderItemModelQueryFilter
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.between(
-        property: r'refractiveIndex',
+        property: r'rightAdd',
         lower: lower,
         includeLower: includeLower,
         upper: upper,
@@ -1318,31 +2074,105 @@ extension OrderItemModelQueryFilter
   }
 
   QueryBuilder<OrderItemModel, OrderItemModel, QAfterFilterCondition>
-      sphericalIsNull() {
+      rightAxisIsNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'spherical',
+        property: r'rightAxis',
       ));
     });
   }
 
   QueryBuilder<OrderItemModel, OrderItemModel, QAfterFilterCondition>
-      sphericalIsNotNull() {
+      rightAxisIsNotNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'spherical',
+        property: r'rightAxis',
       ));
     });
   }
 
   QueryBuilder<OrderItemModel, OrderItemModel, QAfterFilterCondition>
-      sphericalEqualTo(
+      rightAxisEqualTo(int? value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'rightAxis',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<OrderItemModel, OrderItemModel, QAfterFilterCondition>
+      rightAxisGreaterThan(
+    int? value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'rightAxis',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<OrderItemModel, OrderItemModel, QAfterFilterCondition>
+      rightAxisLessThan(
+    int? value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'rightAxis',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<OrderItemModel, OrderItemModel, QAfterFilterCondition>
+      rightAxisBetween(
+    int? lower,
+    int? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'rightAxis',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
+
+  QueryBuilder<OrderItemModel, OrderItemModel, QAfterFilterCondition>
+      rightCylinderIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'rightCylinder',
+      ));
+    });
+  }
+
+  QueryBuilder<OrderItemModel, OrderItemModel, QAfterFilterCondition>
+      rightCylinderIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'rightCylinder',
+      ));
+    });
+  }
+
+  QueryBuilder<OrderItemModel, OrderItemModel, QAfterFilterCondition>
+      rightCylinderEqualTo(
     double? value, {
     double epsilon = Query.epsilon,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'spherical',
+        property: r'rightCylinder',
         value: value,
         epsilon: epsilon,
       ));
@@ -1350,7 +2180,7 @@ extension OrderItemModelQueryFilter
   }
 
   QueryBuilder<OrderItemModel, OrderItemModel, QAfterFilterCondition>
-      sphericalGreaterThan(
+      rightCylinderGreaterThan(
     double? value, {
     bool include = false,
     double epsilon = Query.epsilon,
@@ -1358,7 +2188,7 @@ extension OrderItemModelQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
         include: include,
-        property: r'spherical',
+        property: r'rightCylinder',
         value: value,
         epsilon: epsilon,
       ));
@@ -1366,7 +2196,7 @@ extension OrderItemModelQueryFilter
   }
 
   QueryBuilder<OrderItemModel, OrderItemModel, QAfterFilterCondition>
-      sphericalLessThan(
+      rightCylinderLessThan(
     double? value, {
     bool include = false,
     double epsilon = Query.epsilon,
@@ -1374,7 +2204,7 @@ extension OrderItemModelQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.lessThan(
         include: include,
-        property: r'spherical',
+        property: r'rightCylinder',
         value: value,
         epsilon: epsilon,
       ));
@@ -1382,7 +2212,7 @@ extension OrderItemModelQueryFilter
   }
 
   QueryBuilder<OrderItemModel, OrderItemModel, QAfterFilterCondition>
-      sphericalBetween(
+      rightCylinderBetween(
     double? lower,
     double? upper, {
     bool includeLower = true,
@@ -1391,7 +2221,91 @@ extension OrderItemModelQueryFilter
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.between(
-        property: r'spherical',
+        property: r'rightCylinder',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<OrderItemModel, OrderItemModel, QAfterFilterCondition>
+      rightSphereIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'rightSphere',
+      ));
+    });
+  }
+
+  QueryBuilder<OrderItemModel, OrderItemModel, QAfterFilterCondition>
+      rightSphereIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'rightSphere',
+      ));
+    });
+  }
+
+  QueryBuilder<OrderItemModel, OrderItemModel, QAfterFilterCondition>
+      rightSphereEqualTo(
+    double? value, {
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'rightSphere',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<OrderItemModel, OrderItemModel, QAfterFilterCondition>
+      rightSphereGreaterThan(
+    double? value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'rightSphere',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<OrderItemModel, OrderItemModel, QAfterFilterCondition>
+      rightSphereLessThan(
+    double? value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'rightSphere',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<OrderItemModel, OrderItemModel, QAfterFilterCondition>
+      rightSphereBetween(
+    double? lower,
+    double? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'rightSphere',
         lower: lower,
         includeLower: includeLower,
         upper: upper,
@@ -1480,42 +2394,30 @@ extension OrderItemModelQueryLinks
 
 extension OrderItemModelQuerySortBy
     on QueryBuilder<OrderItemModel, OrderItemModel, QSortBy> {
-  QueryBuilder<OrderItemModel, OrderItemModel, QAfterSortBy> sortByAddPower() {
+  QueryBuilder<OrderItemModel, OrderItemModel, QAfterSortBy> sortByBasePrice() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'addPower', Sort.asc);
+      return query.addSortBy(r'basePrice', Sort.asc);
     });
   }
 
   QueryBuilder<OrderItemModel, OrderItemModel, QAfterSortBy>
-      sortByAddPowerDesc() {
+      sortByBasePriceDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'addPower', Sort.desc);
-    });
-  }
-
-  QueryBuilder<OrderItemModel, OrderItemModel, QAfterSortBy> sortByAxis() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'axis', Sort.asc);
-    });
-  }
-
-  QueryBuilder<OrderItemModel, OrderItemModel, QAfterSortBy> sortByAxisDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'axis', Sort.desc);
+      return query.addSortBy(r'basePrice', Sort.desc);
     });
   }
 
   QueryBuilder<OrderItemModel, OrderItemModel, QAfterSortBy>
-      sortByCylindrical() {
+      sortByCoatingSurcharges() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'cylindrical', Sort.asc);
+      return query.addSortBy(r'coatingSurcharges', Sort.asc);
     });
   }
 
   QueryBuilder<OrderItemModel, OrderItemModel, QAfterSortBy>
-      sortByCylindricalDesc() {
+      sortByCoatingSurchargesDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'cylindrical', Sort.desc);
+      return query.addSortBy(r'coatingSurcharges', Sort.desc);
     });
   }
 
@@ -1532,6 +2434,74 @@ extension OrderItemModelQuerySortBy
     });
   }
 
+  QueryBuilder<OrderItemModel, OrderItemModel, QAfterSortBy> sortByLeftAdd() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'leftAdd', Sort.asc);
+    });
+  }
+
+  QueryBuilder<OrderItemModel, OrderItemModel, QAfterSortBy>
+      sortByLeftAddDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'leftAdd', Sort.desc);
+    });
+  }
+
+  QueryBuilder<OrderItemModel, OrderItemModel, QAfterSortBy> sortByLeftAxis() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'leftAxis', Sort.asc);
+    });
+  }
+
+  QueryBuilder<OrderItemModel, OrderItemModel, QAfterSortBy>
+      sortByLeftAxisDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'leftAxis', Sort.desc);
+    });
+  }
+
+  QueryBuilder<OrderItemModel, OrderItemModel, QAfterSortBy>
+      sortByLeftCylinder() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'leftCylinder', Sort.asc);
+    });
+  }
+
+  QueryBuilder<OrderItemModel, OrderItemModel, QAfterSortBy>
+      sortByLeftCylinderDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'leftCylinder', Sort.desc);
+    });
+  }
+
+  QueryBuilder<OrderItemModel, OrderItemModel, QAfterSortBy>
+      sortByLeftSphere() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'leftSphere', Sort.asc);
+    });
+  }
+
+  QueryBuilder<OrderItemModel, OrderItemModel, QAfterSortBy>
+      sortByLeftSphereDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'leftSphere', Sort.desc);
+    });
+  }
+
+  QueryBuilder<OrderItemModel, OrderItemModel, QAfterSortBy>
+      sortByMaterialSurcharge() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'materialSurcharge', Sort.asc);
+    });
+  }
+
+  QueryBuilder<OrderItemModel, OrderItemModel, QAfterSortBy>
+      sortByMaterialSurchargeDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'materialSurcharge', Sort.desc);
+    });
+  }
+
   QueryBuilder<OrderItemModel, OrderItemModel, QAfterSortBy>
       sortByMaterialType() {
     return QueryBuilder.apply(this, (query) {
@@ -1543,6 +2513,32 @@ extension OrderItemModelQuerySortBy
       sortByMaterialTypeDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'materialType', Sort.desc);
+    });
+  }
+
+  QueryBuilder<OrderItemModel, OrderItemModel, QAfterSortBy> sortByPdLeft() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'pdLeft', Sort.asc);
+    });
+  }
+
+  QueryBuilder<OrderItemModel, OrderItemModel, QAfterSortBy>
+      sortByPdLeftDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'pdLeft', Sort.desc);
+    });
+  }
+
+  QueryBuilder<OrderItemModel, OrderItemModel, QAfterSortBy> sortByPdRight() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'pdRight', Sort.asc);
+    });
+  }
+
+  QueryBuilder<OrderItemModel, OrderItemModel, QAfterSortBy>
+      sortByPdRightDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'pdRight', Sort.desc);
     });
   }
 
@@ -1587,30 +2583,57 @@ extension OrderItemModelQuerySortBy
     });
   }
 
-  QueryBuilder<OrderItemModel, OrderItemModel, QAfterSortBy>
-      sortByRefractiveIndex() {
+  QueryBuilder<OrderItemModel, OrderItemModel, QAfterSortBy> sortByRightAdd() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'refractiveIndex', Sort.asc);
+      return query.addSortBy(r'rightAdd', Sort.asc);
     });
   }
 
   QueryBuilder<OrderItemModel, OrderItemModel, QAfterSortBy>
-      sortByRefractiveIndexDesc() {
+      sortByRightAddDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'refractiveIndex', Sort.desc);
+      return query.addSortBy(r'rightAdd', Sort.desc);
     });
   }
 
-  QueryBuilder<OrderItemModel, OrderItemModel, QAfterSortBy> sortBySpherical() {
+  QueryBuilder<OrderItemModel, OrderItemModel, QAfterSortBy> sortByRightAxis() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'spherical', Sort.asc);
+      return query.addSortBy(r'rightAxis', Sort.asc);
     });
   }
 
   QueryBuilder<OrderItemModel, OrderItemModel, QAfterSortBy>
-      sortBySphericalDesc() {
+      sortByRightAxisDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'spherical', Sort.desc);
+      return query.addSortBy(r'rightAxis', Sort.desc);
+    });
+  }
+
+  QueryBuilder<OrderItemModel, OrderItemModel, QAfterSortBy>
+      sortByRightCylinder() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'rightCylinder', Sort.asc);
+    });
+  }
+
+  QueryBuilder<OrderItemModel, OrderItemModel, QAfterSortBy>
+      sortByRightCylinderDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'rightCylinder', Sort.desc);
+    });
+  }
+
+  QueryBuilder<OrderItemModel, OrderItemModel, QAfterSortBy>
+      sortByRightSphere() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'rightSphere', Sort.asc);
+    });
+  }
+
+  QueryBuilder<OrderItemModel, OrderItemModel, QAfterSortBy>
+      sortByRightSphereDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'rightSphere', Sort.desc);
     });
   }
 
@@ -1630,42 +2653,30 @@ extension OrderItemModelQuerySortBy
 
 extension OrderItemModelQuerySortThenBy
     on QueryBuilder<OrderItemModel, OrderItemModel, QSortThenBy> {
-  QueryBuilder<OrderItemModel, OrderItemModel, QAfterSortBy> thenByAddPower() {
+  QueryBuilder<OrderItemModel, OrderItemModel, QAfterSortBy> thenByBasePrice() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'addPower', Sort.asc);
+      return query.addSortBy(r'basePrice', Sort.asc);
     });
   }
 
   QueryBuilder<OrderItemModel, OrderItemModel, QAfterSortBy>
-      thenByAddPowerDesc() {
+      thenByBasePriceDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'addPower', Sort.desc);
-    });
-  }
-
-  QueryBuilder<OrderItemModel, OrderItemModel, QAfterSortBy> thenByAxis() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'axis', Sort.asc);
-    });
-  }
-
-  QueryBuilder<OrderItemModel, OrderItemModel, QAfterSortBy> thenByAxisDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'axis', Sort.desc);
+      return query.addSortBy(r'basePrice', Sort.desc);
     });
   }
 
   QueryBuilder<OrderItemModel, OrderItemModel, QAfterSortBy>
-      thenByCylindrical() {
+      thenByCoatingSurcharges() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'cylindrical', Sort.asc);
+      return query.addSortBy(r'coatingSurcharges', Sort.asc);
     });
   }
 
   QueryBuilder<OrderItemModel, OrderItemModel, QAfterSortBy>
-      thenByCylindricalDesc() {
+      thenByCoatingSurchargesDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'cylindrical', Sort.desc);
+      return query.addSortBy(r'coatingSurcharges', Sort.desc);
     });
   }
 
@@ -1694,6 +2705,74 @@ extension OrderItemModelQuerySortThenBy
     });
   }
 
+  QueryBuilder<OrderItemModel, OrderItemModel, QAfterSortBy> thenByLeftAdd() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'leftAdd', Sort.asc);
+    });
+  }
+
+  QueryBuilder<OrderItemModel, OrderItemModel, QAfterSortBy>
+      thenByLeftAddDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'leftAdd', Sort.desc);
+    });
+  }
+
+  QueryBuilder<OrderItemModel, OrderItemModel, QAfterSortBy> thenByLeftAxis() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'leftAxis', Sort.asc);
+    });
+  }
+
+  QueryBuilder<OrderItemModel, OrderItemModel, QAfterSortBy>
+      thenByLeftAxisDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'leftAxis', Sort.desc);
+    });
+  }
+
+  QueryBuilder<OrderItemModel, OrderItemModel, QAfterSortBy>
+      thenByLeftCylinder() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'leftCylinder', Sort.asc);
+    });
+  }
+
+  QueryBuilder<OrderItemModel, OrderItemModel, QAfterSortBy>
+      thenByLeftCylinderDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'leftCylinder', Sort.desc);
+    });
+  }
+
+  QueryBuilder<OrderItemModel, OrderItemModel, QAfterSortBy>
+      thenByLeftSphere() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'leftSphere', Sort.asc);
+    });
+  }
+
+  QueryBuilder<OrderItemModel, OrderItemModel, QAfterSortBy>
+      thenByLeftSphereDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'leftSphere', Sort.desc);
+    });
+  }
+
+  QueryBuilder<OrderItemModel, OrderItemModel, QAfterSortBy>
+      thenByMaterialSurcharge() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'materialSurcharge', Sort.asc);
+    });
+  }
+
+  QueryBuilder<OrderItemModel, OrderItemModel, QAfterSortBy>
+      thenByMaterialSurchargeDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'materialSurcharge', Sort.desc);
+    });
+  }
+
   QueryBuilder<OrderItemModel, OrderItemModel, QAfterSortBy>
       thenByMaterialType() {
     return QueryBuilder.apply(this, (query) {
@@ -1705,6 +2784,32 @@ extension OrderItemModelQuerySortThenBy
       thenByMaterialTypeDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'materialType', Sort.desc);
+    });
+  }
+
+  QueryBuilder<OrderItemModel, OrderItemModel, QAfterSortBy> thenByPdLeft() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'pdLeft', Sort.asc);
+    });
+  }
+
+  QueryBuilder<OrderItemModel, OrderItemModel, QAfterSortBy>
+      thenByPdLeftDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'pdLeft', Sort.desc);
+    });
+  }
+
+  QueryBuilder<OrderItemModel, OrderItemModel, QAfterSortBy> thenByPdRight() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'pdRight', Sort.asc);
+    });
+  }
+
+  QueryBuilder<OrderItemModel, OrderItemModel, QAfterSortBy>
+      thenByPdRightDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'pdRight', Sort.desc);
     });
   }
 
@@ -1749,30 +2854,57 @@ extension OrderItemModelQuerySortThenBy
     });
   }
 
-  QueryBuilder<OrderItemModel, OrderItemModel, QAfterSortBy>
-      thenByRefractiveIndex() {
+  QueryBuilder<OrderItemModel, OrderItemModel, QAfterSortBy> thenByRightAdd() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'refractiveIndex', Sort.asc);
+      return query.addSortBy(r'rightAdd', Sort.asc);
     });
   }
 
   QueryBuilder<OrderItemModel, OrderItemModel, QAfterSortBy>
-      thenByRefractiveIndexDesc() {
+      thenByRightAddDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'refractiveIndex', Sort.desc);
+      return query.addSortBy(r'rightAdd', Sort.desc);
     });
   }
 
-  QueryBuilder<OrderItemModel, OrderItemModel, QAfterSortBy> thenBySpherical() {
+  QueryBuilder<OrderItemModel, OrderItemModel, QAfterSortBy> thenByRightAxis() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'spherical', Sort.asc);
+      return query.addSortBy(r'rightAxis', Sort.asc);
     });
   }
 
   QueryBuilder<OrderItemModel, OrderItemModel, QAfterSortBy>
-      thenBySphericalDesc() {
+      thenByRightAxisDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'spherical', Sort.desc);
+      return query.addSortBy(r'rightAxis', Sort.desc);
+    });
+  }
+
+  QueryBuilder<OrderItemModel, OrderItemModel, QAfterSortBy>
+      thenByRightCylinder() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'rightCylinder', Sort.asc);
+    });
+  }
+
+  QueryBuilder<OrderItemModel, OrderItemModel, QAfterSortBy>
+      thenByRightCylinderDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'rightCylinder', Sort.desc);
+    });
+  }
+
+  QueryBuilder<OrderItemModel, OrderItemModel, QAfterSortBy>
+      thenByRightSphere() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'rightSphere', Sort.asc);
+    });
+  }
+
+  QueryBuilder<OrderItemModel, OrderItemModel, QAfterSortBy>
+      thenByRightSphereDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'rightSphere', Sort.desc);
     });
   }
 
@@ -1792,22 +2924,23 @@ extension OrderItemModelQuerySortThenBy
 
 extension OrderItemModelQueryWhereDistinct
     on QueryBuilder<OrderItemModel, OrderItemModel, QDistinct> {
-  QueryBuilder<OrderItemModel, OrderItemModel, QDistinct> distinctByAddPower() {
+  QueryBuilder<OrderItemModel, OrderItemModel, QDistinct>
+      distinctByBasePrice() {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'addPower');
-    });
-  }
-
-  QueryBuilder<OrderItemModel, OrderItemModel, QDistinct> distinctByAxis() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'axis');
+      return query.addDistinctBy(r'basePrice');
     });
   }
 
   QueryBuilder<OrderItemModel, OrderItemModel, QDistinct>
-      distinctByCylindrical() {
+      distinctByCoatingSurcharges() {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'cylindrical');
+      return query.addDistinctBy(r'coatingSurcharges');
+    });
+  }
+
+  QueryBuilder<OrderItemModel, OrderItemModel, QDistinct> distinctByCoatings() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'coatings');
     });
   }
 
@@ -1818,10 +2951,55 @@ extension OrderItemModelQueryWhereDistinct
     });
   }
 
+  QueryBuilder<OrderItemModel, OrderItemModel, QDistinct> distinctByLeftAdd() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'leftAdd');
+    });
+  }
+
+  QueryBuilder<OrderItemModel, OrderItemModel, QDistinct> distinctByLeftAxis() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'leftAxis');
+    });
+  }
+
+  QueryBuilder<OrderItemModel, OrderItemModel, QDistinct>
+      distinctByLeftCylinder() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'leftCylinder');
+    });
+  }
+
+  QueryBuilder<OrderItemModel, OrderItemModel, QDistinct>
+      distinctByLeftSphere() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'leftSphere');
+    });
+  }
+
+  QueryBuilder<OrderItemModel, OrderItemModel, QDistinct>
+      distinctByMaterialSurcharge() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'materialSurcharge');
+    });
+  }
+
   QueryBuilder<OrderItemModel, OrderItemModel, QDistinct>
       distinctByMaterialType({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'materialType', caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<OrderItemModel, OrderItemModel, QDistinct> distinctByPdLeft() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'pdLeft');
+    });
+  }
+
+  QueryBuilder<OrderItemModel, OrderItemModel, QDistinct> distinctByPdRight() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'pdRight');
     });
   }
 
@@ -1845,17 +3023,30 @@ extension OrderItemModelQueryWhereDistinct
     });
   }
 
-  QueryBuilder<OrderItemModel, OrderItemModel, QDistinct>
-      distinctByRefractiveIndex() {
+  QueryBuilder<OrderItemModel, OrderItemModel, QDistinct> distinctByRightAdd() {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'refractiveIndex');
+      return query.addDistinctBy(r'rightAdd');
     });
   }
 
   QueryBuilder<OrderItemModel, OrderItemModel, QDistinct>
-      distinctBySpherical() {
+      distinctByRightAxis() {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'spherical');
+      return query.addDistinctBy(r'rightAxis');
+    });
+  }
+
+  QueryBuilder<OrderItemModel, OrderItemModel, QDistinct>
+      distinctByRightCylinder() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'rightCylinder');
+    });
+  }
+
+  QueryBuilder<OrderItemModel, OrderItemModel, QDistinct>
+      distinctByRightSphere() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'rightSphere');
     });
   }
 
@@ -1875,22 +3066,23 @@ extension OrderItemModelQueryProperty
     });
   }
 
-  QueryBuilder<OrderItemModel, double?, QQueryOperations> addPowerProperty() {
+  QueryBuilder<OrderItemModel, int, QQueryOperations> basePriceProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'addPower');
+      return query.addPropertyName(r'basePrice');
     });
   }
 
-  QueryBuilder<OrderItemModel, int?, QQueryOperations> axisProperty() {
+  QueryBuilder<OrderItemModel, int, QQueryOperations>
+      coatingSurchargesProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'axis');
+      return query.addPropertyName(r'coatingSurcharges');
     });
   }
 
-  QueryBuilder<OrderItemModel, double?, QQueryOperations>
-      cylindricalProperty() {
+  QueryBuilder<OrderItemModel, List<String>?, QQueryOperations>
+      coatingsProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'cylindrical');
+      return query.addPropertyName(r'coatings');
     });
   }
 
@@ -1901,10 +3093,54 @@ extension OrderItemModelQueryProperty
     });
   }
 
+  QueryBuilder<OrderItemModel, double?, QQueryOperations> leftAddProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'leftAdd');
+    });
+  }
+
+  QueryBuilder<OrderItemModel, int?, QQueryOperations> leftAxisProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'leftAxis');
+    });
+  }
+
+  QueryBuilder<OrderItemModel, double?, QQueryOperations>
+      leftCylinderProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'leftCylinder');
+    });
+  }
+
+  QueryBuilder<OrderItemModel, double?, QQueryOperations> leftSphereProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'leftSphere');
+    });
+  }
+
+  QueryBuilder<OrderItemModel, int, QQueryOperations>
+      materialSurchargeProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'materialSurcharge');
+    });
+  }
+
   QueryBuilder<OrderItemModel, LensMaterialTypeModel?, QQueryOperations>
       materialTypeProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'materialType');
+    });
+  }
+
+  QueryBuilder<OrderItemModel, double?, QQueryOperations> pdLeftProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'pdLeft');
+    });
+  }
+
+  QueryBuilder<OrderItemModel, double?, QQueryOperations> pdRightProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'pdRight');
     });
   }
 
@@ -1926,16 +3162,29 @@ extension OrderItemModelQueryProperty
     });
   }
 
-  QueryBuilder<OrderItemModel, double?, QQueryOperations>
-      refractiveIndexProperty() {
+  QueryBuilder<OrderItemModel, double?, QQueryOperations> rightAddProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'refractiveIndex');
+      return query.addPropertyName(r'rightAdd');
     });
   }
 
-  QueryBuilder<OrderItemModel, double?, QQueryOperations> sphericalProperty() {
+  QueryBuilder<OrderItemModel, int?, QQueryOperations> rightAxisProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'spherical');
+      return query.addPropertyName(r'rightAxis');
+    });
+  }
+
+  QueryBuilder<OrderItemModel, double?, QQueryOperations>
+      rightCylinderProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'rightCylinder');
+    });
+  }
+
+  QueryBuilder<OrderItemModel, double?, QQueryOperations>
+      rightSphereProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'rightSphere');
     });
   }
 

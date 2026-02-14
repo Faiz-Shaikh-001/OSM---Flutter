@@ -16,9 +16,11 @@ class ProductSearchBar extends StatelessWidget {
           border: OutlineInputBorder(),
         ),
         onChanged: (value) {
-          context.read<ProductSearchBloc>().add(
-            ProductSearchQueryChanged(value),
-          );
+          if (value.isEmpty || value.length >= 2) {
+            context.read<ProductSearchBloc>().add(
+              ProductSearchQueryChanged(value),
+            );
+          }
         },
       ),
     );

@@ -100,8 +100,8 @@ ProductSearchResult _mapLens(Lens l) {
   return ProductSearchResult(
     id: l.id.toString(),
     sku: l.sku,
-    name: l.productName,
-    code: l.productCode!,
+    name: "${l.companyName} ${l.productName}",
+    code: l.productCode ?? 'N/A',
     type: ProductSearchType.lens,
     price: l.salesPrice,
     raw: l,
