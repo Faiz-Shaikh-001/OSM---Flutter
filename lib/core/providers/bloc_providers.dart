@@ -16,6 +16,7 @@ import 'package:osm/features/dashboard/domain/repositories/activity_repository.d
 import 'package:osm/features/dashboard/domain/usecases/save_activity.dart';
 import 'package:osm/features/dashboard/domain/usecases/watch_recent_activities.dart';
 import 'package:osm/features/dashboard/presentation/blocs/activity/activity_bloc.dart';
+import 'package:osm/features/dashboard/presentation/blocs/global_search/global_search_bloc.dart';
 import 'package:osm/features/inventory/domain/repositories/accessory_repository.dart';
 import 'package:osm/features/inventory/domain/repositories/frame_repository.dart';
 import 'package:osm/features/inventory/domain/repositories/lens_repository.dart';
@@ -83,6 +84,8 @@ List<BlocProvider> buildBlocProviders(BuildContext context) {
         watchRecentActivities: WatchRecentActivities(activityReposistory),
       ),
     ),
+
+    BlocProvider<GlobalSearchBloc>(create: (_) => GlobalSearchBloc()),
 
     BlocProvider<StoreLocationBloc>(
       create: (_) => StoreLocationBloc(

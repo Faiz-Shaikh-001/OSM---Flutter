@@ -321,7 +321,7 @@ class _OrdersListView extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        'Total: ${order.totalAmount.toString()}',
+                        'Total: ₹${order.totalAmount.toString()}',
                         style: const TextStyle(fontWeight: FontWeight.bold),
                       ),
                       IconButton(

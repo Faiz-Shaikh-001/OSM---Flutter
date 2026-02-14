@@ -1,6 +1,8 @@
 import 'package:equatable/equatable.dart';
 import 'package:osm/core/value_objects/money.dart';
 import 'package:osm/features/inventory/domain/entities/lens/lens_type.dart';
+import 'package:osm/features/prescription/domain/value_objects/eye_power.dart';
+import 'package:osm/features/prescription/domain/value_objects/pupillary_distance.dart';
 
 import 'order_item_type.dart';
 
@@ -12,12 +14,16 @@ class OrderItem extends Equatable {
   final int quantity;
   final Money unitPrice;
 
-  final double? spherical;
-  final double? cylindrical;
-  final int? axis;
-  final double? addPower;
+  final EyePower? rightEye;
+  final EyePower? leftEye;
+  final PupillaryDistance? pd;
+
   final LensMaterialType? materialType;
-  final double? refractiveIndex;
+  final List<String>? coatings;
+
+  final Money basePrice;
+  final double materialSurcharge;
+  final double coatingSurcharges;
 
   const OrderItem({
     required this.productID,
@@ -26,17 +32,30 @@ class OrderItem extends Equatable {
     required this.type,
     required this.quantity,
     required this.unitPrice,
-    this.spherical,
-    this.cylindrical,
-    this.axis,
-    this.addPower,
+    required this.basePrice,
+    this.leftEye,
+    this.rightEye,
+    this.pd,
     this.materialType,
-    this.refractiveIndex,
+    this.coatings = const [],
+    this.coatingSurcharges = 0.0,
+    this.materialSurcharge = 0.0,
   });
 
   Money get total => Money(unitPrice.value * quantity);
 
-  OrderItem copyWith({int? quantity, Money? unitPrice}) {
+  OrderItem copyWith({
+    int? quantity,
+    Money? unitPrice,
+    EyePower? leftEye,
+    EyePower? rightEye,
+    PupillaryDistance? pd,
+    LensMaterialType? materialType,
+    List<String>? coatings,
+    Money? basePrice,
+    double? coatingSurcharges,
+    double? materialSurcharge,
+  }) {
     return OrderItem(
       productID: productID,
       productName: productName,
@@ -44,12 +63,14 @@ class OrderItem extends Equatable {
       type: type,
       quantity: quantity ?? this.quantity,
       unitPrice: unitPrice ?? this.unitPrice,
-      spherical: spherical,
-      cylindrical: cylindrical,
-      axis: axis,
-      addPower: addPower,
+      leftEye: leftEye,
+      rightEye: rightEye,
+      pd: pd,
       materialType: materialType,
-      refractiveIndex: refractiveIndex,
+      coatings: coatings,
+      basePrice: basePrice ?? Money(0),
+      coatingSurcharges: coatingSurcharges ?? this.coatingSurcharges,
+      materialSurcharge: materialSurcharge ?? this.materialSurcharge,
     );
   }
 
@@ -61,11 +82,12 @@ class OrderItem extends Equatable {
     type,
     quantity,
     unitPrice,
-    spherical,
-    cylindrical,
-    axis,
-    addPower,
+    leftEye,
+    rightEye,
+    pd,
     materialType,
-    refractiveIndex,
+    coatings,
+    coatingSurcharges,
+    materialSurcharge
   ];
 }

@@ -1,5 +1,3 @@
-// ignore_for_file: deprecated_member_use
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -12,6 +10,7 @@ import 'package:osm/features/dashboard/data/sources_impl/accessory_search_source
 import 'package:osm/features/dashboard/data/sources_impl/frame_search_source_impl.dart';
 import 'package:osm/features/dashboard/data/sources_impl/lens_search_source_impl.dart';
 import 'package:osm/features/orders/domain/entities/order_item.dart';
+import 'package:osm/features/orders/domain/entities/order_item_type.dart';
 import 'package:osm/features/orders/presentation/blocs/order_draft/order_draft_bloc.dart';
 import 'package:osm/features/orders/presentation/blocs/product_search/product_search_bloc.dart';
 import 'package:osm/features/orders/presentation/screens/product_step/product_search_screen.dart';
@@ -130,7 +129,7 @@ class ProductStep extends StatelessWidget {
             Container(
               padding: EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: Colors.blue.withOpacity(0.1),
+                color: Colors.blue.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: Icon(
@@ -193,9 +192,39 @@ class ProductStep extends StatelessWidget {
       itemCount: items.length,
       itemBuilder: (context, index) {
         final item = items[index];
-        final title = item.productName;
-        final subtitle = "Qty: ${item.quantity}";
 
+        Widget subtitle;
+
+        if (item.type == OrderItemType.lens &&
+            (item.materialType != null || (item.coatings?.isNotEmpty ?? false))) {
+          subtitle = Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (item.materialType != null)
+                Padding(
+                  padding: const EdgeInsets.only(top: 2, bottom: 2),
+                  child: Text(
+                    "Material: ${item.materialType!.name.toUpperCase()}",
+                    style: TextStyle(color: Colors.blueGrey[700], fontSize: 13),
+                  ),
+                ),
+              if (item.coatings?.isNotEmpty ?? false)
+                Text(
+                  "Coatings: ${item.coatings!.join(', ')}",
+                  style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                ),
+              const SizedBox(height: 4),
+              Text(
+                "Qty: ${item.quantity}",
+                style: const TextStyle(fontWeight: FontWeight.w500),
+              ),
+            ],
+          );
+        } else {
+          subtitle = Text("Qty: ${item.quantity}");
+        }
+
+        
         return Dismissible(
           key: Key(item.hashCode.toString()),
           direction: DismissDirection.endToStart,
@@ -227,16 +256,25 @@ class ProductStep extends StatelessWidget {
                 width: 48,
                 height: 48,
                 decoration: BoxDecoration(
-                  color: Colors.grey[100],
+                  color: item.type == OrderItemType.lens
+                      ? Colors.blue[50]
+                      : Colors.grey[100],
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: Icon(CupertinoIcons.eyeglasses, color: Colors.grey),
+                child: Icon(
+                  item.type == OrderItemType.lens
+                      ? CupertinoIcons.sparkles
+                      : CupertinoIcons.eyeglasses,
+                  color: item.type == OrderItemType.lens
+                      ? Colors.blue
+                      : Colors.grey,
+                ),
               ),
               title: Text(
-                title,
+                item.productName,
                 style: const TextStyle(fontWeight: FontWeight.bold),
               ),
-              subtitle: Text(subtitle),
+              subtitle: subtitle, // Using our new conditional widget
               trailing: QuantityCapsule(
                 quantity: item.quantity,
                 onIncrement: () {
@@ -264,7 +302,7 @@ class ProductStep extends StatelessWidget {
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, -5),
           ),
@@ -394,7 +432,7 @@ class _ActionCard extends StatelessWidget {
           border: Border.all(color: Colors.grey.shade200),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.03),
+              color: Colors.black.withValues(alpha: 0.03),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),

@@ -237,8 +237,6 @@ class _SelectedCustomerSection extends StatelessWidget {
                     },
                     onNext: onNext,
                   ),
-
-                  // child: _buildProfileCard(context, customer),
                 ),
               ),
             ),

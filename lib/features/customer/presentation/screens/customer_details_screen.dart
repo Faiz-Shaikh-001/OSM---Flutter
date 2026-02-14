@@ -1,6 +1,7 @@
 import 'package:flex_color_picker/flex_color_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:intl/intl.dart';
 import 'package:osm/core/value_objects/id.dart';
 import 'package:osm/core/value_objects/money.dart';
 import 'package:osm/features/customer/domain/entities/customer.dart';
@@ -8,6 +9,8 @@ import 'package:osm/features/customer/presentation/bloc/customer/customer_bloc.d
 import 'package:osm/features/customer/presentation/bloc/customer_details/customer_details_bloc.dart';
 import 'package:osm/features/customer/presentation/screens/add_new_customer_form.dart';
 import 'package:osm/features/customer/services/build_customer_image.dart';
+import 'package:osm/features/orders/presentation/blocs/order_submission/order_submission_bloc.dart';
+import 'package:osm/features/orders/presentation/screens/order_detail_screen/order_detail_screen.dart';
 import 'package:osm/features/prescription/domain/repositories/prescription_repository.dart';
 import 'package:osm/features/prescription/domain/usecases/add_prescription.dart';
 import 'package:osm/features/prescription/presentation/bloc/add_prescription/add_prescription_bloc.dart';
@@ -139,7 +142,8 @@ class _CustomerDetailsScreenState extends State<CustomerDetailsScreen> {
                           leading: const Icon(Icons.phone),
                           title: Text(customer.primaryPhoneNumber),
                         ),
-                        if (customer.secondaryPhoneNumber != null)
+                        if (customer.secondaryPhoneNumber != null &&
+                            customer.secondaryPhoneNumber != '')
                           ListTile(
                             leading: const Icon(Icons.settings_phone),
                             title: Text(customer.secondaryPhoneNumber!),
@@ -171,7 +175,7 @@ class _CustomerDetailsScreenState extends State<CustomerDetailsScreen> {
                           ListTile(
                             leading: const Icon(Icons.location_city),
                             title: Text(
-                              "${customer.city!}, ${customer.state!}, ${customer.country!}",
+                              "${customer.city!}, ${customer.state ?? ""}, ${customer.country ?? ""}",
                             ),
                           ),
                       ],
@@ -215,9 +219,7 @@ class _CustomerDetailsScreenState extends State<CustomerDetailsScreen> {
                         ],
                       ),
 
-                    PrescriptionTimelineSection(
-                      customerId: customer.id!,
-                    ),
+                    PrescriptionTimelineSection(customerId: customer.id!),
 
                     _InfoCard(
                       title: 'Orders',
@@ -225,9 +227,44 @@ class _CustomerDetailsScreenState extends State<CustomerDetailsScreen> {
                           ? const [ListTile(title: Text('No orders yet'))]
                           : orders.map((o) {
                               return ListTile(
+                                onTap: () {
+                                  final submissionBloc = context
+                                      .read<OrderSubmissionBloc>();
+
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) => BlocProvider.value(
+                                        value: submissionBloc,
+                                        child: OrderDetailsScreen(order: o),
+                                      ),
+                                    ),
+                                  );
+                                },
                                 leading: const Icon(Icons.shopping_bag),
-                                title: Text('Order #${o.id}'),
-                                subtitle: Text('₹${o.totalAmount}'),
+                                trailing: const Icon(
+                                  Icons.chevron_right_rounded,
+                                ),
+                                title: Text('Order #${o.id} • ₹${o.totalAmount.toString()}'),
+                                subtitle: Row(
+                                  children: [
+                                    Icon(
+                                      Icons.calendar_today,
+                                      size: 14,
+                                      color: Colors.grey[600],
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      DateFormat(
+                                        'MMM d, y • h:mm a',
+                                      ).format(o.createdAt),
+                                      style: TextStyle(
+                                        color: Colors.grey[600],
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               );
                             }).toList(),
                     ),
@@ -259,7 +296,9 @@ class _CustomerDetailsScreenState extends State<CustomerDetailsScreen> {
               MaterialPageRoute(
                 builder: (_) => BlocProvider(
                   create: (context) => AddPrescriptionBloc(
-                    addPrescription: AddPrescription(context.read<PrescriptionRepository>()),
+                    addPrescription: AddPrescription(
+                      context.read<PrescriptionRepository>(),
+                    ),
                   ),
                   child: AddPrescriptionScreen(customerId: widget.customerId),
                 ),
