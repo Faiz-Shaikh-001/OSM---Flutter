@@ -21,12 +21,21 @@ class DashboardRecentActivitiesSection extends StatelessWidget {
         const SizedBox(height: 10),
 
         if (activities.isEmpty)
-          const Padding(
-            padding: EdgeInsets.all(20),
+          Padding(
+            padding: const EdgeInsets.all(
+              40,
+            ), // Increased padding for a better look
             child: Center(
-              child: Text(
-                "No recent activities yet.",
-                style: TextStyle(color: Colors.grey),
+              child: Column(
+                children: [
+                  Icon(Icons.history, color: Colors.grey[300], size: 48),
+                  const SizedBox(height: 12),
+                  const Text(
+                    "Your recent store activity will appear here.",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(color: Colors.grey),
+                  ),
+                ],
               ),
             ),
           )

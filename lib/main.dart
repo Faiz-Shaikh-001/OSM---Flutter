@@ -53,11 +53,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return const MaterialApp(
       debugShowCheckedModeBanner: false,
-      // home: CustomerListScreen(),
       home: DashboardScreen(),
-      // home: InventoryScreen(),
-      // home: CreateOrderFlowScreen()
-      // home: OrderListScreen(),
     );
   }
 }

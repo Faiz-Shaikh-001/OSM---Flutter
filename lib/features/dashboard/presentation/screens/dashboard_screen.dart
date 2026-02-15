@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:osm/features/customer/presentation/screens/customer_list_screen.dart';
 import 'package:osm/features/dashboard/presentation/screens/dashboard_body.dart';
 import 'package:osm/features/inventory/presentation/screens/inventory_screen.dart';
+import 'package:osm/features/orders/presentation/screens/add_order/create_order_flow_screen.dart';
 import 'package:osm/features/orders/presentation/screens/order_list/order_list_screen.dart';
 import 'package:osm/features/settings/presentation/screens/settings_screen.dart';
 
@@ -34,13 +35,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
       appBar: _selectedIndex == 2 ? _buildAppBar(context) : null,
       body: Stack(
         children: [
-          _selectedIndex == 2 ? BuildDashboardBody() : _pages[_selectedIndex],
+          Positioned.fill(
+            child: _selectedIndex == 2
+                ? BuildDashboardBody()
+                : _pages[_selectedIndex],
+          ),
           if (_isDialOpen && _selectedIndex == 2) _buildBlurOverlay(),
           if (_isDialOpen && _selectedIndex == 2) ..._buildFloatingActions(),
         ],
       ),
       bottomNavigationBar: _buildBottomNavigationBar(),
       floatingActionButton: _selectedIndex == 2 ? _buildMainFAB() : null,
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
   }
 
@@ -172,20 +178,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
   void _handleAction(String label) {
     setState(() => _isDialOpen = false);
     if (label == 'Create Order') {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Order screen pending")));
-
-      // Navigator.push(
-      //   context,
-      //   MaterialPageRoute(builder: (context) => const CreateOrderFlowScreen()),
-      // );
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const CreateOrderFlowScreen()),
+      );
     } else if (label == 'Scan Barcode') {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text('$label tapped')));
     } else if (label == 'Manage Stock') {
-      // Navigate to InventoryScreen
       setState(() {
-        _selectedIndex = 1; // Index for InventoryScreen
+        _selectedIndex = 1;
       });
     }
   }

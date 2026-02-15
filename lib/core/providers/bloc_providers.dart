@@ -16,7 +16,10 @@ import 'package:osm/features/dashboard/domain/repositories/activity_repository.d
 import 'package:osm/features/dashboard/domain/usecases/save_activity.dart';
 import 'package:osm/features/dashboard/domain/usecases/watch_recent_activities.dart';
 import 'package:osm/features/dashboard/presentation/blocs/activity/activity_bloc.dart';
+import 'package:osm/features/dashboard/presentation/blocs/dashboard/dashboard_bloc.dart';
 import 'package:osm/features/dashboard/presentation/blocs/global_search/global_search_bloc.dart';
+import 'package:osm/features/doctors/domain/repositories/doctor_repository.dart';
+import 'package:osm/features/doctors/domain/usecases/get_all_doctors.dart';
 import 'package:osm/features/inventory/domain/repositories/accessory_repository.dart';
 import 'package:osm/features/inventory/domain/repositories/frame_repository.dart';
 import 'package:osm/features/inventory/domain/repositories/lens_repository.dart';
@@ -53,6 +56,7 @@ import 'package:osm/features/inventory/presentation/blocs/qr_scan/qr_scan_bloc.d
 import 'package:osm/features/orders/domain/repositories/order_repository.dart';
 import 'package:osm/features/orders/domain/usecases/add_payment.dart';
 import 'package:osm/features/orders/domain/usecases/create_order_from_draft.dart';
+import 'package:osm/features/orders/domain/usecases/get_orders.dart';
 import 'package:osm/features/orders/presentation/blocs/order_submission/order_submission_bloc.dart';
 import 'package:osm/features/prescription/domain/repositories/prescription_repository.dart';
 import 'package:osm/features/prescription/domain/usecases/add_prescription.dart';
@@ -75,6 +79,7 @@ List<BlocProvider> buildBlocProviders(BuildContext context) {
   final prescriptionRepository = context.read<PrescriptionRepository>();
   final activityReposistory = context.read<ActivityRepository>();
   final orderRepository = context.read<OrderRepository>();
+  final doctorRepository = context.read<DoctorRepository>();
 
   return [
     // BlocProviders
@@ -85,7 +90,25 @@ List<BlocProvider> buildBlocProviders(BuildContext context) {
       ),
     ),
 
-    BlocProvider<GlobalSearchBloc>(create: (_) => GlobalSearchBloc()),
+    BlocProvider<GlobalSearchBloc>(
+      create: (_) => GlobalSearchBloc(
+        getOrders: GetOrders(orderRepository),
+        getAllFrames: GetAllFrames(frameRepository),
+        getAllAccessories: GetAllAccessories(accessoryRepository),
+        getAllCustomers: GetCustomers(customerRepository),
+        getAllDoctors: GetAllDoctors(doctorRepository),
+        getAllLenses: GetAllLenses(lensRepository),
+      ),
+    ),
+
+    BlocProvider<DashboardBloc>(
+      create: (_) => DashboardBloc(
+        getOrders: GetOrders(orderRepository),
+        getAllFrames: GetAllFrames(frameRepository),
+        getAllAccessories: GetAllAccessories(accessoryRepository),
+        watchRecentActivities: WatchRecentActivities(activityReposistory),
+      ),
+    ),
 
     BlocProvider<StoreLocationBloc>(
       create: (_) => StoreLocationBloc(

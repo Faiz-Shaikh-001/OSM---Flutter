@@ -4,7 +4,9 @@ enum SearchResultType {
   order,
   frame,
   lens,
-  customer
+  accessory,
+  customer,
+  doctor
 }
 
 class SearchResultUiModel {

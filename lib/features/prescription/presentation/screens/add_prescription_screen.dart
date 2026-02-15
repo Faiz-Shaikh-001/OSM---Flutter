@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:osm/core/value_objects/id.dart';
 import 'package:osm/features/doctors/domain/entities/doctor.dart';
 import 'package:osm/features/doctors/domain/repositories/doctor_repository.dart';
-import 'package:osm/features/doctors/domain/usecases/get_all_doctor.dart';
+import 'package:osm/features/doctors/domain/usecases/get_all_doctors.dart';
 import 'package:osm/features/doctors/domain/usecases/get_doctors_by_store_location.dart';
 import 'package:osm/features/doctors/presentation/blocs/doctor/doctor_bloc.dart';
 import 'package:osm/features/doctors/presentation/widgets/doctor_picker_bottom_sheet.dart';
@@ -224,7 +224,7 @@ class _AddPrescriptionScreenState extends State<AddPrescriptionScreen> {
                                     final repo = context
                                         .read<DoctorRepository>();
                                     return DoctorBloc(
-                                      getAllDoctor: GetAllDoctor(repo),
+                                      getAllDoctor: GetAllDoctors(repo),
                                       getDoctorsByStoreLocation:
                                           GetDoctorsByStoreLocation(repo),
                                     )..add(LoadDoctors());
