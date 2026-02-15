@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:bloc/bloc.dart';
-import 'package:meta/meta.dart';
+import 'package:flutter/material.dart';
 import 'package:osm/features/dashboard/domain/entities/activity.dart';
 import 'package:osm/features/dashboard/domain/failures/activity_failure.dart';
 import 'package:osm/features/dashboard/domain/usecases/save_activity.dart';
@@ -47,14 +47,12 @@ class ActivityBloc extends Bloc<ActivityEvent, ActivityState> {
   ) async {
     emit(ActivityLoading());
 
-    await _subscription?.cancel();
-
-    _subscription = watchRecentActivities(limit: event.limit).listen(
-      (activities) {
-        emit(ActivityLoaded(activities));
-      },
-      onError: (_) {
-        emit(const ActivityError('Failed to load activities'));
+    await emit.forEach<List<Activity>>(
+      watchRecentActivities(limit: event.limit),
+      onData: (activities) => ActivityLoaded(activities),
+      onError: (error, stackTrace) {
+        debugPrint('Activity stream error: $error');
+        return const ActivityError('Failed to load activities');
       },
     );
   }
