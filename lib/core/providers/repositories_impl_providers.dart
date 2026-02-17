@@ -57,6 +57,7 @@ final List<Provider> repositoryImplProviders = [
       context.read<StoreLocationLocalRepository>(),
       context.read<PrescriptionLocalRepository>(),
       context.read<OrderItemLocalRepository>(),
+      context.read<ActivityLocalRepository>(),
     ),
   ),
 
@@ -89,18 +90,21 @@ final List<Provider> repositoryImplProviders = [
     create: (context) => FrameRepositoryImpl(
       context.read<IsarService>(),
       context.read<FrameLocalRepository>(),
+      context.read<ActivityLocalRepository>(),
     ),
   ),
   Provider<LensRepository>(
     create: (context) => LensRepositoryImpl(
       context.read<IsarService>(),
       context.read<LensLocalRepository>(),
+      context.read<ActivityLocalRepository>(),
     ),
   ),
   Provider<AccessoryRepository>(
     create: (context) => AccessoryRepositoryImpl(
       context.read<IsarService>(),
       context.read<AccessoryLocalRepository>(),
+      context.read<ActivityLocalRepository>(),
     ),
   ),
   Provider<IndexCounterRepository>(

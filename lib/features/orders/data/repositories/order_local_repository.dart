@@ -73,19 +73,14 @@ class OrderLocalRepository {
   }
 
   Future<void> delete(int id, Isar isar) async {
-    await isar.writeTxn(() async {
-      await isar.orderItemModels
-          .filter()
-          .order((o) => o.idEqualTo(id))
-          .deleteAll();
+    await isar.orderItemModels
+        .filter()
+        .order((o) => o.idEqualTo(id))
+        .deleteAll();
 
-      await isar.paymentModels
-          .filter()
-          .order((o) => o.idEqualTo(id))
-          .deleteAll();
+    await isar.paymentModels.filter().order((o) => o.idEqualTo(id)).deleteAll();
 
-      await isar.orderModels.delete(id);
-    });
+    await isar.orderModels.delete(id);
   }
 
   Future<List<OrderModel>> searchByCustomerOrOrderId(

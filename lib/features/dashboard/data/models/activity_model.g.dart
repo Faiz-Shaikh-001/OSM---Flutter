@@ -17,23 +17,18 @@ const ActivityModelSchema = CollectionSchema(
   name: r'ActivityModel',
   id: -6385501004358380311,
   properties: {
-    r'activityId': PropertySchema(
-      id: 0,
-      name: r'activityId',
-      type: IsarType.long,
-    ),
     r'metadataJson': PropertySchema(
-      id: 1,
+      id: 0,
       name: r'metadataJson',
       type: IsarType.string,
     ),
     r'occurredAt': PropertySchema(
-      id: 2,
+      id: 1,
       name: r'occurredAt',
       type: IsarType.dateTime,
     ),
     r'type': PropertySchema(
-      id: 3,
+      id: 2,
       name: r'type',
       type: IsarType.string,
       enumMap: _ActivityModeltypeEnumValueMap,
@@ -70,10 +65,9 @@ void _activityModelSerialize(
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
 ) {
-  writer.writeLong(offsets[0], object.activityId);
-  writer.writeString(offsets[1], object.metadataJson);
-  writer.writeDateTime(offsets[2], object.occurredAt);
-  writer.writeString(offsets[3], object.type.name);
+  writer.writeString(offsets[0], object.metadataJson);
+  writer.writeDateTime(offsets[1], object.occurredAt);
+  writer.writeString(offsets[2], object.type.name);
 }
 
 ActivityModel _activityModelDeserialize(
@@ -83,12 +77,11 @@ ActivityModel _activityModelDeserialize(
   Map<Type, List<int>> allOffsets,
 ) {
   final object = ActivityModel();
-  object.activityId = reader.readLongOrNull(offsets[0]);
   object.isarId = id;
-  object.metadataJson = reader.readString(offsets[1]);
-  object.occurredAt = reader.readDateTime(offsets[2]);
+  object.metadataJson = reader.readString(offsets[0]);
+  object.occurredAt = reader.readDateTime(offsets[1]);
   object.type =
-      _ActivityModeltypeValueEnumMap[reader.readStringOrNull(offsets[3])] ??
+      _ActivityModeltypeValueEnumMap[reader.readStringOrNull(offsets[2])] ??
           ActivityType.newOrder;
   return object;
 }
@@ -101,12 +94,10 @@ P _activityModelDeserializeProp<P>(
 ) {
   switch (propertyId) {
     case 0:
-      return (reader.readLongOrNull(offset)) as P;
-    case 1:
       return (reader.readString(offset)) as P;
-    case 2:
+    case 1:
       return (reader.readDateTime(offset)) as P;
-    case 3:
+    case 2:
       return (_ActivityModeltypeValueEnumMap[reader.readStringOrNull(offset)] ??
           ActivityType.newOrder) as P;
     default:
@@ -116,20 +107,26 @@ P _activityModelDeserializeProp<P>(
 
 const _ActivityModeltypeEnumValueMap = {
   r'newOrder': r'newOrder',
+  r'orderStatusUpdated': r'orderStatusUpdated',
+  r'orderDeleted': r'orderDeleted',
   r'paymentReceived': r'paymentReceived',
   r'lowStockAlert': r'lowStockAlert',
   r'stockUpdated': r'stockUpdated',
   r'newStockAdded': r'newStockAdded',
+  r'stockDeleted': r'stockDeleted',
   r'newCustomerAdded': r'newCustomerAdded',
   r'customerUpdated': r'customerUpdated',
   r'customerDeleted': r'customerDeleted',
 };
 const _ActivityModeltypeValueEnumMap = {
   r'newOrder': ActivityType.newOrder,
+  r'orderStatusUpdated': ActivityType.orderStatusUpdated,
+  r'orderDeleted': ActivityType.orderDeleted,
   r'paymentReceived': ActivityType.paymentReceived,
   r'lowStockAlert': ActivityType.lowStockAlert,
   r'stockUpdated': ActivityType.stockUpdated,
   r'newStockAdded': ActivityType.newStockAdded,
+  r'stockDeleted': ActivityType.stockDeleted,
   r'newCustomerAdded': ActivityType.newCustomerAdded,
   r'customerUpdated': ActivityType.customerUpdated,
   r'customerDeleted': ActivityType.customerDeleted,
@@ -230,80 +227,6 @@ extension ActivityModelQueryWhere
 
 extension ActivityModelQueryFilter
     on QueryBuilder<ActivityModel, ActivityModel, QFilterCondition> {
-  QueryBuilder<ActivityModel, ActivityModel, QAfterFilterCondition>
-      activityIdIsNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'activityId',
-      ));
-    });
-  }
-
-  QueryBuilder<ActivityModel, ActivityModel, QAfterFilterCondition>
-      activityIdIsNotNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'activityId',
-      ));
-    });
-  }
-
-  QueryBuilder<ActivityModel, ActivityModel, QAfterFilterCondition>
-      activityIdEqualTo(int? value) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'activityId',
-        value: value,
-      ));
-    });
-  }
-
-  QueryBuilder<ActivityModel, ActivityModel, QAfterFilterCondition>
-      activityIdGreaterThan(
-    int? value, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'activityId',
-        value: value,
-      ));
-    });
-  }
-
-  QueryBuilder<ActivityModel, ActivityModel, QAfterFilterCondition>
-      activityIdLessThan(
-    int? value, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'activityId',
-        value: value,
-      ));
-    });
-  }
-
-  QueryBuilder<ActivityModel, ActivityModel, QAfterFilterCondition>
-      activityIdBetween(
-    int? lower,
-    int? upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'activityId',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-      ));
-    });
-  }
-
   QueryBuilder<ActivityModel, ActivityModel, QAfterFilterCondition>
       isarIdEqualTo(Id value) {
     return QueryBuilder.apply(this, (query) {
@@ -696,19 +619,6 @@ extension ActivityModelQueryLinks
 
 extension ActivityModelQuerySortBy
     on QueryBuilder<ActivityModel, ActivityModel, QSortBy> {
-  QueryBuilder<ActivityModel, ActivityModel, QAfterSortBy> sortByActivityId() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'activityId', Sort.asc);
-    });
-  }
-
-  QueryBuilder<ActivityModel, ActivityModel, QAfterSortBy>
-      sortByActivityIdDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'activityId', Sort.desc);
-    });
-  }
-
   QueryBuilder<ActivityModel, ActivityModel, QAfterSortBy>
       sortByMetadataJson() {
     return QueryBuilder.apply(this, (query) {
@@ -751,19 +661,6 @@ extension ActivityModelQuerySortBy
 
 extension ActivityModelQuerySortThenBy
     on QueryBuilder<ActivityModel, ActivityModel, QSortThenBy> {
-  QueryBuilder<ActivityModel, ActivityModel, QAfterSortBy> thenByActivityId() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'activityId', Sort.asc);
-    });
-  }
-
-  QueryBuilder<ActivityModel, ActivityModel, QAfterSortBy>
-      thenByActivityIdDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'activityId', Sort.desc);
-    });
-  }
-
   QueryBuilder<ActivityModel, ActivityModel, QAfterSortBy> thenByIsarId() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'isarId', Sort.asc);
@@ -818,12 +715,6 @@ extension ActivityModelQuerySortThenBy
 
 extension ActivityModelQueryWhereDistinct
     on QueryBuilder<ActivityModel, ActivityModel, QDistinct> {
-  QueryBuilder<ActivityModel, ActivityModel, QDistinct> distinctByActivityId() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'activityId');
-    });
-  }
-
   QueryBuilder<ActivityModel, ActivityModel, QDistinct> distinctByMetadataJson(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
@@ -850,12 +741,6 @@ extension ActivityModelQueryProperty
   QueryBuilder<ActivityModel, int, QQueryOperations> isarIdProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'isarId');
-    });
-  }
-
-  QueryBuilder<ActivityModel, int?, QQueryOperations> activityIdProperty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'activityId');
     });
   }
 
