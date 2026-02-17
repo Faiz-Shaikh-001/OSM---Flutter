@@ -1,8 +1,12 @@
+import 'package:isar/isar.dart';
 import 'package:osm/core/either.dart';
 import 'package:osm/core/services/isar_service.dart';
 import 'package:osm/core/value_objects/id.dart';
 import 'package:osm/features/customer/data/models/customer_model.dart';
 import 'package:osm/features/customer/data/repositories/customer_local_repository.dart';
+import 'package:osm/features/dashboard/data/models/activity_model.dart';
+import 'package:osm/features/dashboard/data/repositories/activity_local_repository.dart';
+import 'package:osm/features/dashboard/domain/entities/activity.dart';
 import 'package:osm/features/orders/data/mappers/order_enums_mapper.dart';
 import 'package:osm/features/orders/data/mappers/order_item_mapper.dart';
 import 'package:osm/features/orders/data/mappers/order_mapper.dart';
@@ -29,6 +33,7 @@ class OrderRepositoryImpl implements OrderRepository {
   final StoreLocationLocalRepository storeLocal;
   final PrescriptionLocalRepository prescriptionLocal;
   final OrderItemLocalRepository orderItemLocal;
+  final ActivityLocalRepository _activityLocalRepository;
 
   OrderRepositoryImpl(
     this._isarService,
@@ -38,6 +43,7 @@ class OrderRepositoryImpl implements OrderRepository {
     this.storeLocal,
     this.prescriptionLocal,
     this.orderItemLocal,
+    this._activityLocalRepository,
   );
   @override
   Future<Either<OrderFailure, Order>> getById(OrderId id) async {
@@ -164,9 +170,21 @@ class OrderRepositoryImpl implements OrderRepository {
           store,
           isar,
         );
+        final activity = Activity(
+          type: ActivityType.newOrder,
+          occurredAt: DateTime.now(),
+          metadata: {
+            'orderId': id.toString(),
+            'customerName': customer.fullName,
+            'amount': order.totalAmount.value,
+          },
+        );
+        await _activityLocalRepository.log(
+          ActivityModel.fromEntity(activity),
+          isar: isar,
+        );
 
         await isar.customerModels.put(customer);
-
         return id;
       });
 
@@ -198,9 +216,25 @@ class OrderRepositoryImpl implements OrderRepository {
         payments: existing.payments,
       )..id = existing.id;
 
-      await orderLocal.save(updated, isar);
+      await isar.writeTxn(() async {
+        await orderLocal.save(updated, isar);
 
-      await _loadRelations(updated);
+        await updated.customer.load();
+        final activity = Activity(
+          type: ActivityType.orderStatusUpdated,
+          occurredAt: DateTime.now(),
+          metadata: {
+            'orderId': orderId.value,
+            'status': status.name,
+            'customerName': updated.customer.value?.fullName ?? "Unknown",
+          },
+        );
+        await _activityLocalRepository.log(
+          ActivityModel.fromEntity(activity),
+          isar: isar,
+        );
+      });
+
       return Right(
         OrderMapper.toEntity(
           updated,
@@ -224,7 +258,7 @@ class OrderRepositoryImpl implements OrderRepository {
         int.parse(orderId.value),
         isar,
       );
-      
+
       if (orderModel == null) {
         return const Left(OrderNotFoundFailure());
       }
@@ -244,6 +278,23 @@ class OrderRepositoryImpl implements OrderRepository {
         await paymentLocal.insert(
           payment: newPaymentModel,
           order: orderModel,
+          isar: isar,
+        );
+
+        await orderModel.customer.load();
+        final activity = Activity(
+          type: ActivityType.paymentReceived,
+          occurredAt: DateTime.now(),
+          metadata: {
+            'orderId': orderId.value,
+            'amount': payment.amountPaid.value,
+            'method': payment.method.name,
+            'customerName': orderModel.customer.value?.fullName ?? "Unknown",
+          },
+        );
+
+        await _activityLocalRepository.log(
+          ActivityModel.fromEntity(activity),
           isar: isar,
         );
 
@@ -320,11 +371,92 @@ class OrderRepositoryImpl implements OrderRepository {
         payments: model.payments.toList(),
       );
 
-      await orderLocal.delete(id, isar);
+      await isar.writeTxn(() async {
+        await orderLocal.delete(id, isar);
+
+        final activity = Activity(
+          type: ActivityType.orderDeleted,
+          occurredAt: DateTime.now(),
+          metadata: {
+            'orderId': orderId.value,
+            'customerName': model.customer.value?.fullName ?? "Unknown",
+            'action': 'Order record removed',
+          },
+        );
+        await _activityLocalRepository.log(
+          ActivityModel.fromEntity(activity),
+          isar: isar,
+        );
+      });
 
       return Right(deletedOrder);
     } catch (e) {
       return Left(OrderStorageFailure(e.toString()));
     }
+  }
+
+  @override
+  Stream<double> watchTodaysSale() async* {
+    final isar = await _isarService.db;
+    final now = DateTime.now();
+    final todayStart = DateTime(now.year, now.month, now.day);
+
+    yield* isar.orderModels
+        .filter()
+        .createdAtGreaterThan(todayStart)
+        .build()
+        .watch(fireImmediately: true)
+        .asyncMap((orders) async {
+          double total = 0;
+          for (var order in orders) {
+            await order.items.load();
+            for (var item in order.items) {
+              total += (item.unitPrice * item.quantity);
+            }
+          }
+          return total;
+        });
+  }
+
+  @override
+  Stream<int> watchTodaysOrderCount() async* {
+    final isar = await _isarService.db;
+    final now = DateTime.now();
+    final todayStart = DateTime(now.year, now.month, now.day);
+
+    yield* isar.orderModels
+        .filter()
+        .createdAtGreaterThan(todayStart)
+        .watch(fireImmediately: true)
+        .map((orders) => orders.length);
+  }
+
+  @override
+  Stream<double> watchPendingPayments() async* {
+    final isar = await _isarService.db;
+
+    yield* isar.orderModels.where().watch(fireImmediately: true).asyncMap((
+      orders,
+    ) async {
+      double pending = 0;
+      for (var order in orders) {
+        await order.items.load();
+        await order.payments.load();
+
+        double totalOrderValue = order.items.fold(
+          0,
+          (prev, element) => prev + (element.unitPrice * element.quantity),
+        );
+        double totalPaid = order.payments.fold(
+          0,
+          (prev, element) => prev + element.amountPaid,
+        );
+
+        if (totalPaid < totalOrderValue) {
+          pending += (totalOrderValue - totalPaid);
+        }
+      }
+      return pending;
+    });
   }
 }

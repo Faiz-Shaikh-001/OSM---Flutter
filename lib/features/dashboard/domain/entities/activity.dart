@@ -1,9 +1,12 @@
 enum ActivityType {
   newOrder,
+  orderStatusUpdated,
+  orderDeleted,
   paymentReceived,
   lowStockAlert,
   stockUpdated,
   newStockAdded,
+  stockDeleted,
   newCustomerAdded,
   customerUpdated,
   customerDeleted,
