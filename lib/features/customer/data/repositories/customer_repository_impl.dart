@@ -71,10 +71,9 @@ class CustomerRepositoryImpl implements CustomerRepository {
 
       final isar = await _isarService.db;
 
-      final model = CustomerMapper.fromEntity(customer)
-        ..id = int.parse(customer.id!.value);
+      final model = CustomerMapper.fromEntity(customer);
 
-      final existing = await isar.customerModels.get(model.id);
+      final existing = await _localRepository.getById(model.id, isar);
 
       if (existing == null) {
         return Left(CustomerNotFoundFailure());
@@ -87,14 +86,17 @@ class CustomerRepositoryImpl implements CustomerRepository {
             .findFirst();
 
         if (phoneExist != null) {
-          throw Exception("Phone number already in use.");
+          return Left(CustomerDuplicatePhoneFailure());
         }
       }
 
       final activity = Activity(
         type: ActivityType.customerUpdated,
         occurredAt: DateTime.now(),
-        metadata: {'customerId': customer.id, 'name': customer.fullName},
+        metadata: {
+          'customerId': customer.id.toString(),
+          'name': customer.fullName,
+        },
       );
 
       await isar.writeTxn(() async {

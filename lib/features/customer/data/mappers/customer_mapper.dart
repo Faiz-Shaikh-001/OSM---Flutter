@@ -6,7 +6,7 @@ import '../models/customer_model.dart';
 
 class CustomerMapper {
   static CustomerModel fromEntity(Customer customer) {
-    return CustomerModel(
+    final model = CustomerModel(
       createdAt: customer.createdAt,
       firstName: customer.firstName,
       lastName: customer.lastName,
@@ -29,6 +29,10 @@ class CustomerMapper {
       isActive: customer.isActive,
       profileImageUrl: customer.profileImageUrl,
     );
+
+    if (customer.id != null) model.id = int.parse(customer.id!.value);
+
+    return model;
   }
 
   static Customer toEntity(CustomerModel model) {
