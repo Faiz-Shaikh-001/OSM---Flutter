@@ -29,9 +29,9 @@ class GlobalSearchBloc extends Bloc<GlobalSearchEvent, GlobalSearchState> {
   final GetOrders _getOrders;
   final GetAllFrames _getAllFrames;
   final GetAllAccessories _getAllAccessories;
-  final GetCustomers _getAllCustomers; // Add these
-  final GetAllDoctors _getAllDoctors; // Add these
-  final GetAllLenses _getAllLenses; // Add these
+  final GetCustomers _getAllCustomers;
+  final GetAllDoctors _getAllDoctors;
+  final GetAllLenses _getAllLenses;
 
   List<SearchResultUiModel> _searchDatabase = [];
 

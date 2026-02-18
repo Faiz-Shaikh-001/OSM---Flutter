@@ -57,6 +57,8 @@ class _CustomerDetailsScreenState extends State<CustomerDetailsScreen> {
                 }
                 return IconButton(
                   onPressed: () async {
+                    debugPrint("Edit button is pressed.");
+
                     final updated = await showModalBottomSheet<Customer>(
                       context: context,
                       isScrollControlled: true,
@@ -64,6 +66,8 @@ class _CustomerDetailsScreenState extends State<CustomerDetailsScreen> {
                         initialCustomer: state.details.customer,
                       ),
                     );
+                    
+                    debugPrint("\n\nUpdated customer: ${updated != null}");
 
                     if (updated != null && context.mounted) {
                       context.read<CustomerBloc>().add(
@@ -77,6 +81,7 @@ class _CustomerDetailsScreenState extends State<CustomerDetailsScreen> {
             ),
           ],
         ),
+
         body: BlocBuilder<CustomerDetailsBloc, CustomerDetailsState>(
           builder: (context, state) {
             if (state is CustomerDetailsLoading) {
@@ -245,7 +250,9 @@ class _CustomerDetailsScreenState extends State<CustomerDetailsScreen> {
                                 trailing: const Icon(
                                   Icons.chevron_right_rounded,
                                 ),
-                                title: Text('Order #${o.id} • ₹${o.totalAmount.toString()}'),
+                                title: Text(
+                                  'Order #${o.id} • ₹${o.totalAmount.toString()}',
+                                ),
                                 subtitle: Row(
                                   children: [
                                     Icon(
