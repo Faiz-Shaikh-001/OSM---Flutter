@@ -13,11 +13,13 @@ class AccountLocalSource {
       return Account.initial();
     }
 
-    final map = json.decode(jsonString);
+    final Map<String, dynamic> map =
+        json.decode(jsonString) as Map<String, dynamic>;
+
     return Account(
-      name: map['name'],
-      email: map['email'],
-      phone: map['phone'],
+      name: map['name'] ?? '',
+      email: map['email'] ?? '',
+      phone: map['phone'] ?? '',
       businessName: map['businessName'] ?? '',
       address: map['address'] ?? '',
     );
@@ -25,14 +27,16 @@ class AccountLocalSource {
 
   Future<void> saveAccount(Account account) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(
-      _key,
-      json.encode({
-        'name': account.name,
-        'email': account.email,
-        'phone': account.phone,
-      }),
-    );
+
+    final map = {
+      'name': account.name,
+      'email': account.email,
+      'phone': account.phone,
+      'businessName': account.businessName,
+      'address': account.address,
+    };
+
+    await prefs.setString(_key, json.encode(map));
   }
 
   Future<void> clear() async {
