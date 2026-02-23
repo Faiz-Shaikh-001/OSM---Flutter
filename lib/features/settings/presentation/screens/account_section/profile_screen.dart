@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+
 import '../../bloc/account_bloc.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -16,19 +17,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   final _phoneController = TextEditingController();
   final _addressController = TextEditingController();
 
-  @override
-  void initState() {
-    super.initState();
-
-    final state = context.read<AccountBloc>().state;
-    if (state is AccountLoaded) {
-      _nameController.text = state.account.name;
-      _businessController.text = state.account.businessName;
-      _emailController.text = state.account.email;
-      _phoneController.text = state.account.phone;
-      _addressController.text = state.account.address;
-    }
-  }
+  bool _initialized = false;
 
   @override
   void dispose() {
@@ -40,7 +29,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     super.dispose();
   }
 
-  void _saveProfile() {
+  void _saveProfile(BuildContext context) {
     context.read<AccountBloc>().add(
           UpdateProfile(
             name: _nameController.text.trim(),
@@ -62,40 +51,60 @@ class _ProfileScreenState extends State<ProfileScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.save_outlined),
-            onPressed: _saveProfile,
+            onPressed: () => _saveProfile(context),
           ),
         ],
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          Center(
-            child: CircleAvatar(
-              radius: 36,
-              child: const Icon(Icons.person, size: 36),
-            ),
-          ),
-          //TODO: Add profile picture upload functionality(bhutni ka nahi chal raha mere phone mein)
-          const SizedBox(height: 24),
+      body: BlocBuilder<AccountBloc, AccountState>(
+        builder: (context, state) {
+          if (state is! AccountLoaded) {
+            return const Center(child: CircularProgressIndicator());
+          }
 
-          _field('Your Name', _nameController),
-          _field('Business Name', _businessController),
-          _field('Email Address', _emailController),
-          _field('Phone Number', _phoneController),
-          _field('Address', _addressController, maxLines: 3),
+          // Initialize controllers only ONCE
+          if (!_initialized) {
+            final account = state.account;
+            _nameController.text = account.name;
+            _businessController.text = account.businessName;
+            _emailController.text = account.email;
+            _phoneController.text = account.phone;
+            _addressController.text = account.address;
+            _initialized = true;
+          }
 
-          const SizedBox(height: 24),
+          return ListView(
+            padding: const EdgeInsets.all(16),
+            children: [
+              Center(
+                child: CircleAvatar(
+                  radius: 36,
+                  child: const Icon(Icons.person, size: 36),
+                ),//TODO: Add profile picture upload functionality(bhutni ka nahi chal raha mere phone mein)
+              ),
+              const SizedBox(height: 24),
 
-          const Text(
-            'Current Branch',
-            style: TextStyle(fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 4),
-          const Text(
-            'No branch selected',
-            style: TextStyle(color: Colors.grey),
-          ),
-        ],
+              _field('Your Name', _nameController),
+              _field('Business Name', _businessController),
+              _field('Email Address', _emailController,
+                  keyboardType: TextInputType.emailAddress),
+              _field('Phone Number', _phoneController,
+                  keyboardType: TextInputType.phone),
+              _field('Address', _addressController, maxLines: 3),
+
+              const SizedBox(height: 24),
+
+              const Text(
+                'Current Branch',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 4),
+              const Text(
+                'Linked to active store',
+                style: TextStyle(color: Colors.grey),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
@@ -104,12 +113,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
     String label,
     TextEditingController controller, {
     int maxLines = 1,
+    TextInputType keyboardType = TextInputType.text,
   }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: TextField(
         controller: controller,
         maxLines: maxLines,
+        keyboardType: keyboardType,
         decoration: InputDecoration(
           labelText: label,
           border: const OutlineInputBorder(),
