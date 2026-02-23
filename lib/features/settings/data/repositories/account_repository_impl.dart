@@ -3,17 +3,17 @@ import '../../domain/repositories/account_repository.dart';
 import '../sources/account_local_source.dart';
 
 class AccountRepositoryImpl implements AccountRepository {
-  final AccountLocalSource local;
+  final AccountLocalSource localSource;
 
-  AccountRepositoryImpl(this.local);
+  const AccountRepositoryImpl(this.localSource);
 
   @override
-  Future<Account> getAccount() => local.getAccount();
+  Future<Account> getAccount() => localSource.getAccount();
 
   @override
   Future<void> updateAccount(Account account) =>
-      local.saveAccount(account);
+      localSource.saveAccount(account);
 
   @override
-  Future<void> clearAccount() => local.clear();
+  Future<void> clearAccount() => localSource.clear();
 }

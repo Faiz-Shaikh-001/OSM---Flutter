@@ -26,23 +26,22 @@ List<BlocProvider> settingsBlocProviders() {
   // ───────── Account Data ─────────
   final accountLocalSource = AccountLocalSource();
   final accountRepository = AccountRepositoryImpl(accountLocalSource);
-
   final getAccount = GetAccount(accountRepository);
   final updateAccount = UpdateAccount(accountRepository);
 
   return [
-    // ───────── Settings Bloc ─────────
     BlocProvider<SettingsBloc>(
-      create: (_) =>
-          SettingsBloc(getSettings: getSettings, updateSettings: updateSettings)
-            ..add(LoadSettings()),
+      create: (_) => SettingsBloc(
+        getSettings: getSettings,
+        updateSettings: updateSettings,
+      )..add(LoadSettings()),
     ),
 
-    // ───────── Account Bloc (SUB-FEATURE OF SETTINGS) ─────────
     BlocProvider<AccountBloc>(
-      create: (_) =>
-          AccountBloc(getAccount: getAccount, updateAccount: updateAccount)
-            ..add(LoadAccount()),
+      create: (_) => AccountBloc(
+        getAccount: getAccount,
+        updateAccount: updateAccount,
+      )..add(LoadAccount()),
     ),
   ];
 }
