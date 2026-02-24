@@ -20,12 +20,12 @@ class CustomerSelected extends OrderDraftEvent {
 class CustomerRemoved extends OrderDraftEvent {}
 
 class PrescriptionSelected extends OrderDraftEvent {
-  final PrescriptionId prescriptionId;
+  final Prescription prescription;
 
-  const PrescriptionSelected(this.prescriptionId);
+  const PrescriptionSelected(this.prescription);
 
   @override
-  List<Object?> get props => [prescriptionId];
+  List<Object?> get props => [prescription];
 }
 
 class PrescriptionCleared extends OrderDraftEvent {}

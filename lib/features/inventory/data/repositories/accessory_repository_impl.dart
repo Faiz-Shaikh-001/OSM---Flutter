@@ -1,6 +1,9 @@
 import 'package:osm/core/either.dart';
 import 'package:osm/core/services/isar_service.dart';
 import 'package:osm/core/value_objects/id.dart';
+import 'package:osm/features/dashboard/data/models/activity_model.dart';
+import 'package:osm/features/dashboard/data/repositories/activity_local_repository.dart';
+import 'package:osm/features/dashboard/domain/entities/activity.dart';
 import 'package:osm/features/inventory/data/mappers/accessory/accessory_mapper.dart';
 import 'package:osm/features/inventory/data/repositories/accessory_local_repository.dart';
 import 'package:osm/features/inventory/domain/entities/accessory/accessory.dart';
@@ -11,8 +14,13 @@ import 'package:osm/features/inventory/domain/success/accessory/accessory_succes
 class AccessoryRepositoryImpl implements AccessoryRepository {
   final IsarService _isarService;
   final AccessoryLocalRepository _localRepository;
+  final ActivityLocalRepository _activityLocalRepository;
 
-  AccessoryRepositoryImpl(this._isarService, this._localRepository);
+  AccessoryRepositoryImpl(
+    this._isarService,
+    this._localRepository,
+    this._activityLocalRepository,
+  );
 
   @override
   Future<Either<AccessoryFailure, List<Accessory>>> getAll() async {
@@ -76,6 +84,23 @@ class AccessoryRepositoryImpl implements AccessoryRepository {
         await _localRepository.insert(model, isar);
       });
 
+      final activity = Activity(
+        type: ActivityType.newStockAdded,
+        occurredAt: DateTime.now(),
+        metadata: {
+          'accessoryId': id,
+          'name': accessory.name,
+          'brand': accessory.brand,
+        },
+      );
+
+      await isar.writeTxn(() async {
+        await _activityLocalRepository.log(
+          ActivityModel.fromEntity(activity),
+          isar: isar,
+        );
+      });
+
       return Right(AccessoryCreatedSuccess(AccessoryId(id.toString())));
     } catch (e) {
       return Left(AccessoryStorageFailure(e.toString()));
@@ -88,6 +113,14 @@ class AccessoryRepositoryImpl implements AccessoryRepository {
   ) async {
     try {
       final isar = await _isarService.db;
+
+      final existingModel = await _localRepository.getById(
+        int.parse(id.value),
+        isar,
+      );
+
+      final String accessoryName = existingModel?.name ?? "Unknown";
+
       final success = await isar.writeTxn(() async {
         await _localRepository.delete(int.parse(id.value), isar);
       });
@@ -95,6 +128,24 @@ class AccessoryRepositoryImpl implements AccessoryRepository {
       if (!success) {
         return const Left(AccessoryNotFoundFailure());
       }
+
+      final activity = Activity(
+        type: ActivityType
+            .stockDeleted,
+        occurredAt: DateTime.now(),
+        metadata: {
+          'accessoryId': id.value,
+          'name': accessoryName,
+          'action': 'Deleted',
+        },
+      );
+
+      await isar.writeTxn(() async {
+        await _activityLocalRepository.log(
+          ActivityModel.fromEntity(activity),
+          isar: isar,
+        );
+      });
 
       return Right(AccessoryDeletedSuccess("Accessory deleted successfully."));
     } catch (e) {
@@ -113,6 +164,23 @@ class AccessoryRepositoryImpl implements AccessoryRepository {
 
       await isar.writeTxn(() async {
         await _localRepository.insert(model, isar);
+      });
+
+      final activity = Activity(
+        type: ActivityType.stockUpdated,
+        occurredAt: DateTime.now(),
+        metadata: {
+          'accessoryId': accessory.id!.value,
+          'name': accessory.name,
+          'action': 'Updated details/quantity',
+        },
+      );
+
+      await isar.writeTxn(() async {
+        await _activityLocalRepository.log(
+          ActivityModel.fromEntity(activity),
+          isar: isar,
+        );
       });
 
       return Right(AccessoryUpdatedSuccess("Accessory updated successfully."));

@@ -183,6 +183,11 @@ class StoreLocationRepositoryImpl implements StoreLocationRepository {
       phoneNumber: '0000000000',
       operatingHours: '9:00 AM - 9:00 PM',
       createdAt: DateTime.now(),
+      licenseNumber: "12864192731",
+      country: "India",
+      postalCode: "456321",
+      state: "Maharashtra",
+      storeLogoUrl: "",
     );
 
     await isar.writeTxn(() async {

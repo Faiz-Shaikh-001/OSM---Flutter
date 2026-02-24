@@ -90,4 +90,8 @@ class CustomerModel {
        orders = orders ?? IsarLinks<OrderModel>();
 
   String get fullName => '$firstName $lastName';
+
+  @override
+  String toString() =>
+      "Id: $id\nCustomer: $fullName\nPrimary Phone Number: $primaryPhoneNumber\nSecondary Phone Number: $secondaryPhoneNumber\nCreated At: $createdAt\nUpdated At: $updatedAt\nIs Active: $isActive\nDate Of Birth: $dateOfBirth\nGender: $gender\nEmail: $email\nStreet Address: $streetAddress\nCity: $city\nState: $state\n Postal Code: $postalCode\nCountry: $country\nCustomer Type: $customerType\n";
 }

@@ -58,7 +58,7 @@ class _PrescriptionSectionState extends State<PrescriptionSection> {
 
             if (selectedId == null) {
               context.read<OrderDraftBloc>().add(
-                PrescriptionSelected(prescriptions.first.prescription.id!),
+                PrescriptionSelected(prescriptions.first.prescription),
               );
             }
 
@@ -91,7 +91,7 @@ class _PrescriptionSectionState extends State<PrescriptionSection> {
       LoadPrescriptionTimeline(widget.customer.id!),
     );
 
-    context.read<OrderDraftBloc>().add(PrescriptionSelected(prescription.id!));
+    context.read<OrderDraftBloc>().add(PrescriptionSelected(prescription));
   }
 }
 

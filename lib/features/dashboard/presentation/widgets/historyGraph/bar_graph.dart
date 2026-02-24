@@ -9,9 +9,13 @@ class HistoryBarGraph extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final maxY = weeklySummary.every((v) => v == 0)
-        ? 10.0
-        : weeklySummary.reduce((a, b) => a > b ? a : b) * 1.1;
+    final bool isDataEmpty = weeklySummary.every((v) => v == 0);
+
+    final double maxEarning = isDataEmpty
+        ? 0
+        : weeklySummary.reduce((a, b) => a > b ? a : b);
+
+    final double chartMaxY = maxEarning == 0 ? 100.0 : maxEarning * 1.2;
 
     Bardata myBarData = Bardata(
       sunAmount: weeklySummary[0],
@@ -26,59 +30,98 @@ class HistoryBarGraph extends StatelessWidget {
     myBarData.initializeBarData();
 
     return Container(
-      decoration: BoxDecoration(border: Border.all(color: Colors.black, width: 1), borderRadius: BorderRadius.circular(15)),
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.black, width: 1),
+        borderRadius: BorderRadius.circular(15),
+      ),
       width: MediaQuery.of(context).size.width * .9,
-      child: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: BarChart(
-          BarChartData(
-            maxY: maxY,
-            minY: 0,
-            gridData: FlGridData(show: false),
-            borderData: FlBorderData(show: false),
-            titlesData: FlTitlesData(
-              show: true,
-              topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-              leftTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-              rightTitles: AxisTitles(
-                sideTitles: SideTitles(showTitles: false),
-              ),
-              bottomTitles: AxisTitles(
-                sideTitles: SideTitles(
-                  showTitles: true,
-                  getTitlesWidget: getBottomTiles,
+      height: 200,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: BarChart(
+              BarChartData(
+                maxY: chartMaxY,
+                minY: 0,
+                gridData: FlGridData(
+                  show: true,
+                  drawVerticalLine: false,
+                  horizontalInterval: chartMaxY / 5,
+                  getDrawingHorizontalLine: (value) =>
+                      FlLine(color: Colors.grey[200], strokeWidth: 1),
                 ),
+                borderData: FlBorderData(show: false),
+                titlesData: FlTitlesData(
+                  show: true,
+                  topTitles: AxisTitles(
+                    sideTitles: SideTitles(showTitles: false),
+                  ),
+                  leftTitles: AxisTitles(
+                    sideTitles: SideTitles(showTitles: false),
+                  ),
+                  rightTitles: AxisTitles(
+                    sideTitles: SideTitles(showTitles: false),
+                  ),
+                  bottomTitles: AxisTitles(
+                    sideTitles: SideTitles(
+                      showTitles: true,
+                      getTitlesWidget: getBottomTiles,
+                    ),
+                  ),
+                ),
+                barGroups: myBarData.barData
+                    .map(
+                      (data) => BarChartGroupData(
+                        x: data.x,
+                        barRods: [
+                          BarChartRodData(
+                            toY: data.y,
+                            color: Colors.blue[800],
+                            width: 15,
+                            borderRadius: BorderRadius.only(
+                              topLeft: Radius.circular(15),
+                              topRight: Radius.circular(15),
+                              bottomLeft: Radius.zero,
+                              bottomRight: Radius.zero,
+                            ),
+                            backDrawRodData: BackgroundBarChartRodData(
+                              show: true,
+                              toY: chartMaxY,
+                              color: Colors.blue[50],
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                    .toList(),
               ),
             ),
-            barGroups: myBarData.barData
-                .map(
-                  (data) => BarChartGroupData(
-                    x: data.x,
-                    barRods: [
-                      BarChartRodData(
-                        toY: data.y,
-                        color: Colors.blue[800],
-                        width: 15,
-                        borderRadius: BorderRadius.only(
-                          topLeft: Radius.circular(15),
-                          topRight: Radius.circular(15),
-                          bottomLeft: Radius.zero,
-                          bottomRight: Radius.zero,
-                        ),
-                        backDrawRodData: BackgroundBarChartRodData(
-                          show: true,
-                          toY:
-                              (weeklySummary.reduce((a, b) => a > b ? a : b) *
-                              1.1),
-                          color: Colors.blue[50],
-                        ),
-                      ),
-                    ],
-                  ),
-                )
-                .toList(),
           ),
-        ),
+
+          if (isDataEmpty)
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: .7),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.bar_chart_rounded, color: Colors.grey),
+                  Text(
+                    "No earnings yet for this week",
+                    style: TextStyle(
+                      color: Colors.grey,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+        ],
       ),
     );
   }

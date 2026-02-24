@@ -7,10 +7,12 @@ import '../models/payment/payment_model.dart';
 class PaymentMapper {
   static Payment toEntity(PaymentModel model) {
     return Payment(
+      id: model.id.toString(),
       paymentDate: model.paymentDate,
       amountPaid: MoneyMapper.fromPaise(model.amountPaid),
       method: OrderEnumsMapper.toPaymentMethod(model.paymentMethod),
       status: OrderEnumsMapper.toPaymentStatus(model.status),
+      transactionId: model.transactionId,
     );
   }
 
@@ -18,7 +20,9 @@ class PaymentMapper {
     return PaymentModel(
       paymentDate: payment.paymentDate,
       amountPaid: MoneyMapper.toPaise(payment.amountPaid),
-      status: OrderEnumsMapper.toPaymentStatusModel(payment.status), paymentMethod: OrderEnumsMapper.toPaymentMethodModel(payment.method),
-    );
+      status: OrderEnumsMapper.toPaymentStatusModel(payment.status),
+      paymentMethod: OrderEnumsMapper.toPaymentMethodModel(payment.method),
+      transactionId: payment.transactionId,
+    ) ;
   }
 }

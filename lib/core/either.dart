@@ -25,3 +25,4 @@ class Right<L, R> extends Either<L, R> {
     return onRight(value);
   }
 }
+

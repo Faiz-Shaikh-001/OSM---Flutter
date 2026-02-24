@@ -19,8 +19,11 @@ class OrderMapper {
     return Order.rehydrate(
       id: OrderId(model.id.toString()),
       createdAt: model.createdAt,
+      completedAt: model.completedAt,
       status: OrderEnumsMapper.toOrderStatus(model.status),
-      customerId: CustomerId(model.customer.value!.id.toString()),
+      customerId: CustomerId(model.customer.value?.id.toString() ?? '0'),
+      prescriptionId: PrescriptionId(model.prescription.value?.id.toString() ?? '0'),
+      storeLocationId: StoreLocationId(model.storeLocation.value?.id.toString() ?? '0'),
 
       items: items.map(OrderItemMapper.toEntity).toList(),
       payments: payments.map(PaymentMapper.toEntity).toList(),
@@ -28,12 +31,14 @@ class OrderMapper {
   }
 
   static OrderModel toModel(Order order) {
-    return OrderModel(
+    final model = OrderModel(
       createdAt: order.createdAt,
       completedAt: order.status == OrderStatus.completed
           ? DateTime.now()
           : null,
       status: OrderEnumsMapper.toOrderStatusModel(order.status),
     );
+
+    return model;
   }
 }

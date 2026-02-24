@@ -1,55 +1,43 @@
-// import 'package:flutter/material.dart';
-// import 'package:osm/features/dashboard/presentation/widgets/historyGraph/bar_graph.dart';
-// import 'package:provider/provider.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:osm/features/dashboard/presentation/blocs/dashboard/dashboard_bloc.dart';
+import 'package:osm/features/dashboard/presentation/widgets/historyGraph/bar_graph.dart';
 
-// class DashboardHistorySection extends StatelessWidget {
-//   const DashboardHistorySection({super.key});
+class DashboardHistorySection extends StatelessWidget {
+  const DashboardHistorySection({super.key});
 
-//   @override
-//   Widget build(BuildContext context) {
-//     // List of weekly income
-//     // List<double> weeklySummary = context.select((OrderRepository o) => o.weeklySummary);
-//     final orderRepository = Provider.of<OrderRepository>(
-//       context,
-//       listen: false,
-//     );
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          "Weekly Report",
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
+        ),
+        BlocBuilder<DashboardBloc, DashboardState>(
+          builder: (context, state) {
+            if (state.status == DashboardStatus.loading) {
+              return const SizedBox(
+                height: 200,
+                child: Center(child: CircularProgressIndicator()),
+              );
+            }
 
-//     return Column(
-//       crossAxisAlignment: CrossAxisAlignment.start,
-//       children: [
-//         Text(
-//           "Weekly Report",
-//           style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
-//         ),
-//         FutureBuilder<List<double>>(
-//           future: orderRepository.weeklySummary,
-//           builder: (context, snapshot) {
-//             if (snapshot.connectionState == ConnectionState.waiting) {
-//               final List<double> weeklySummary = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0];
-//               return SizedBox(
-//                 height: 200,
-//                 child:  HistoryBarGraph(weeklySummary: weeklySummary),
-//               );
-//             } else if (snapshot.hasError) {
-//               return SizedBox(
-//                 height: 200,
-//                 child: Center(child: Text("Error: ${snapshot.error}")),
-//               );
-//             } else if (snapshot.hasData) {
-//               List<double> weeklySummary = snapshot.data!;
-//               return SizedBox(
-//                 height: 200,
-//                 child: HistoryBarGraph(weeklySummary: weeklySummary),
-//               );
-//             } else {
-//               return const SizedBox(
-//                 height: 200,
-//                 child: Center(child: Text('No weekly data available.')),
-//               );
-//             }
-//           },
-//         ),
-//       ],
-//     );
-//   }
-// }
+            if (state.status == DashboardStatus.failure) {
+              return const SizedBox(
+                height: 200,
+                child: Center(child: Text("Failed to load chart data")),
+              );
+            }
+
+            return SizedBox(
+              height: 200,
+              child: HistoryBarGraph(weeklySummary: state.weeklySalesData),
+            );
+          },
+        ),
+      ],
+    );
+  }
+}
