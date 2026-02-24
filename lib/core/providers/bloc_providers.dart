@@ -69,6 +69,9 @@ import 'package:osm/features/store/domain/usecases/get_store_locations.dart';
 import 'package:osm/features/store/domain/usecases/set_active_store_location.dart';
 import 'package:osm/features/store/presentation/bloc/store_location_bloc.dart';
 import 'package:osm/features/settings/settings_di.dart';
+import 'package:osm/features/store/domain/usecases/add_store_location.dart';
+import 'package:osm/features/store/domain/usecases/update_store_location.dart';
+import 'package:osm/features/store/domain/usecases/delete_store_location.dart';
 
 List<BlocProvider> buildBlocProviders(BuildContext context) {
   final storeLocationRepository = context.read<StoreLocationRepository>();
@@ -117,6 +120,9 @@ List<BlocProvider> buildBlocProviders(BuildContext context) {
         getStoreLocations: GetStoreLocations(storeLocationRepository),
         getAllStoreLocation: GetAllStoreLocation(storeLocationRepository),
         setActiveStoreLocation: SetActiveStoreLocation(storeLocationRepository),
+        addStoreLocation: AddStoreLocation(storeLocationRepository),
+        updateStoreLocation: UpdateStoreLocation(storeLocationRepository),
+        deleteStoreLocation: DeleteStoreLocation(storeLocationRepository),
       )..add(LoadStoreLocations()),
     ),
 
