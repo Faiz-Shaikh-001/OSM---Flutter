@@ -10,7 +10,14 @@ import 'package:osm/features/store/data/repositories/store_location_local_reposi
 import 'package:osm/features/store/data/repositories/store_location_repository_impl.dart';
 import 'package:osm/features/store/domain/usecases/ensure_active_store_location.dart';
 import 'package:provider/provider.dart';
-import 'main_settings.dart';
+// import 'package:osm/features/inventory/presentation/screens/add_stock/screen/add_stock_screen.dart';
+// import 'package:osm/features/inventory/presentation/screens/inventory_screen.dart';
+// import 'package:osm/features/orders/presentation/screens/add_order/create_order_flow_screen.dart';
+// import 'package:osm/features/store/data/repositories/store_location_local_repository.dart';
+// import 'package:osm/features/store/data/repositories/store_location_repository_impl.dart';
+// import 'package:osm/features/store/domain/usecases/ensure_active_store_location.dart';
+// import 'package:provider/provider.dart';
+// import 'main_settings.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -46,35 +53,18 @@ Future<void> main() async {
   );
 }
 
-// class MyApp extends StatelessWidget {
-//   const MyApp({super.key});
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return const MaterialApp(
-//       debugShowCheckedModeBanner: false,
-//       // home: CustomerListScreen(),
-//       //home: DashboardScreen(),
-//       // home: InventoryScreen(),
-//       // home: CreateOrderFlowScreen()
-//       home: SettingsBootstrap(),     
-//     );
-//   }
-// }
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     final themeProvider = context.watch<ThemeProvider>();
-
-    return MaterialApp(
+    return  MaterialApp(
       debugShowCheckedModeBanner: false,
       themeMode: themeProvider.themeMode,
       theme: ThemeData.light(),
       darkTheme: ThemeData.dark(),
-      home: SettingsBootstrap(),
+      home: DashboardScreen(),
     );
   }
 }
-

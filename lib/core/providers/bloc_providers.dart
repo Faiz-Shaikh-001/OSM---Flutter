@@ -68,6 +68,7 @@ import 'package:osm/features/store/domain/usecases/get_all_store_location.dart';
 import 'package:osm/features/store/domain/usecases/get_store_locations.dart';
 import 'package:osm/features/store/domain/usecases/set_active_store_location.dart';
 import 'package:osm/features/store/presentation/bloc/store_location_bloc.dart';
+import 'package:osm/features/settings/settings_di.dart';
 
 List<BlocProvider> buildBlocProviders(BuildContext context) {
   final storeLocationRepository = context.read<StoreLocationRepository>();
@@ -80,6 +81,7 @@ List<BlocProvider> buildBlocProviders(BuildContext context) {
   final activityReposistory = context.read<ActivityRepository>();
   final orderRepository = context.read<OrderRepository>();
   final doctorRepository = context.read<DoctorRepository>();
+
 
   return [
     // BlocProviders
@@ -220,5 +222,7 @@ List<BlocProvider> buildBlocProviders(BuildContext context) {
         addPayment: AddPayment(orderRepository),
       ),
     ),
+
+    ...settingsBlocProviders(),
   ];
 }
