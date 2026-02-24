@@ -5,6 +5,8 @@ import '../../bloc/account_bloc.dart';
 import 'profile_screen.dart';
 import '../../widgets/settings_section_title.dart';
 import '../../widgets/settings_tile.dart';
+import 'package:osm/features/store/presentation/bloc/store_location_bloc.dart';
+import 'manage_stores_screen.dart';
 
 class AccountScreen extends StatelessWidget {
   const AccountScreen({super.key});
@@ -46,8 +48,17 @@ class AccountScreen extends StatelessWidget {
           SettingsTile(
             icon: Icons.store_outlined,
             title: 'Manage Stores',
-            //
-            onTap: () => _showComingSoon(context),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => BlocProvider.value(
+                    value: context.read<StoreLocationBloc>(),
+                    child: const ManageStoresScreen(),
+                  ),
+                ),
+              );
+            },
           ),
           SettingsTile(
             icon: Icons.people_outline,
@@ -128,7 +139,9 @@ class AccountScreen extends StatelessWidget {
       context: context,
       builder: (_) => AlertDialog(
         title: const Text('Delete Account'),
-        content: const Text('Are you sure you want to permanently delete your account? \n \n WARNING:This action will wipe ALL data including customers, orders, inventory, stores and staff. This action is permanent and cannot be undone'),
+        content: const Text(
+          'Are you sure you want to permanently delete your account? \n \n WARNING:This action will wipe ALL data including customers, orders, inventory, stores and staff. This action is permanent and cannot be undone',
+        ),
         contentTextStyle: Colors.red[700] != null
             ? TextStyle(color: Colors.red)
             : const TextStyle(color: Colors.red),

@@ -1,25 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:osm/features/settings/presentation/screens/account_section/account_screen.dart';
+
 import 'package:osm/features/settings/settings_di.dart';
+import 'package:osm/core/theme_provider.dart';
+
 import '../bloc/settings_bloc.dart';
 import '../bloc/settings_event.dart';
 import '../bloc/settings_state.dart';
 import '../bloc/account_bloc.dart';
+
 import '../widgets/settings_section_title.dart';
 import '../widgets/settings_tile.dart';
 import '../widgets/settings_switch_tile.dart';
 import '../widgets/store_selector_tile.dart';
-import 'package:osm/core/theme_provider.dart';
+
 import 'notification_section/notification_settings_screen.dart';
 import 'inventory_section/inventory_settings_screen.dart';
 import 'about_section/about_screen.dart';
 import 'help_support_section/help_support_screen.dart';
 import 'security_section/backup_restore_screen.dart';
+import 'account_section/account_screen.dart';
 
-/// ─────────────────────────────────────────────────────────────
-/// Entry point for Settings feature (DI boundary)
-/// ─────────────────────────────────────────────────────────────
+import 'package:osm/features/store/presentation/bloc/store_location_bloc.dart';
+
+/// ───────────────── Entry Point ─────────────────
 class SettingsEntry extends StatelessWidget {
   const SettingsEntry({super.key});
 
@@ -32,16 +36,14 @@ class SettingsEntry extends StatelessWidget {
   }
 }
 
-/// ─────────────────────────────────────────────────────────────
-/// Settings Screen (UI only)
-/// ─────────────────────────────────────────────────────────────
+/// ───────────────── Settings Screen ─────────────────
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Settings & Preferences'), elevation: 1),
+      appBar: AppBar(title: const Text('Settings & Preferences')),
       body: BlocBuilder<SettingsBloc, SettingsState>(
         builder: (context, state) {
           if (state is! SettingsLoaded) {
@@ -51,21 +53,33 @@ class SettingsScreen extends StatelessWidget {
           final settings = state.settings;
           final themeProvider = context.read<ThemeProvider>();
 
-          // Sync theme only if needed
-          final isDark = settings.darkMode;
-          final currentThemeIsDark = themeProvider.themeMode == ThemeMode.dark;
-
-          if (isDark != currentThemeIsDark) {
-            themeProvider.setTheme(isDark);
+          if (settings.darkMode &&
+              themeProvider.themeMode != ThemeMode.dark) {
+            themeProvider.setTheme(true);
           }
 
           return ListView(
             children: [
-              // ───────────────────────── Store Selector ─────────────────────────
-              const StoreSelectorTile(storeName: 'No Store Selected'),
+              /// ───────── Store Selector ─────────
+              BlocBuilder<StoreLocationBloc, StoreLocationState>(
+                builder: (context, storeState) {
+                  String storeName = 'No Store Selected';
+
+                  if (storeState is StoreLocationLoaded &&
+                      storeState.activeStore != null) {
+                    storeName = storeState.activeStore!.name;
+                  }
+
+                  return StoreSelectorTile(
+                    storeName: storeName,
+                    onTap: () => _openStoreSelector(context),
+                  );
+                },
+              ),
+
               const Divider(height: 24),
 
-              // ─────────────────────── App Preferences ───────────────────────
+              /// ───────── App Preferences ─────────
               const SettingsSectionTitle(
                 icon: Icons.settings_outlined,
                 title: 'App Preferences',
@@ -75,22 +89,14 @@ class SettingsScreen extends StatelessWidget {
                 title: 'Enable Dark Mode',
                 value: settings.darkMode,
                 onChanged: (value) {
-                  // 1️⃣ Update settings (persisted)
                   context.read<SettingsBloc>().add(ToggleDarkMode(value));
-
-                  // 2️⃣ Update theme immediately
                   context.read<ThemeProvider>().setTheme(value);
                 },
               ),
 
-              const SettingsTile(
-                icon: Icons.currency_rupee_outlined,
-                title: 'Currency Preference',
-                subtitle: 'INR (₹)',
-              ),
               const Divider(height: 32),
 
-              // ─────────────────────── Notifications ───────────────────────
+              /// ───────── Notifications ─────────
               const SettingsSectionTitle(
                 icon: Icons.notifications_outlined,
                 title: 'Notifications',
@@ -100,7 +106,8 @@ class SettingsScreen extends StatelessWidget {
                 title: 'Manage Notifications',
                 subtitle: 'Push alerts, Stock warnings, Daily summaries',
                 onTap: () {
-                  Navigator.of(context).push(
+                  Navigator.push(
+                    context,
                     MaterialPageRoute(
                       builder: (_) => BlocProvider.value(
                         value: context.read<SettingsBloc>(),
@@ -110,9 +117,10 @@ class SettingsScreen extends StatelessWidget {
                   );
                 },
               ),
+
               const Divider(height: 32),
 
-              // ─────────────────────── Inventory Settings ───────────────────────
+              /// ───────── Inventory ─────────
               const SettingsSectionTitle(
                 icon: Icons.inventory_2_outlined,
                 title: 'Inventory Settings',
@@ -136,7 +144,7 @@ class SettingsScreen extends StatelessWidget {
 
               const Divider(height: 32),
 
-              // ─────────────────────── Security & Support ───────────────────────
+              /// ───────── Security ─────────
               const SettingsSectionTitle(
                 icon: Icons.security_outlined,
                 title: 'Security & Support',
@@ -144,7 +152,6 @@ class SettingsScreen extends StatelessWidget {
               SettingsTile(
                 icon: Icons.cloud_sync_outlined,
                 title: 'Backup & Restore',
-                subtitle: 'Backup or restore your data',
                 onTap: () {
                   Navigator.push(
                     context,
@@ -157,8 +164,7 @@ class SettingsScreen extends StatelessWidget {
 
               const Divider(height: 32),
 
-              
-              // ─────────────────────── ACCOUNT ───────────────────────
+              /// ───────── Account ─────────
               SettingsTile(
                 icon: Icons.person_outline,
                 title: 'Account',
@@ -175,8 +181,10 @@ class SettingsScreen extends StatelessWidget {
                 },
               ),
 
-              // ─────────────────────── Help & Support ───────────────────────
-              SettingsSectionTitle(
+              const Divider(height: 32),
+
+              /// ───────── Help ─────────
+              const SettingsSectionTitle(
                 icon: Icons.help_outline,
                 title: 'Help & Support',
               ),
@@ -192,23 +200,70 @@ class SettingsScreen extends StatelessWidget {
                   );
                 },
               ),
+
               const Divider(height: 32),
 
-              // ─────────────────────── About ───────────────────────
+              /// ───────── About ─────────
               SettingsTile(
                 icon: Icons.info_outline,
                 title: 'About',
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (_) => const AboutScreen()),
+                    MaterialPageRoute(
+                      builder: (_) => const AboutScreen(),
+                    ),
                   );
                 },
               ),
+
+              const SizedBox(height: 24),
             ],
           );
         },
       ),
+    );
+  }
+
+  /// ───────── Store Selector Bottom Sheet ─────────
+  void _openStoreSelector(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (_) {
+        return BlocBuilder<StoreLocationBloc, StoreLocationState>(
+          builder: (context, state) {
+            if (state is! StoreLocationLoaded) {
+              return const Padding(
+                padding: EdgeInsets.all(24),
+                child: Center(child: CircularProgressIndicator()),
+              );
+            }
+
+            return ListView(
+              children: state.stores.map((store) {
+                final isActive =
+                    state.activeStore?.id?.value == store.id?.value;
+
+                return ListTile(
+                  title: Text(store.name),
+                  subtitle: Text(store.city),
+                  trailing:
+                      isActive ? const Icon(Icons.check) : null,
+                  onTap: () {
+                    context.read<StoreLocationBloc>().add(
+                          SetActiveStoreLocationEvent(store.id!),
+                        );
+                    Navigator.pop(context);
+                  },
+                );
+              }).toList(),
+            );
+          },
+        );
+      },
     );
   }
 }
