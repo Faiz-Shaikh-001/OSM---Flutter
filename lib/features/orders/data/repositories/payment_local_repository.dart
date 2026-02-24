@@ -10,15 +10,13 @@ class PaymentLocalRepository {
     required OrderModel order,
     required Isar isar,
   }) async {
-    return isar.writeTxn(() async {
-      payment.order.value = order;
-      final id = await isar.paymentModels.put(payment);
+    payment.order.value = order;
+    final id = await isar.paymentModels.put(payment);
 
-      order.payments.add(payment);
-      await order.payments.save();
+    order.payments.add(payment);
+    await order.payments.save();
 
-      return id;
-    });
+    return id;
   }
 
   Future<void> update(PaymentModel payment, Isar isar) async {

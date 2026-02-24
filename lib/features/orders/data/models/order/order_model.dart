@@ -14,10 +14,10 @@ class OrderModel {
   Id id = Isar.autoIncrement;
 
   final DateTime createdAt;
-  final DateTime? completedAt;
+  DateTime? completedAt;
 
   @Enumerated(EnumType.name)
-  final OrderStatusModel status;
+  OrderStatusModel status;
 
   // ---- Relations ----
   final IsarLink<CustomerModel> customer;

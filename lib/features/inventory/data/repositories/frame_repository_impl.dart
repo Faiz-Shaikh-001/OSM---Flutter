@@ -1,6 +1,9 @@
 import 'package:osm/core/either.dart';
 import 'package:osm/core/services/isar_service.dart';
 import 'package:osm/core/value_objects/id.dart';
+import 'package:osm/features/dashboard/data/models/activity_model.dart';
+import 'package:osm/features/dashboard/data/repositories/activity_local_repository.dart';
+import 'package:osm/features/dashboard/domain/entities/activity.dart';
 import 'package:osm/features/inventory/data/mappers/frame/frame_enum_mappers.dart';
 import 'package:osm/features/inventory/data/mappers/frame/frame_mapper.dart';
 import 'package:osm/features/inventory/data/repositories/frame_local_repository.dart';
@@ -14,8 +17,13 @@ import 'package:osm/features/inventory/data/models/frame/frame_model.dart';
 class FrameRepositoryImpl implements FrameRepository {
   final IsarService _isarService;
   final FrameLocalRepository _localRepository;
+  final ActivityLocalRepository _activityLocalRepository;
 
-  FrameRepositoryImpl(this._isarService, this._localRepository);
+  FrameRepositoryImpl(
+    this._isarService,
+    this._localRepository,
+    this._activityLocalRepository,
+  );
 
   @override
   Future<Either<FrameFailure, Frame>> getById(FrameId id) async {
@@ -111,7 +119,24 @@ class FrameRepositoryImpl implements FrameRepository {
       final model = FrameMapper.toModel(frame);
 
       final id = await isar.writeTxn(() async {
-        return await _localRepository.insert(model, isar);
+        final newId = await _localRepository.insert(model, isar);
+
+        final activity = Activity(
+          type: ActivityType.newStockAdded,
+          occurredAt: DateTime.now(),
+          metadata: {
+            'productId': newId.toString(),
+            'name': frame.name,
+            'brand': frame.companyName,
+            'category': 'Frame',
+          },
+        );
+        await _activityLocalRepository.log(
+          ActivityModel.fromEntity(activity),
+          isar: isar,
+        );
+
+        return newId;
       });
 
       return Right(FrameCreatedSuccess(FrameId(id.toString())));
@@ -133,7 +158,23 @@ class FrameRepositoryImpl implements FrameRepository {
       final model = FrameMapper.toModel(frame);
 
       final id = await isar.writeTxn(() async {
-        return await _localRepository.update(model, isar);
+        final updatedId = await _localRepository.update(model, isar);
+
+        final activity = Activity(
+          type: ActivityType.stockUpdated,
+          occurredAt: DateTime.now(),
+          metadata: {
+            'productId': frame.id!.value,
+            'name': frame.name,
+            'brand': frame.companyName,
+          },
+        );
+        await _activityLocalRepository.log(
+          ActivityModel.fromEntity(activity),
+          isar: isar,
+        );
+
+        return updatedId;
       });
 
       return Right(FrameUpdatedSuccess(FrameId(id.toString())));
@@ -146,15 +187,32 @@ class FrameRepositoryImpl implements FrameRepository {
   Future<Either<FrameFailure, FrameDeletedSuccess>> delete(FrameId id) async {
     try {
       final isar = await _isarService.db;
-      final deleted = await isar.writeTxn(() async {
+
+      final existing = await _localRepository.getById(
+        int.parse(id.value),
+        isar,
+      );
+      final frameName = existing?.name ?? "Unknown Frame";
+
+      final success = await isar.writeTxn(() async {
         return await _localRepository.delete(int.parse(id.value), isar);
       });
 
-      if (!deleted) {
+      if (!success) {
         return Left(FrameNotFoundFailure());
       }
 
-      return Right(FrameDeletedSuccess(deleted));
+      final activity = Activity(
+        type: ActivityType.stockDeleted,
+        occurredAt: DateTime.now(),
+        metadata: {'productId': id.value, 'name': frameName},
+      );
+      await _activityLocalRepository.log(
+        ActivityModel.fromEntity(activity),
+        isar: isar,
+      );
+
+      return Right(FrameDeletedSuccess(success));
     } catch (e) {
       return Left(FrameUnexpectedFailure("Frame unexpected failure"));
     }

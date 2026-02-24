@@ -6,9 +6,7 @@ class ActivityLocalRepository {
   const ActivityLocalRepository();
 
   // Save an activity
-  Future<void> log(Activity activity, {required Isar isar}) async {
-    final model = ActivityModel.fromEntity(activity);
-
+  Future<void> log(ActivityModel model, {required Isar isar}) async {
     await isar.activityModels.put(model);
   }
 

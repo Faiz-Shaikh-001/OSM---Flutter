@@ -1,5 +1,6 @@
 import 'package:osm/core/either.dart';
 import 'package:osm/core/value_objects/id.dart';
+import 'package:osm/features/orders/domain/entities/order.dart';
 import '../entities/payment.dart';
 import '../failures/order_failure.dart';
 import '../repositories/order_repository.dart';
@@ -9,7 +10,7 @@ class AddPayment {
 
   AddPayment(this.repository);
 
-  Future<Either<OrderFailure, void>> call(
+  Future<Either<OrderFailure, Order>> call(
     OrderId orderId,
     Payment payment,
   ) {

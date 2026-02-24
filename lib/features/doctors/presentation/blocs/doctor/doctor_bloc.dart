@@ -2,14 +2,14 @@ import 'package:bloc/bloc.dart';
 import 'package:meta/meta.dart';
 import 'package:osm/core/value_objects/id.dart';
 import 'package:osm/features/doctors/domain/entities/doctor.dart';
-import 'package:osm/features/doctors/domain/usecases/get_all_doctor.dart';
+import 'package:osm/features/doctors/domain/usecases/get_all_doctors.dart';
 import 'package:osm/features/doctors/domain/usecases/get_doctors_by_store_location.dart';
 
 part 'doctor_event.dart';
 part 'doctor_state.dart';
 
 class DoctorBloc extends Bloc<DoctorEvent, DoctorState> {
-  final GetAllDoctor getAllDoctor;
+  final GetAllDoctors getAllDoctor;
   final GetDoctorsByStoreLocation getDoctorsByStoreLocation;
   DoctorBloc({
     required this.getAllDoctor,

@@ -11,53 +11,85 @@ class DashboardRecentActivitiesSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 15.0),
+        const Padding(
+          padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
           child: Text(
             'Recent Activities',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
         ),
-        const SizedBox(height: 10),
-
         if (activities.isEmpty)
-          const Padding(
-            padding: EdgeInsets.all(20),
-            child: Center(
-              child: Text(
-                "No recent activities yet.",
-                style: TextStyle(color: Colors.grey),
-              ),
-            ),
-          )
+          _buildEmptyState()
         else
           ListView.separated(
             shrinkWrap: true,
-            physics: NeverScrollableScrollPhysics(),
+            physics: const NeverScrollableScrollPhysics(),
             itemCount: activities.length,
-            separatorBuilder: (_, _) => const Divider(height: 1),
+            separatorBuilder: (_, _) => Divider(
+              height: 1,
+              indent: 72, 
+              color: Colors.grey[100],
+            ),
             itemBuilder: (context, index) {
               final activity = activities[index];
 
               return ListTile(
-                leading: Icon(activity.icon),
-                title: Text(activity.title),
-                subtitle: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    if (activity.subtitle.isNotEmpty) Text(activity.subtitle),
-                    Text(
-                      activity.time,
-                      style: Theme.of(
-                        context,
-                      ).textTheme.bodySmall?.copyWith(color: Colors.grey),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 4,
+                ),
+                leading: Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: activity.color.withValues(
+                       alpha: .1,
                     ),
-                  ],
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(activity.icon, color: activity.color, size: 20),
+                ),
+                title: Text(
+                  activity.title,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 14,
+                  ),
+                ),
+                subtitle: activity.subtitle.isNotEmpty
+                    ? Text(
+                        activity.subtitle,
+                        style: TextStyle(color: Colors.grey[600], fontSize: 13),
+                      )
+                    : null,
+                trailing: Text(
+                  activity.time,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Colors.grey[500],
+                    fontSize: 11,
+                  ),
                 ),
               );
             },
           ),
       ],
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 60),
+      child: Center(
+        child: Column(
+          children: [
+            Icon(Icons.history, color: Colors.grey[200], size: 64),
+            const SizedBox(height: 16),
+            const Text(
+              "No recent activity to show",
+              style: TextStyle(color: Colors.grey, fontWeight: FontWeight.w500),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

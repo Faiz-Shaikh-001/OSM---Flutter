@@ -8,8 +8,6 @@ part 'activity_model.g.dart';
 class ActivityModel {
   Id isarId = Isar.autoIncrement;
 
-  late int? activityId;
-
   @Enumerated(EnumType.name)
   late ActivityType type;
   late DateTime occurredAt;
@@ -18,7 +16,6 @@ class ActivityModel {
   ActivityModel();
   factory ActivityModel.fromEntity(Activity activity) {
     return ActivityModel()
-      ..activityId = activity.id
       ..type = activity.type
       ..occurredAt = activity.occurredAt
       ..metadataJson = json.encode(activity.metadata);
@@ -26,7 +23,7 @@ class ActivityModel {
 
   Activity toEntity() {
     return Activity(
-      id: activityId,
+      id: isarId,
       type: type,
       occurredAt: occurredAt,
       metadata: json.decode(metadataJson) as Map<String, dynamic>,

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:osm/core/widgets/custom_button.dart';
 import 'package:osm/features/customer/domain/entities/customer.dart';
 import 'package:osm/features/orders/presentation/screens/customer_step/widgets/prescription_section.dart';
 import 'package:osm/features/orders/presentation/screens/customer_step/widgets/selected_customer_card.dart';
@@ -23,17 +22,33 @@ class SelectedCustomerView extends StatelessWidget {
         Expanded(
           child: SingleChildScrollView(
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+
+                // Profile card
                 SelectedCustomerCard(customer: customer, onRemove: onRemove),
-                const SizedBox(height: 20),
+
+                const SizedBox(height: 24),
+
+                // Prescription Section Header
+                const Padding(
+                  padding: EdgeInsets.only(left: 4, bottom: 12),
+                  child: Text(
+                    "Prescription Details",
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                    ),
+                  ),
+                ),
+
+                // The Prescription Widget (Your existing widget)
                 PrescriptionSection(customer: customer),
               ],
             ),
           ),
         ),
-        const SizedBox(height: 16),
-        CustomButton(label: 'Next Step', onPressed: onNext),
-        const SizedBox(height: 16),
       ],
     );
   }

@@ -8,14 +8,14 @@ class OrderDraft {
   final PrescriptionId? prescriptionId;
   final StoreLocationId? storeLocationId;
   final List<OrderItem> items;
-  final Payment? payment;
+  final List<Payment> payments;
 
   const OrderDraft({
     this.customerId,
     this.prescriptionId,
     this.storeLocationId,
     this.items = const [],
-    this.payment,
+    this.payments = const [],
   });
 
   factory OrderDraft.empty() {
@@ -28,9 +28,17 @@ class OrderDraft {
   bool get hasPrescription => prescriptionId != null;
   bool get isStoreSelected => storeLocationId != null;
   bool get hasItems => items.isNotEmpty;
-  bool get isPaymentDone => payment != null;
 
   bool get isComplete => isCustomerSelected && isStoreSelected && hasItems;
+
+  Money get totalAmount =>
+      items.fold(Money(0), (sum, item) => sum + item.total);
+
+  Money get totalPaid => payments.fold(Money(0), (sum, p) => sum + p.amountPaid);
+
+  Money get remainingAmount => totalAmount - totalPaid;
+
+  bool get isFullyPaid => remainingAmount.isZero;
 
   // Immutable builders
 
@@ -40,7 +48,7 @@ class OrderDraft {
       prescriptionId: prescriptionId,
       storeLocationId: storeLocationId,
       items: items,
-      payment: payment,
+      payments: payments,
     );
   }
 
@@ -50,7 +58,7 @@ class OrderDraft {
       prescriptionId: prescriptionId,
       storeLocationId: storeLocationId,
       items: items,
-      payment: payment,
+      payments: payments,
     );
   }
 
@@ -60,7 +68,7 @@ class OrderDraft {
       prescriptionId: prescriptionId,
       storeLocationId: storeLocationId,
       items: items,
-      payment: payment,
+      payments: payments,
     );
   }
 
@@ -70,7 +78,7 @@ class OrderDraft {
       prescriptionId: prescriptionId,
       storeLocationId: storeLocationId,
       items: items,
-      payment: payment,
+      payments: payments,
     );
   }
 
@@ -80,10 +88,7 @@ class OrderDraft {
       prescriptionId: prescriptionId,
       storeLocationId: storeLocationId,
       items: items,
-      payment: payment,
+      payments: [...payments, payment],
     );
   }
-
-  Money get totalAmount =>
-      items.fold(Money(0), (sum, item) => sum + item.total);
 }

@@ -19,6 +19,7 @@ import 'package:osm/features/inventory/data/repositories/lens_repository_impl.da
 import 'package:osm/features/inventory/domain/repositories/accessory_repository.dart';
 import 'package:osm/features/inventory/domain/repositories/frame_repository.dart';
 import 'package:osm/features/inventory/domain/repositories/lens_repository.dart';
+import 'package:osm/features/orders/data/repositories/order_item_local_repository.dart';
 import 'package:osm/features/orders/data/repositories/order_local_repository.dart';
 import 'package:osm/features/orders/data/repositories/order_repository_impl.dart';
 import 'package:osm/features/orders/data/repositories/payment_local_repository.dart';
@@ -52,6 +53,11 @@ final List<Provider> repositoryImplProviders = [
       context.read<IsarService>(),
       context.read<OrderLocalRepository>(),
       context.read<PaymentLocalRepository>(),
+      context.read<CustomerLocalRepository>(),
+      context.read<StoreLocationLocalRepository>(),
+      context.read<PrescriptionLocalRepository>(),
+      context.read<OrderItemLocalRepository>(),
+      context.read<ActivityLocalRepository>(),
     ),
   ),
 
@@ -84,18 +90,21 @@ final List<Provider> repositoryImplProviders = [
     create: (context) => FrameRepositoryImpl(
       context.read<IsarService>(),
       context.read<FrameLocalRepository>(),
+      context.read<ActivityLocalRepository>(),
     ),
   ),
   Provider<LensRepository>(
     create: (context) => LensRepositoryImpl(
       context.read<IsarService>(),
       context.read<LensLocalRepository>(),
+      context.read<ActivityLocalRepository>(),
     ),
   ),
   Provider<AccessoryRepository>(
     create: (context) => AccessoryRepositoryImpl(
       context.read<IsarService>(),
       context.read<AccessoryLocalRepository>(),
+      context.read<ActivityLocalRepository>(),
     ),
   ),
   Provider<IndexCounterRepository>(

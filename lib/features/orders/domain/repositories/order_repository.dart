@@ -18,7 +18,10 @@ abstract class OrderRepository {
 
   Future<Either<OrderFailure, OrderId>> create(Order order);
 
-  Future<Either<OrderFailure, void>> addPayment(OrderId orderId, Payment payment);
+  Future<Either<OrderFailure, Order>> addPayment(
+    OrderId orderId,
+    Payment payment,
+  );
 
   Future<Either<OrderFailure, void>> updateStatus(
     OrderId orderId,
@@ -26,4 +29,10 @@ abstract class OrderRepository {
   );
 
   Future<Either<OrderFailure, Order>> delete(OrderId orderId);
+
+  Stream<double> watchTodaysSale();
+
+  Stream<int> watchTodaysOrderCount();
+
+  Stream<double> watchPendingPayments();
 }

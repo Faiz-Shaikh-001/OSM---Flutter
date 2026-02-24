@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:osm/features/dashboard/presentation/blocs/activity/activity_bloc.dart';
 import 'package:osm/features/dashboard/presentation/models/activity_ui_model.dart';
+import 'package:osm/features/dashboard/presentation/widgets/dashboard_history_section.dart';
 import 'package:osm/features/dashboard/presentation/widgets/dashboard_recent_activities_section.dart';
+import 'package:osm/features/dashboard/presentation/widgets/dashboard_summary_section.dart';
 import 'package:osm/features/dashboard/presentation/widgets/global_search_delegate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -37,9 +39,9 @@ class _BuildDashboardBodyState extends State<BuildDashboardBody> {
           children: [
             _buildSearchBar(context),
             SizedBox(height: 30),
-            // DashboardSummarySection(),
+            DashboardSummarySection(),
             SizedBox(height: 30),
-            // DashboardHistorySection(),
+            DashboardHistorySection(),
             SizedBox(height: 30),
             _buildRecentActivities(),
           ],
@@ -64,10 +66,20 @@ class _BuildDashboardBodyState extends State<BuildDashboardBody> {
         }
 
         if (state is ActivityError) {
-          return Text(state.message);
+          return Column(
+            children: [
+              Text(state.message),
+              ElevatedButton(
+                onPressed: () => context.read<ActivityBloc>().add(
+                  const WatchActivitiesEvent(),
+                ),
+                child: const Text("Retry"),
+              ),
+            ],
+          );
         }
 
-        return const SizedBox.shrink();
+        return const Text("Initializing dashboard...");
       },
     );
   }
@@ -77,10 +89,8 @@ class _BuildDashboardBodyState extends State<BuildDashboardBody> {
       height: 50,
       width: MediaQuery.of(content).size.width * .9,
       child: GestureDetector(
-        onTap: () => showSearch(
-          context: context,
-          delegate: GlobalSearchDelegate(),
-        ),
+        onTap: () =>
+            showSearch(context: context, delegate: GlobalSearchDelegate()),
         child: AbsorbPointer(
           child: TextField(
             controller: _searchController,

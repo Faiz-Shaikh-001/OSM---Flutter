@@ -1,6 +1,9 @@
 import 'package:osm/core/either.dart';
 import 'package:osm/core/services/isar_service.dart';
 import 'package:osm/core/value_objects/id.dart';
+import 'package:osm/features/dashboard/data/models/activity_model.dart';
+import 'package:osm/features/dashboard/data/repositories/activity_local_repository.dart';
+import 'package:osm/features/dashboard/domain/entities/activity.dart';
 import 'package:osm/features/inventory/data/mappers/lens/lens_enum_mappers.dart';
 import 'package:osm/features/inventory/data/mappers/lens/lens_mapper.dart';
 import 'package:osm/features/inventory/data/repositories/lens_local_repository.dart';
@@ -13,8 +16,13 @@ import 'package:osm/features/inventory/domain/success/lens/lens_success.dart';
 class LensRepositoryImpl implements LensRepository {
   final IsarService _isarService;
   final LensLocalRepository _localRepository;
+  final ActivityLocalRepository _activityLocalRepository;
 
-  LensRepositoryImpl(this._isarService, this._localRepository);
+  LensRepositoryImpl(
+    this._isarService,
+    this._localRepository,
+    this._activityLocalRepository,
+  );
 
   @override
   Future<Either<LensFailure, Lens>> getById(LensId id) async {
@@ -88,7 +96,7 @@ class LensRepositoryImpl implements LensRepository {
   }
 
   @override
-  Future<Lens?> getByQrKey(String qrKey) async{
+  Future<Lens?> getByQrKey(String qrKey) async {
     try {
       final isar = await _isarService.db;
       final model = await _localRepository.getByQrKey(qrKey, isar);
@@ -110,7 +118,24 @@ class LensRepositoryImpl implements LensRepository {
       final model = LensMapper.toModel(lens);
 
       final id = await isar.writeTxn(() async {
-        return await _localRepository.insert(model, isar);
+        final newId = await _localRepository.insert(model, isar);
+
+        final activity = Activity(
+          type: ActivityType.newStockAdded,
+          occurredAt: DateTime.now(),
+          metadata: {
+            'productId': newId.toString(),
+            'productName': lens.productName,
+            'company': lens.companyName,
+            'category': 'Lens',
+          },
+        );
+        await _activityLocalRepository.log(
+          ActivityModel.fromEntity(activity),
+          isar: isar,
+        );
+
+        return newId;
       });
 
       return Right(LensCreatedSuccess(LensId(id.toString())));
@@ -123,7 +148,10 @@ class LensRepositoryImpl implements LensRepository {
   Future<Either<LensFailure, LensUpdatedSuccess>> update(Lens lens) async {
     try {
       final isar = await _isarService.db;
-      final exists = await _localRepository.getById(int.parse(lens.id!.value), isar);
+      final exists = await _localRepository.getById(
+        int.parse(lens.id!.value),
+        isar,
+      );
 
       if (exists == null) {
         return Left(LensNotFoundFailure());
@@ -132,7 +160,23 @@ class LensRepositoryImpl implements LensRepository {
       final model = LensMapper.toModel(lens);
 
       final id = await isar.writeTxn(() async {
-        return await _localRepository.update(model, isar);
+        final updatedId = await _localRepository.update(model, isar);
+
+        final activity = Activity(
+          type: ActivityType.stockUpdated,
+          occurredAt: DateTime.now(),
+          metadata: {
+            'productId': lens.id!.value,
+            'productName': lens.productName,
+            'company': lens.companyName,
+          },
+        );
+        await _activityLocalRepository.log(
+          ActivityModel.fromEntity(activity),
+          isar: isar,
+        );
+
+        return updatedId;
       });
 
       return Right(LensUpdatedSuccess(LensId(id.toString())));
@@ -145,15 +189,37 @@ class LensRepositoryImpl implements LensRepository {
   Future<Either<LensFailure, LensDeletedSuccess>> delete(LensId id) async {
     try {
       final isar = await _isarService.db;
-      final deleted = await isar.writeTxn(() async {
+
+      final existingModel = await _localRepository.getById(
+        int.parse(id.value),
+        isar,
+      );
+
+      final String lensName =
+          "${existingModel?.companyName ?? "Unknown"} ${existingModel?.productName ?? "Unknown"}";
+
+      final success = await isar.writeTxn(() async {
         return await _localRepository.delete(int.parse(id.value), isar);
       });
 
-      if (!deleted) {
+      if (!success) {
         return Left(LensNotFoundFailure());
       }
 
-      return Right(LensDeletedSuccess(deleted));
+      final activity = Activity(
+        type: ActivityType.stockDeleted,
+        occurredAt: DateTime.now(),
+        metadata: {'lensId': id.value, 'name': lensName, 'action': 'Deleted'},
+      );
+
+      await isar.writeTxn(() async {
+        await _activityLocalRepository.log(
+          ActivityModel.fromEntity(activity),
+          isar: isar,
+        );
+      });
+
+      return Right(LensDeletedSuccess(success));
     } catch (e) {
       return Left(LensUnexpectedFailure());
     }

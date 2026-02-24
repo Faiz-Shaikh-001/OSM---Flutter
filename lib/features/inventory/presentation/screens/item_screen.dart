@@ -174,7 +174,7 @@ class _ItemScreenState extends State<ItemScreen> {
                       Text(
                         frame.name.capitalize,
                         style: const TextStyle(
-                          fontSize: 32,
+                          fontSize: 20,
                           fontWeight: FontWeight.bold,
                         ),
                       ),

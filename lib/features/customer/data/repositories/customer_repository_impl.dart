@@ -9,6 +9,7 @@ import 'package:osm/features/customer/domain/entities/customer.dart';
 import 'package:osm/features/customer/domain/failures/customer_failure.dart';
 import 'package:osm/features/customer/domain/repositories/customer_repository.dart';
 import 'package:osm/features/customer/domain/success/customer_success.dart';
+import 'package:osm/features/dashboard/data/models/activity_model.dart';
 import 'package:osm/features/dashboard/data/repositories/activity_local_repository.dart';
 import 'package:osm/features/dashboard/domain/entities/activity.dart';
 
@@ -45,15 +46,16 @@ class CustomerRepositoryImpl implements CustomerRepository {
       );
     });
 
+    final activity = Activity(
+      type: ActivityType.newCustomerAdded,
+      occurredAt: DateTime.now(),
+      metadata: {'customerId': id, 'name': customer.fullName},
+    );
+
+    final activityModel = ActivityModel.fromEntity(activity);
+
     await isar.writeTxn(() async {
-      await _activityRepository.log(
-        Activity(
-          type: ActivityType.newCustomerAdded,
-          occurredAt: DateTime.now(),
-          metadata: {'customerId': id, 'name': customer.fullName},
-        ),
-        isar: isar,
-      );
+      await _activityRepository.log(activityModel, isar: isar);
     });
 
     return Right(CustomerId(id.toString()));
@@ -69,10 +71,9 @@ class CustomerRepositoryImpl implements CustomerRepository {
 
       final isar = await _isarService.db;
 
-      final model = CustomerMapper.fromEntity(customer)
-        ..id = int.parse(customer.id!.value);
+      final model = CustomerMapper.fromEntity(customer);
 
-      final existing = await isar.customerModels.get(model.id);
+      final existing = await _localRepository.getById(model.id, isar);
 
       if (existing == null) {
         return Left(CustomerNotFoundFailure());
@@ -85,18 +86,23 @@ class CustomerRepositoryImpl implements CustomerRepository {
             .findFirst();
 
         if (phoneExist != null) {
-          throw Exception("Phone number already in use.");
+          return Left(CustomerDuplicatePhoneFailure());
         }
       }
+
+      final activity = Activity(
+        type: ActivityType.customerUpdated,
+        occurredAt: DateTime.now(),
+        metadata: {
+          'customerId': customer.id.toString(),
+          'name': customer.fullName,
+        },
+      );
 
       await isar.writeTxn(() async {
         await _localRepository.update(model, isar);
         await _activityRepository.log(
-          Activity(
-            type: ActivityType.customerUpdated,
-            occurredAt: DateTime.now(),
-            metadata: {'customerId': customer.id, 'name': customer.fullName},
-          ),
+          ActivityModel.fromEntity(activity),
           isar: isar,
         );
       });
@@ -127,15 +133,17 @@ class CustomerRepositoryImpl implements CustomerRepository {
         throw const CustomerHasRelationsFailure();
       }
 
+      final activity = Activity(
+        type: ActivityType.customerDeleted,
+        occurredAt: DateTime.now(),
+        metadata: {'customerId': id.value, 'name': model.fullName},
+      );
+
       await isar.writeTxn(() async {
         await _localRepository.delete(parsedId, isar);
 
         await _activityRepository.log(
-          Activity(
-            type: ActivityType.customerDeleted,
-            occurredAt: DateTime.now(),
-            metadata: {'customerId': id.value, 'name': model.fullName},
-          ),
+          ActivityModel.fromEntity(activity),
           isar: isar,
         );
       });
@@ -180,9 +188,9 @@ class CustomerRepositoryImpl implements CustomerRepository {
   Stream<Either<CustomerFailure, List<Customer>>> watchAll() async* {
     try {
       final isar = await _isarService.db;
-      yield* _localRepository.watchAll(isar).map(
-        (models) => Right(models.map(CustomerMapper.toEntity).toList()),
-      );
+      yield* _localRepository
+          .watchAll(isar)
+          .map((models) => Right(models.map(CustomerMapper.toEntity).toList()));
     } catch (e) {
       yield const Left(CustomerUnknownFailure());
     }

@@ -103,6 +103,8 @@ class CustomerBloc extends Bloc<CustomerEvent, CustomerState> {
     emit(const CustomerLoading());
     final result = await updateCustomer(event.customer);
 
+    debugPrint("Customer reached customer bloc after being updated");
+
     result.fold((failure) => emit(CustomerError(failure.message)), (
       updatedCustomer,
     ) {
