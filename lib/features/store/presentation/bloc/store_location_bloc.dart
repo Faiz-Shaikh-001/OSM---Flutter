@@ -13,8 +13,7 @@ import 'package:osm/features/store/domain/usecases/delete_store_location.dart';
 part 'store_location_event.dart';
 part 'store_location_state.dart';
 
-class StoreLocationBloc
-    extends Bloc<StoreLocationEvent, StoreLocationState> {
+class StoreLocationBloc extends Bloc<StoreLocationEvent, StoreLocationState> {
   final GetStoreLocations getStoreLocations;
   final GetAllStoreLocation getAllStoreLocation;
   final SetActiveStoreLocation setActiveStoreLocation;
@@ -49,19 +48,12 @@ class StoreLocationBloc
 
     StoreLocation? activeStore;
 
-    activeResult.fold(
-      (_) {},
-      (store) => activeStore = store,
-    );
+    activeResult.fold((_) {}, (store) => activeStore = store);
 
     allResult.fold(
       (failure) => emit(StoreLocationError(failure.message)),
-      (stores) => emit(
-        StoreLocationLoaded(
-          stores: stores,
-          activeStore: activeStore,
-        ),
-      ),
+      (stores) =>
+          emit(StoreLocationLoaded(stores: stores, activeStore: activeStore)),
     );
   }
 
@@ -109,11 +101,18 @@ class StoreLocationBloc
     DeleteStoreLocationEvent event,
     Emitter<StoreLocationState> emit,
   ) async {
-    final result = await deleteStoreLocation(event.id);
+    if (state is! StoreLocationLoaded) return;
 
-    result.fold(
-      (failure) => emit(StoreLocationError(failure.message)),
-      (_) => add(LoadStoreLocations()),
-    );
+    final current = state as StoreLocationLoaded;
+
+    final isActive = current.activeStore?.id?.value == event.id.value;
+
+    if (isActive) {
+      return;
+    }
+
+    await deleteStoreLocation(event.id);
+
+    add(LoadStoreLocations());
   }
 }

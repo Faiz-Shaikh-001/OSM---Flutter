@@ -35,10 +35,6 @@ class ManageStoresScreen extends StatelessWidget {
             return const Center(child: CircularProgressIndicator());
           }
 
-          if (state is StoreLocationError) {
-            return Center(child: Text(state.message));
-          }
-
           if (state is StoreLocationLoaded) {
             return ListView.separated(
               itemCount: state.stores.length,
@@ -84,7 +80,15 @@ class _StoreTile extends StatelessWidget {
               break;
 
             case 'edit':
-              // Step D – Edit Store screen
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => BlocProvider.value(
+                    value: context.read<StoreLocationBloc>(),
+                    child: StoreFormScreen(store: store),
+                  ),
+                ),
+              );
               break;
 
             case 'delete':
@@ -119,9 +123,58 @@ class _StoreTile extends StatelessWidget {
           FilledButton(
             style: FilledButton.styleFrom(backgroundColor: Colors.red),
             onPressed: () {
-              context.read<StoreLocationBloc>().add(
-                DeleteStoreLocationEvent(store.id!),
-              );
+              final bloc = context.read<StoreLocationBloc>();
+              final state = bloc.state;
+
+              if (state is StoreLocationLoaded) {
+                // Prevent deleting last store
+                if (state.stores.length == 1) {
+                  Navigator.pop(context);
+
+                  showDialog(
+                    context: context,
+                    builder: (dialogContext) => AlertDialog(
+                      title: const Text('Action Not Allowed'),
+                      content: const Text(
+                        'At least one store must exist. You cannot delete the last store.',
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(dialogContext),
+                          child: const Text('OK'),
+                        ),
+                      ],
+                    ),
+                  );
+
+                  return;
+                }
+
+                //  Prevent deleting active store
+                if (state.activeStore?.id?.value == store.id?.value) {
+                  Navigator.pop(context);
+
+                  showDialog(
+                    context: context,
+                    builder: (dialogContext) => AlertDialog(
+                      title: const Text('Action Not Allowed'),
+                      content: const Text(
+                        'Cannot delete the active store. Please switch stores first.',
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(dialogContext),
+                          child: const Text('OK'),
+                        ),
+                      ],
+                    ),
+                  );
+
+                  return;
+                }
+              }
+
+              bloc.add(DeleteStoreLocationEvent(store.id!));
               Navigator.pop(context);
             },
             child: const Text('Delete'),
