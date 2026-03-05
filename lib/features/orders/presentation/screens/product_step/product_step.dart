@@ -9,6 +9,9 @@ import 'package:osm/features/dashboard/data/sources/lens_search_source.dart';
 import 'package:osm/features/dashboard/data/sources_impl/accessory_search_source_impl.dart';
 import 'package:osm/features/dashboard/data/sources_impl/frame_search_source_impl.dart';
 import 'package:osm/features/dashboard/data/sources_impl/lens_search_source_impl.dart';
+import 'package:osm/features/inventory/data/repositories/accessory_local_repository.dart';
+import 'package:osm/features/inventory/data/repositories/frame_local_repository.dart';
+import 'package:osm/features/inventory/data/repositories/lens_local_repository.dart';
 import 'package:osm/features/orders/domain/entities/order_item.dart';
 import 'package:osm/features/orders/domain/entities/order_item_type.dart';
 import 'package:osm/features/orders/presentation/blocs/order_draft/order_draft_bloc.dart';
@@ -33,15 +36,15 @@ class ProductStep extends StatelessWidget {
           providers: [
             Provider<AccessorySearchSource>(
               create: (context) =>
-                  AccessorySearchSourceImpl(context.read<IsarService>()),
+                  AccessorySearchSourceImpl(context.read<IsarService>(), AccessoryLocalRepository()),
             ),
             Provider<FrameSearchSource>(
               create: (context) =>
-                  FrameSearchSourceImpl(context.read<IsarService>()),
+                  FrameSearchSourceImpl(context.read<IsarService>(), FrameLocalRepository()),
             ),
             Provider<LensSearchSource>(
               create: (context) =>
-                  LensSearchSourceImpl(context.read<IsarService>()),
+                  LensSearchSourceImpl(context.read<IsarService>(), LensLocalRepository()),
             ),
             BlocProvider(
               create: (context) => ProductSearchBloc(
