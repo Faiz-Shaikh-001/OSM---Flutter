@@ -27,4 +27,17 @@ class DoctorLocalRepository {
         .findAll();
   }
 
+  Future<List<DoctorModel>> search(String query, Isar isar) async {
+    return await isar.doctorModels
+        .filter()
+        .group(
+          (q) => q
+              .nameContains(query, caseSensitive: false)
+              .or()
+              .hospitalContains(query, caseSensitive: false)
+              .or()
+              .cityContains(query, caseSensitive: false),
+        )
+        .findAll();
+  }
 }

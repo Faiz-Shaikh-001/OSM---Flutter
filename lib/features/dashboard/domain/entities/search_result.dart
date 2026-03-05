@@ -1,4 +1,4 @@
-enum SearchResultType { order, customer, lens, frame, accessory, doctor }
+import 'package:osm/features/dashboard/presentation/models/search_results_ui_model.dart';
 
 class SearchResult {
   final SearchResultType type;

@@ -44,9 +44,18 @@ class FrameLocalRepository {
   }
 
   Future<FrameModel?> getByQrKey(String qrKey, Isar isar) async {
+    return await isar.frameModels.filter().qrKeyEqualTo(qrKey).findFirst();
+  }
+
+  Future<List<FrameModel>> search(String query, Isar isar) async {
     return await isar.frameModels
         .filter()
-        .qrKeyEqualTo(qrKey)
-        .findFirst();
+        .group(
+          (q) => q
+              .nameContains(query, caseSensitive: false)
+              .or()
+              .companyNameContains(query, caseSensitive: false),
+        )
+        .findAll();
   }
 }

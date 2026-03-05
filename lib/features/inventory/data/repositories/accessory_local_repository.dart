@@ -37,4 +37,20 @@ class AccessoryLocalRepository {
   Future<AccessoryModel?> getByQrKey(String qrKey, Isar isar) async {
     return await isar.accessoryModels.filter().qrKeyEqualTo(qrKey).findFirst();
   }
+
+  Future<List<AccessoryModel>> search(String query, Isar isar) async {
+    return await isar.accessoryModels
+        .filter()
+        .group(
+          (q) => q
+              .nameContains(query, caseSensitive: false)
+              .or()
+              .brandContains(query, caseSensitive: false)
+              .or()
+              .categoryContains(query, caseSensitive: false)
+              .or()
+              .skuContains(query, caseSensitive: false),
+        )
+        .findAll();
+  }
 }

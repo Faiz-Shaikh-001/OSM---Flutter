@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:osm/core/repositories/index_counter_repository.dart';
+import 'package:osm/core/services/isar_service.dart';
 import 'package:osm/core/usecases/resolve_qr_scan.dart';
+import 'package:osm/features/customer/data/repositories/customer_local_repository.dart';
 import 'package:osm/features/customer/domain/repositories/customer_repository.dart';
 import 'package:osm/features/customer/domain/usecases/add_customer.dart';
 import 'package:osm/features/customer/domain/usecases/delete_customer.dart';
@@ -12,14 +14,23 @@ import 'package:osm/features/customer/domain/usecases/update_customer.dart';
 import 'package:osm/features/customer/domain/usecases/watch_customers_stream.dart';
 import 'package:osm/features/customer/presentation/bloc/customer/customer_bloc.dart';
 import 'package:osm/features/customer/presentation/bloc/customer_details/customer_details_bloc.dart';
+import 'package:osm/features/dashboard/application/search/search_everything.dart';
+import 'package:osm/features/dashboard/data/sources_impl/accessory_search_source_impl.dart';
+import 'package:osm/features/dashboard/data/sources_impl/customer_search_source_impl.dart';
+import 'package:osm/features/dashboard/data/sources_impl/doctor_search_source_impl.dart';
+import 'package:osm/features/dashboard/data/sources_impl/frame_search_source_impl.dart';
+import 'package:osm/features/dashboard/data/sources_impl/lens_search_source_impl.dart';
+import 'package:osm/features/dashboard/data/sources_impl/order_search_source_impl.dart';
 import 'package:osm/features/dashboard/domain/repositories/activity_repository.dart';
 import 'package:osm/features/dashboard/domain/usecases/save_activity.dart';
 import 'package:osm/features/dashboard/domain/usecases/watch_recent_activities.dart';
 import 'package:osm/features/dashboard/presentation/blocs/activity/activity_bloc.dart';
 import 'package:osm/features/dashboard/presentation/blocs/dashboard/dashboard_bloc.dart';
 import 'package:osm/features/dashboard/presentation/blocs/global_search/global_search_bloc.dart';
-import 'package:osm/features/doctors/domain/repositories/doctor_repository.dart';
-import 'package:osm/features/doctors/domain/usecases/get_all_doctors.dart';
+import 'package:osm/features/doctors/data/repositories/doctor_local_repository.dart';
+import 'package:osm/features/inventory/data/repositories/accessory_local_repository.dart';
+import 'package:osm/features/inventory/data/repositories/frame_local_repository.dart';
+import 'package:osm/features/inventory/data/repositories/lens_local_repository.dart';
 import 'package:osm/features/inventory/domain/repositories/accessory_repository.dart';
 import 'package:osm/features/inventory/domain/repositories/frame_repository.dart';
 import 'package:osm/features/inventory/domain/repositories/lens_repository.dart';
@@ -53,6 +64,7 @@ import 'package:osm/features/inventory/presentation/blocs/frames/frame_list/fram
 import 'package:osm/features/inventory/presentation/blocs/lens/lens_detail/lens_detail_bloc.dart';
 import 'package:osm/features/inventory/presentation/blocs/lens/lens_list/lens_list_bloc.dart';
 import 'package:osm/features/inventory/presentation/blocs/qr_scan/qr_scan_bloc.dart';
+import 'package:osm/features/orders/data/repositories/order_local_repository.dart';
 import 'package:osm/features/orders/domain/repositories/order_repository.dart';
 import 'package:osm/features/orders/domain/usecases/add_payment.dart';
 import 'package:osm/features/orders/domain/usecases/create_order_from_draft.dart';
@@ -79,7 +91,8 @@ List<BlocProvider> buildBlocProviders(BuildContext context) {
   final prescriptionRepository = context.read<PrescriptionRepository>();
   final activityReposistory = context.read<ActivityRepository>();
   final orderRepository = context.read<OrderRepository>();
-  final doctorRepository = context.read<DoctorRepository>();
+  // final doctorRepository = context.read<DoctorRepository>();
+  final isarService = context.read<IsarService>();
 
   return [
     // BlocProviders
@@ -92,12 +105,14 @@ List<BlocProvider> buildBlocProviders(BuildContext context) {
 
     BlocProvider<GlobalSearchBloc>(
       create: (_) => GlobalSearchBloc(
-        getOrders: GetOrders(orderRepository),
-        getAllFrames: GetAllFrames(frameRepository),
-        getAllAccessories: GetAllAccessories(accessoryRepository),
-        getAllCustomers: GetCustomers(customerRepository),
-        getAllDoctors: GetAllDoctors(doctorRepository),
-        getAllLenses: GetAllLenses(lensRepository),
+        searchEverything: SearchEverything(
+          orderSearch: OrderSearchSourceImpl(isarService, OrderLocalRepository()),
+          customerSearch: CustomerSearchSourceImpl(isarService, CustomerLocalRepository()),
+          frameSearch: FrameSearchSourceImpl(isarService, FrameLocalRepository()),
+          lensSearch: LensSearchSourceImpl(isarService, LensLocalRepository()),
+          accessorySearch: AccessorySearchSourceImpl(isarService, AccessoryLocalRepository()),
+          doctorSearch: DoctorSearchSourceImpl(isarService, DoctorLocalRepository()),
+        ),
       ),
     ),
 

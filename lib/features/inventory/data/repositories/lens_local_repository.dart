@@ -49,4 +49,16 @@ class LensLocalRepository {
   Future<LensModel?> getByQrKey(String qrKey, Isar isar) async {
     return await isar.lensModels.filter().qrKeyEqualTo(qrKey).findFirst();
   }
+
+  Future<List<LensModel>> search(String query, Isar isar) async {
+    return await isar.lensModels
+        .filter()
+        .group(
+          (q) => q
+              .productNameContains(query, caseSensitive: false)
+              .or()
+              .companyNameContains(query, caseSensitive: false),
+        )
+        .findAll();
+  }
 }

@@ -89,8 +89,9 @@ class _BuildDashboardBodyState extends State<BuildDashboardBody> {
       height: 50,
       width: MediaQuery.of(content).size.width * .9,
       child: GestureDetector(
-        onTap: () =>
-            showSearch(context: context, delegate: GlobalSearchDelegate()),
+        onTap: () async {
+          return showSearch(context: context, delegate: GlobalSearchDelegate());
+        },
         child: AbsorbPointer(
           child: TextField(
             controller: _searchController,
@@ -108,85 +109,3 @@ class _BuildDashboardBodyState extends State<BuildDashboardBody> {
     );
   }
 }
-
-//   Widget _buildGlobalSearchDelegate(
-//     BuildContext context,
-//     TextEditingController controller,
-//   ) {
-//     return GestureDetector(
-//       onTap: () async {
-//         final result = await showSearch(
-//           context: context,
-//           delegate: GlobalSearchDelegate(
-//             widget.lensRepository,
-//             widget.frameRepository,
-//             widget.orderRepository,
-//             widget.customerRepository,
-//           ),
-//         );
-//         if (result != null) {
-//           if (result is OrderModel) {
-//             Navigator.push(
-//               context,
-//               MaterialPageRoute(
-//                 builder: (_) {
-//                   return OrderDetailsScreen(order: result);
-//                 },
-//               ),
-//             );
-//           } else if (result is FrameModel) {
-//             Navigator.push(
-//               context,
-//               MaterialPageRoute(
-//                 builder: (_) {
-//                   return ItemPage(
-//                     product: result,
-//                     productType: ProductType.frame,
-//                   );
-//                 },
-//               ),
-//             );
-//           } else if (result is LensModel) {
-//             Navigator.push(
-//               context,
-//               MaterialPageRoute(
-//                 builder: (_) {
-//                   return ItemPage(
-//                     product: result,
-//                     productType: ProductType.lens,
-//                   );
-//                 },
-//               ),
-//             );
-//           } else if (result is CustomerModel) {
-//             Navigator.push(
-//               context,
-//               MaterialPageRoute(
-//                 builder: (_) {
-//                   return CustomerDetailsScreen(customer: result);
-//                 },
-//               ),
-//             );
-//           }
-//         }
-//       },
-//       child: AbsorbPointer(
-//         child: TextField(
-//           controller: controller,
-//           readOnly: true,
-//           decoration: InputDecoration(
-//             labelText: 'Search Orders, Customer, Product,...',
-//             suffixIcon: Icon(Icons.search),
-//             border: OutlineInputBorder(
-//               borderRadius: BorderRadius.circular(10.0),
-//             ),
-//           ),
-//           onChanged: (text) {
-//             print('Text changed: $text');
-//           },
-//           obscureText: false, // Set to true for password fields
-//         ),
-//       ),
-//     );
-//   }
-// }

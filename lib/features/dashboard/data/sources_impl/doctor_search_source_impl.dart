@@ -1,25 +1,20 @@
-import 'package:isar/isar.dart';
+import 'package:osm/core/services/isar_service.dart';
 import 'package:osm/features/dashboard/data/sources/doctor_search_source.dart';
 import 'package:osm/features/doctors/data/mapper/doctor_mapper.dart';
-import 'package:osm/features/doctors/data/models/doctor_model.dart';
+import 'package:osm/features/doctors/data/repositories/doctor_local_repository.dart';
 import 'package:osm/features/doctors/domain/entities/doctor.dart';
 
 class DoctorSearchSourceImpl implements DoctorSearchSource {
-  final Isar isar;
+  final IsarService _isarService;
+  final DoctorLocalRepository _localRepository;
 
-  DoctorSearchSourceImpl(this.isar);
+  DoctorSearchSourceImpl(this._isarService, this._localRepository);
 
   @override
   Future<List<Doctor>> search(String query) async {
-    final models = await isar.doctorModels
-        .filter()
-        .group((q) => q
-            .nameContains(query, caseSensitive: false)
-            .or()
-            .hospitalContains(query, caseSensitive: false)
-            .or()
-            .cityContains(query, caseSensitive: false))
-        .findAll();
+    final isar = await _isarService.db;
+
+    final models = await _localRepository.search(query, isar);
 
     return models.map(DoctorMapper.toEntity).toList();
   }
