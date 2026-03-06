@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-
 import '../../bloc/account_bloc.dart';
+import 'dart:io';
+import 'package:image_picker/image_picker.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -17,7 +18,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
   final _phoneController = TextEditingController();
   final _addressController = TextEditingController();
 
+  final ImagePicker _picker = ImagePicker();
+
   bool _initialized = false;
+  String? _profileImagePath;
 
   @override
   void dispose() {
@@ -37,10 +41,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
             phone: _phoneController.text.trim(),
             businessName: _businessController.text.trim(),
             address: _addressController.text.trim(),
+            profileImagePath: _profileImagePath,
           ),
         );
 
     Navigator.pop(context);
+  }
+
+  Future<void> _pickImage() async {
+    final picked = await _picker.pickImage(source: ImageSource.gallery);
+
+    if (picked == null) return;
+
+    setState(() {
+      _profileImagePath = picked.path;
+    });
   }
 
   @override
@@ -61,14 +76,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
             return const Center(child: CircularProgressIndicator());
           }
 
-          // Initialize controllers only ONCE
+          // Initialize controllers only once
           if (!_initialized) {
             final account = state.account;
+
             _nameController.text = account.name;
             _businessController.text = account.businessName;
             _emailController.text = account.email;
             _phoneController.text = account.phone;
             _addressController.text = account.address;
+
+            _profileImagePath = account.profileImagePath;
+
             _initialized = true;
           }
 
@@ -76,19 +95,37 @@ class _ProfileScreenState extends State<ProfileScreen> {
             padding: const EdgeInsets.all(16),
             children: [
               Center(
-                child: CircleAvatar(
-                  radius: 36,
-                  child: const Icon(Icons.person, size: 36),
-                ),//TODO: Add profile picture upload functionality(bhutni ka nahi chal raha mere phone mein)
+                child: GestureDetector(
+                  onTap: _pickImage,
+                  child: CircleAvatar(
+                    radius: 40,
+                    backgroundImage: _profileImagePath != null
+                        ? FileImage(File(_profileImagePath!))
+                        : null,
+                    child: _profileImagePath == null
+                        ? const Icon(Icons.person, size: 40)
+                        : null,
+                  ),
+                ),
               ),
+
               const SizedBox(height: 24),
 
               _field('Your Name', _nameController),
               _field('Business Name', _businessController),
-              _field('Email Address', _emailController,
-                  keyboardType: TextInputType.emailAddress),
-              _field('Phone Number', _phoneController,
-                  keyboardType: TextInputType.phone),
+
+              _field(
+                'Email Address',
+                _emailController,
+                keyboardType: TextInputType.emailAddress,
+              ),
+
+              _field(
+                'Phone Number',
+                _phoneController,
+                keyboardType: TextInputType.phone,
+              ),
+
               _field('Address', _addressController, maxLines: 3),
 
               const SizedBox(height: 24),
@@ -97,7 +134,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 'Current Branch',
                 style: TextStyle(fontWeight: FontWeight.bold),
               ),
+
               const SizedBox(height: 4),
+
               const Text(
                 'Linked to active store',
                 style: TextStyle(color: Colors.grey),

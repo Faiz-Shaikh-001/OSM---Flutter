@@ -14,6 +14,7 @@ class UpdateProfile extends AccountEvent {
   final String phone;
   final String businessName;
   final String address;
+  final String? profileImagePath;
 
   UpdateProfile({
     required this.name,
@@ -21,6 +22,7 @@ class UpdateProfile extends AccountEvent {
     required this.phone,
     required this.businessName,
     required this.address,
+    this.profileImagePath,
   });
 }
 
@@ -39,18 +41,13 @@ class AccountBloc extends Bloc<AccountEvent, AccountState> {
   final GetAccount getAccount;
   final UpdateAccount updateAccount;
 
-  AccountBloc({
-    required this.getAccount,
-    required this.updateAccount,
-  }) : super(AccountLoading()) {
+  AccountBloc({required this.getAccount, required this.updateAccount})
+    : super(AccountLoading()) {
     on<LoadAccount>(_onLoad);
     on<UpdateProfile>(_onUpdate);
   }
 
-  Future<void> _onLoad(
-    LoadAccount event,
-    Emitter<AccountState> emit,
-  ) async {
+  Future<void> _onLoad(LoadAccount event, Emitter<AccountState> emit) async {
     final account = await getAccount();
     emit(AccountLoaded(account));
   }
@@ -62,12 +59,13 @@ class AccountBloc extends Bloc<AccountEvent, AccountState> {
     if (state is! AccountLoaded) return;
 
     final updated = (state as AccountLoaded).account.copyWith(
-          name: event.name,
-          email: event.email,
-          phone: event.phone,
-          businessName: event.businessName,
-          address: event.address,
-        );
+      name: event.name,
+      email: event.email,
+      phone: event.phone,
+      businessName: event.businessName,
+      address: event.address,
+      profileImagePath: event.profileImagePath,
+    );
 
     await updateAccount(updated);
     emit(AccountLoaded(updated));
