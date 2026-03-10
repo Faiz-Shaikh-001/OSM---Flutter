@@ -4,6 +4,7 @@ import 'package:osm/core/entities/index_counter.dart';
 import 'package:osm/features/dashboard/data/models/activity_model.dart';
 import 'package:osm/features/inventory/data/models/accessory/accessory_model.dart';
 import 'package:osm/features/inventory/data/models/frame/frame_model.dart';
+import 'package:osm/features/staff/data/models/staff_model.dart';
 import 'package:osm/features/store/data/model/active_store_model.dart';
 import 'package:osm/features/store/data/model/store_location_model.dart';
 import 'package:path_provider/path_provider.dart';
@@ -51,6 +52,7 @@ class IsarService {
         ActiveStoreModelSchema,
         ActivityModelSchema,
         IndexCounterSchema,
+        StaffModelSchema,
       ],
       directory: dir.path,
       inspector: true,

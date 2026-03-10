@@ -72,6 +72,15 @@ import 'package:osm/features/settings/settings_di.dart';
 import 'package:osm/features/store/domain/usecases/add_store_location.dart';
 import 'package:osm/features/store/domain/usecases/update_store_location.dart';
 import 'package:osm/features/store/domain/usecases/delete_store_location.dart';
+import 'package:osm/features/staff/data/repositories/staff_repository_impl.dart';
+import 'package:osm/features/staff/domain/usecases/add_staff.dart';
+import 'package:osm/features/staff/domain/usecases/get_staff.dart';
+import 'package:osm/features/staff/domain/usecases/update_staff.dart';
+import 'package:osm/features/staff/domain/usecases/delete_staff.dart';
+import 'package:osm/features/staff/presentation/bloc/staff_bloc.dart';
+import 'package:osm/features/staff/presentation/bloc/staff_event.dart';
+import 'package:osm/core/services/isar_service.dart';
+import 'package:osm/core/value_objects/id.dart';
 
 List<BlocProvider> buildBlocProviders(BuildContext context) {
   final storeLocationRepository = context.read<StoreLocationRepository>();
@@ -84,7 +93,8 @@ List<BlocProvider> buildBlocProviders(BuildContext context) {
   final activityReposistory = context.read<ActivityRepository>();
   final orderRepository = context.read<OrderRepository>();
   final doctorRepository = context.read<DoctorRepository>();
-
+  final isarService = context.read<IsarService>();
+  final staffRepository = StaffRepositoryImpl(isarService);
 
   return [
     // BlocProviders
@@ -229,6 +239,14 @@ List<BlocProvider> buildBlocProviders(BuildContext context) {
       ),
     ),
 
+    BlocProvider<StaffBloc>(
+      create: (_) => StaffBloc(
+        getStaff: GetStaff(staffRepository),
+        addStaff: AddStaff(staffRepository),
+        updateStaff: UpdateStaff(staffRepository),
+        deleteStaff: DeleteStaff(staffRepository),
+      )..add(LoadStaff(storeId: const StoreLocationId('1'))),
+    ),
     ...settingsBlocProviders(),
   ];
 }

@@ -53,3 +53,7 @@ class PrescriptionId extends UniqueId {
 class StoreLocationId extends UniqueId {
   const StoreLocationId(super.value);
 }
+
+class StaffId extends UniqueId {
+  const StaffId(super.value);
+}

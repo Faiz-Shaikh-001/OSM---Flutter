@@ -8,6 +8,10 @@ import '../../widgets/settings_tile.dart';
 import 'package:osm/features/store/presentation/bloc/store_location_bloc.dart';
 import 'manage_stores_screen.dart';
 
+import 'package:osm/features/staff/presentation/screens/manage_staff_screen.dart';
+import 'package:osm/features/staff/presentation/bloc/staff_bloc.dart';
+import 'package:osm/features/staff/presentation/bloc/staff_event.dart';
+
 class AccountScreen extends StatelessWidget {
   const AccountScreen({super.key});
 
@@ -63,8 +67,26 @@ class AccountScreen extends StatelessWidget {
           SettingsTile(
             icon: Icons.people_outline,
             title: 'Manage Staff',
-            //ubtitle: 'Coming Soon',
-            onTap: () => _showComingSoon(context),
+            onTap: () {
+              final storeState = context.read<StoreLocationBloc>().state;
+
+              if (storeState is StoreLocationLoaded &&
+                  storeState.activeStore != null) {
+                context.read<StaffBloc>().add(
+                  LoadStaff(storeId: storeState.activeStore!.id!),
+                );
+              }
+
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => BlocProvider.value(
+                    value: context.read<StaffBloc>(),
+                    child: const ManageStaffScreen(),
+                  ),
+                ),
+              );
+            },
           ),
 
           const Divider(height: 32),
