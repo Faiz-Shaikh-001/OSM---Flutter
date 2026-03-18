@@ -92,6 +92,7 @@ class AccountScreen extends StatelessWidget {
           const Divider(height: 32),
 
           // ───────────────── Account Actions ─────────────────
+          
           const SettingsSectionTitle(
             icon: Icons.security_outlined,
             title: 'Account Actions',

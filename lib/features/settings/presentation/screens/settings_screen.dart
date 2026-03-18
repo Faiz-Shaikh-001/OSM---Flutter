@@ -165,6 +165,10 @@ class SettingsScreen extends StatelessWidget {
               const Divider(height: 32),
 
               /// ───────── Account ─────────
+              const SettingsSectionTitle(
+                icon: Icons.person_outline,
+                title: 'Account',
+              ),
               SettingsTile(
                 icon: Icons.person_outline,
                 title: 'Account',

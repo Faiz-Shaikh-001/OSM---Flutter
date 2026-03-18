@@ -7,8 +7,27 @@ import 'package:osm/features/staff/presentation/bloc/staff_state.dart';
 import 'package:osm/features/store/presentation/bloc/store_location_bloc.dart';
 import 'staff_form_screen.dart';
 
-class ManageStaffScreen extends StatelessWidget {
+class ManageStaffScreen extends StatefulWidget {
   const ManageStaffScreen({super.key});
+
+  @override
+  State<ManageStaffScreen> createState() => _ManageStaffScreenState();
+}
+
+class _ManageStaffScreenState extends State<ManageStaffScreen> {
+
+  @override
+  void initState() {
+    super.initState();
+
+    final storeState = context.read<StoreLocationBloc>().state;
+
+    if (storeState is StoreLocationLoaded && storeState.activeStore != null) {
+      context.read<StaffBloc>().add(
+        LoadStaff(storeId: storeState.activeStore!.id!),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -16,8 +35,8 @@ class ManageStaffScreen extends StatelessWidget {
       listener: (context, state) {
         if (state is StoreLocationLoaded && state.activeStore != null) {
           context.read<StaffBloc>().add(
-                LoadStaff(storeId: state.activeStore!.id!),
-              );
+            LoadStaff(storeId: state.activeStore!.id!),
+          );
         }
       },
       child: Scaffold(
@@ -128,8 +147,9 @@ class _StaffTile extends StatelessWidget {
       context: context,
       builder: (_) => AlertDialog(
         title: const Text('Delete Staff'),
-        content:
-            const Text('Are you sure you want to delete this staff member?'),
+        content: const Text(
+          'Are you sure you want to delete this staff member?',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
