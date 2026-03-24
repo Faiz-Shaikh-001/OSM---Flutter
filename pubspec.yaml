@@ -58,13 +58,16 @@ dependencies:
   shared_preferences: ^2.5.3
   uuid: ^4.5.2
   url_launcher: ^6.1.7
+  firebase_core: ^4.6.0
+  firebase_storage: ^13.1.0
 
 dev_dependencies:
-  build_runner: 2.4.9
+  build_runner: 2.4.13
   flutter_lints: ^6.0.0
   flutter_test:
     sdk: flutter
   isar_generator: ^3.1.0+1
+
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -102,3 +105,5 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+dependency_overrides:
+  web: ^1.0.0
