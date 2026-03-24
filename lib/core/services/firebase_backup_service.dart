@@ -39,6 +39,7 @@ class FirebaseBackupService {
     }
   }
 
+
   /// Upload backup to Firebase
   Future<void> uploadBackup() async {
     final backupDir = await _createBackupFolder();
