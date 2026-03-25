@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:osm/core/services/firebase_backup_service.dart';
 
 class BackupRestoreScreen extends StatelessWidget {
   const BackupRestoreScreen({super.key});
@@ -22,32 +21,12 @@ class BackupRestoreScreen extends StatelessWidget {
               icon: Icons.cloud_upload_outlined,
               title: 'Create Backup',
               description:
-                  'Save a copy of your database and images to Firebase.',
+                  'Save a copy of your database to your device storage or share it.',
               buttonText: 'Backup Now',
               buttonColor: colorScheme.primary,
               textColor: colorScheme.onPrimary,
-              onPressed: () async {
-                final service = FirebaseBackupService();
-
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Backup started...')),
-                );
-
-                try {
-                  await service.uploadBackup();
-
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Backup completed successfully ✅'),
-                    ),
-                  );
-                } catch (e) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Backup failed ❌: $e'),
-                    ),
-                  );
-                }
+              onPressed: () {
+                _showSnack(context, 'Backup started (placeholder)');
               },
             ),
 
@@ -58,21 +37,23 @@ class BackupRestoreScreen extends StatelessWidget {
               icon: Icons.cloud_download_outlined,
               title: 'Restore Data',
               description:
-                  'Restore your data from Firebase backup (coming next).',
-              buttonText: 'Restore',
+                  'Import a previously saved backup file to restore your data.',
+              buttonText: 'Restore from File',
               buttonColor: colorScheme.surfaceContainerHighest,
               textColor: colorScheme.error,
               onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Restore coming soon...'),
-                  ),
-                );
+                _showSnack(context, 'Restore started (placeholder)');
               },
             ),
           ],
         ),
       ),
+    );
+  }
+
+  void _showSnack(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
     );
   }
 }
