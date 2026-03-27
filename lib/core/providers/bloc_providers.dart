@@ -69,6 +69,9 @@ import 'package:osm/features/orders/domain/repositories/order_repository.dart';
 import 'package:osm/features/orders/domain/usecases/add_payment.dart';
 import 'package:osm/features/orders/domain/usecases/create_order_from_draft.dart';
 import 'package:osm/features/orders/domain/usecases/get_orders.dart';
+import 'package:osm/features/orders/domain/usecases/watch_active_order_count.dart';
+import 'package:osm/features/orders/domain/usecases/watch_pending_payments.dart';
+import 'package:osm/features/orders/domain/usecases/watch_todays_sale.dart';
 import 'package:osm/features/orders/presentation/blocs/order_submission/order_submission_bloc.dart';
 import 'package:osm/features/prescription/domain/repositories/prescription_repository.dart';
 import 'package:osm/features/prescription/domain/usecases/add_prescription.dart';
@@ -106,12 +109,27 @@ List<BlocProvider> buildBlocProviders(BuildContext context) {
     BlocProvider<GlobalSearchBloc>(
       create: (_) => GlobalSearchBloc(
         searchEverything: SearchEverything(
-          orderSearch: OrderSearchSourceImpl(isarService, OrderLocalRepository()),
-          customerSearch: CustomerSearchSourceImpl(isarService, CustomerLocalRepository()),
-          frameSearch: FrameSearchSourceImpl(isarService, FrameLocalRepository()),
+          orderSearch: OrderSearchSourceImpl(
+            isarService,
+            OrderLocalRepository(),
+          ),
+          customerSearch: CustomerSearchSourceImpl(
+            isarService,
+            CustomerLocalRepository(),
+          ),
+          frameSearch: FrameSearchSourceImpl(
+            isarService,
+            FrameLocalRepository(),
+          ),
           lensSearch: LensSearchSourceImpl(isarService, LensLocalRepository()),
-          accessorySearch: AccessorySearchSourceImpl(isarService, AccessoryLocalRepository()),
-          doctorSearch: DoctorSearchSourceImpl(isarService, DoctorLocalRepository()),
+          accessorySearch: AccessorySearchSourceImpl(
+            isarService,
+            AccessoryLocalRepository(),
+          ),
+          doctorSearch: DoctorSearchSourceImpl(
+            isarService,
+            DoctorLocalRepository(),
+          ),
         ),
       ),
     ),
@@ -122,6 +140,9 @@ List<BlocProvider> buildBlocProviders(BuildContext context) {
         getAllFrames: GetAllFrames(frameRepository),
         getAllAccessories: GetAllAccessories(accessoryRepository),
         watchRecentActivities: WatchRecentActivities(activityReposistory),
+        watchActiveOrderCount: WatchActiveOrderCount(orderRepository),
+        watchPendingPayments: WatchPendingPayments(orderRepository),
+        watchTodaysSale: WatchTodaysSale(orderRepository),
       ),
     ),
 

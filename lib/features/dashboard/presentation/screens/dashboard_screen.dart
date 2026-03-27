@@ -1,9 +1,10 @@
 import 'dart:math';
-import 'dart:ui';
 
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:osm/features/customer/presentation/screens/customer_list_screen.dart';
+import 'package:osm/features/dashboard/presentation/blocs/dashboard/dashboard_bloc.dart';
 import 'package:osm/features/dashboard/presentation/screens/dashboard_body.dart';
 import 'package:osm/features/inventory/presentation/screens/inventory_screen.dart';
 import 'package:osm/features/orders/presentation/screens/add_order/create_order_flow_screen.dart';
@@ -18,9 +19,20 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
+  // Current active tab index
   int _selectedIndex = 2;
+  // Controls the visibility of the custom FAB menu
   bool _isDialOpen = false;
 
+  @override
+  void initState() {
+    super.initState();
+
+    context.read<DashboardBloc>().add(DashboardStarted());
+  }
+
+  // Map indices to actual screens. Index 2 is a placeholder (SizedBox)
+  // because the DashboardBody is handled seperately in the build method
   final List<Widget> _pages = [
     const OrderListScreen(),
     const InventoryScreen(),
@@ -32,19 +44,23 @@ class _DashboardScreenState extends State<DashboardScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      // Only show the AppBar if we are on the main Dashboard tab (index 2)
       appBar: _selectedIndex == 2 ? _buildAppBar(context) : null,
       body: Stack(
         children: [
+          // Main Content Layer
           Positioned.fill(
             child: _selectedIndex == 2
                 ? BuildDashboardBody()
                 : _pages[_selectedIndex],
           ),
-          if (_isDialOpen && _selectedIndex == 2) _buildBlurOverlay(),
+
           if (_isDialOpen && _selectedIndex == 2) ..._buildFloatingActions(),
         ],
       ),
       bottomNavigationBar: _buildBottomNavigationBar(),
+
+      // The FAB is only functional on the Dashbaord tab
       floatingActionButton: _selectedIndex == 2 ? _buildMainFAB() : null,
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
@@ -94,6 +110,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
+  // The Trigger Button for the Speed Dial
   Widget _buildMainFAB() {
     return FloatingActionButton(
       onPressed: () => setState(() => _isDialOpen = !_isDialOpen),
@@ -112,24 +129,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildBlurOverlay({double blurSigma = 4.0, double opacity = 0.5}) {
-    return Positioned.fill(
-      child: GestureDetector(
-        onTap: () => setState(() => _isDialOpen = false),
-        child: AnimatedOpacity(
-          duration: const Duration(milliseconds: 200),
-          opacity: 1.0,
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: blurSigma, sigmaY: blurSigma),
-            child: Container(color: Color.fromRGBO(0, 0, 0, opacity)),
-          ),
-        ),
-      ),
-    );
-  }
-
+  // Trigonometry logic to place FAB actions in a circular arc
   List<Widget> _buildFloatingActions() {
+    // Distance from the main FAB
     final double radius = 100;
+    // Offset padding from bottom-right
     final Offset center = const Offset(20, 20);
 
     final actions = [
@@ -154,7 +158,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
     ];
 
     return actions.map((action) {
+      // Convert degrees to Radians for Math functions
       final double rad = action.angle * (pi / 180.0);
+      // Calculate X and Y coordinates based on the angle
       final double dx = radius * cos(rad);
       final double dy = radius * sin(rad);
 
@@ -175,6 +181,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }).toList();
   }
 
+  // Centralized logic to handle clicks from the Speed Dial
   void _handleAction(String label) {
     setState(() => _isDialOpen = false);
     if (label == 'Create Order') {

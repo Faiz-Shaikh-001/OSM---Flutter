@@ -12,7 +12,7 @@ class SkuGenerator {
     required String company,
     required String name,
     required String type,
-    required int size,
+    required String size,
     required String color,
     required int sequence,
   }) {
@@ -21,7 +21,7 @@ class SkuGenerator {
       _norm(company, max: 3),
       _norm(name, max: 3),
       _norm(type, max: 4),
-      size,
+      _norm(size),
       _norm(color, max: 3),
       _seq(sequence),
     ].join('-');

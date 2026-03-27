@@ -4,7 +4,7 @@ class FrameVariant {
   final String productCode;
   final String colorName;
   final int? colorValue;
-  final int size;
+  final String size;
   final int quantity;
   final Money purchasePrice;
   final Money salesPrice;

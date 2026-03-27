@@ -1,5 +1,6 @@
 import 'package:osm/core/either.dart';
 import 'package:osm/core/value_objects/id.dart';
+import 'package:osm/core/value_objects/money.dart';
 import 'package:osm/features/orders/domain/entities/order_enums.dart';
 import 'package:osm/features/orders/domain/entities/payment.dart';
 import 'package:osm/features/orders/domain/failures/order_failure.dart';
@@ -30,9 +31,9 @@ abstract class OrderRepository {
 
   Future<Either<OrderFailure, Order>> delete(OrderId orderId);
 
-  Stream<double> watchTodaysSale();
+  Stream<Money> watchTodaysSale();
 
-  Stream<int> watchTodaysOrderCount();
+  Stream<int> watchActiveOrderCount();
 
-  Stream<double> watchPendingPayments();
+  Stream<Money> watchPendingPayments();
 }

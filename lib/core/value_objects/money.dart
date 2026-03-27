@@ -1,11 +1,7 @@
 class Money {
   final double value;
 
-  Money(this.value) {
-    if (value < 0) {
-      throw ArgumentError('Money cannot be negative');
-    }
-  }
+  const Money(this.value) : assert(value >= 0, 'Money cannot be negative');
 
   Money operator +(Money other) => Money(value + other.value);
   Money operator -(Money other) {

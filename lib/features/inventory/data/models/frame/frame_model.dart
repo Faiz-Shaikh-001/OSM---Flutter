@@ -42,7 +42,7 @@ class FrameVariantModel {
   final String? sku;
   final String? colorName;
   final int? colorValue;
-  final int? size;
+  final String? size;
 
   final int? quantity;
 

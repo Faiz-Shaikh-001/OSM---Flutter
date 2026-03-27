@@ -1,7 +1,10 @@
+import 'package:flutter/material.dart';
 import 'package:isar/isar.dart';
 import 'package:osm/core/either.dart';
 import 'package:osm/core/services/isar_service.dart';
 import 'package:osm/core/value_objects/id.dart';
+import 'package:osm/core/value_objects/money.dart';
+import 'package:osm/core/value_objects/money_mapper.dart';
 import 'package:osm/features/customer/data/models/customer_model.dart';
 import 'package:osm/features/customer/data/repositories/customer_local_repository.dart';
 import 'package:osm/features/dashboard/data/models/activity_model.dart';
@@ -45,6 +48,8 @@ class OrderRepositoryImpl implements OrderRepository {
     this.orderItemLocal,
     this._activityLocalRepository,
   );
+
+  // Fetches a single order and manually hydrates its related data (links).
   @override
   Future<Either<OrderFailure, Order>> getById(OrderId id) async {
     try {
@@ -54,7 +59,9 @@ class OrderRepositoryImpl implements OrderRepository {
         return const Left(OrderNotFoundFailure());
       }
 
+      // Isar links are lazy-loaded. We must fetch them before mapping to an Entity.
       await _loadRelations(model);
+
       return Right(
         OrderMapper.toEntity(
           model,
@@ -93,14 +100,18 @@ class OrderRepositoryImpl implements OrderRepository {
     }
   }
 
+  // Provides a real-time stream of all orders.
+  // Every time any order changes in Isar, this stream emits a fresh, updated list.
   @override
   Stream<Either<OrderFailure, List<Order>>> watchAll() async* {
     final isar = await _isarService.db;
     yield* orderLocal.watchAll(isar).asyncMap((models) async {
       try {
+        //  We iterate and load relations for every single model in the list
         for (final m in models) {
           await _loadRelations(m);
         }
+
         return Right(
           models
               .map(
@@ -118,12 +129,15 @@ class OrderRepositoryImpl implements OrderRepository {
     });
   }
 
+  // Complex transation that saves the Order, links it to a Customer/Store,
+  // and logs the 'New Order' activity.
   @override
   Future<Either<OrderFailure, OrderId>> create(Order order) async {
     try {
       final isar = await _isarService.db;
       final model = OrderMapper.toModel(order);
 
+      // ValidationL Ensure the relational parents exist before attempting to link.
       final customer = await customerLocal.getById(
         int.parse(order.customerId.value),
         isar,
@@ -160,6 +174,7 @@ class OrderRepositoryImpl implements OrderRepository {
 
       final payments = order.payments.map(PaymentMapper.toModel).toList();
 
+      // Perform the save inside a Write Transaction to ensure data integrity
       final id = await isar.writeTxn(() async {
         final id = await orderLocal.insert(
           model,
@@ -170,6 +185,8 @@ class OrderRepositoryImpl implements OrderRepository {
           store,
           isar,
         );
+
+        // Audit Trail: Log this action so it appears in the Dashboard Activity feed
         final activity = Activity(
           type: ActivityType.newOrder,
           occurredAt: DateTime.now(),
@@ -313,14 +330,6 @@ class OrderRepositoryImpl implements OrderRepository {
     }
   }
 
-  Future<void> _loadRelations(OrderModel order) async {
-    await order.customer.load();
-    await order.prescription.load();
-    await order.storeLocation.load();
-    await order.items.load();
-    await order.payments.load();
-  }
-
   @override
   Future<Either<OrderFailure, List<Order>>> getByCustomer(
     CustomerId customerId,
@@ -395,8 +404,9 @@ class OrderRepositoryImpl implements OrderRepository {
     }
   }
 
+  // Reactive Summary: Watches all orders created today and calculates the sum of totals.
   @override
-  Stream<double> watchTodaysSale() async* {
+  Stream<Money> watchTodaysSale() async* {
     final isar = await _isarService.db;
     final now = DateTime.now();
     final todayStart = DateTime(now.year, now.month, now.day);
@@ -409,30 +419,34 @@ class OrderRepositoryImpl implements OrderRepository {
         .asyncMap((orders) async {
           double total = 0;
           for (var order in orders) {
+            // We must load items to access their prices for the calculation
             await order.items.load();
             for (var item in order.items) {
               total += (item.unitPrice * item.quantity);
             }
           }
-          return total;
+          return MoneyMapper.fromPaise(total.toInt());
         });
   }
 
   @override
-  Stream<int> watchTodaysOrderCount() async* {
+  Stream<int> watchActiveOrderCount() async* {
     final isar = await _isarService.db;
-    final now = DateTime.now();
-    final todayStart = DateTime(now.year, now.month, now.day);
 
     yield* isar.orderModels
         .filter()
-        .createdAtGreaterThan(todayStart)
+        .not()
+        .statusEqualTo(OrderStatusMapper.toModel(OrderStatus.completed))
+        .and()
+        .not()
+        .statusEqualTo(OrderStatusMapper.toModel(OrderStatus.cancelled))
         .watch(fireImmediately: true)
         .map((orders) => orders.length);
   }
 
+  // Reactive Summary: Calculates the debt (Order Total - Amount Paid) across all orders
   @override
-  Stream<double> watchPendingPayments() async* {
+  Stream<Money> watchPendingPayments() async* {
     final isar = await _isarService.db;
 
     yield* isar.orderModels.where().watch(fireImmediately: true).asyncMap((
@@ -456,7 +470,17 @@ class OrderRepositoryImpl implements OrderRepository {
           pending += (totalOrderValue - totalPaid);
         }
       }
-      return pending;
+
+      return MoneyMapper.fromPaise((pending).toInt());
     });
+  }
+
+  // Helper method to hydrate IsarLinks. Without this, relations return null/empty.
+  Future<void> _loadRelations(OrderModel order) async {
+    await order.customer.load();
+    await order.prescription.load();
+    await order.storeLocation.load();
+    await order.items.load();
+    await order.payments.load();
   }
 }

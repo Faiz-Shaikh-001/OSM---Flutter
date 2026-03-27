@@ -141,7 +141,7 @@ class _AddFrameVariantSheetState extends State<AddFrameVariantSheet> {
       productCode: _productCodeCtrl.text.trim(),
       colorName: _colorName!,
       colorValue: _colorValue,
-      size: int.parse(_sizeCtrl.text),
+      size: _sizeCtrl.text,
       quantity: int.parse(_quantityCtrl.text),
       purchasePrice: Money(double.parse(_purchasePriceCtrl.text)),
       salesPrice: Money(double.parse(_salesPriceCtrl.text)),
@@ -266,7 +266,16 @@ class _AddFrameVariantSheetState extends State<AddFrameVariantSheet> {
                   return null;
                 },
               ),
-              _numberField(_sizeCtrl, 'Size'),
+              TextFormField(
+                controller: _sizeCtrl,
+                decoration: const InputDecoration(labelText: "Size"),
+                validator: (v) {
+                  if (v==null || v.isEmpty) {
+                    return 'Size required';
+                  }
+                  return null;
+                },
+              ),
               _numberField(_quantityCtrl, 'Quantity'),
 
               const SizedBox(height: 12),

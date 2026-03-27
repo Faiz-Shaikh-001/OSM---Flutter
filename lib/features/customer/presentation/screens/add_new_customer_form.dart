@@ -135,8 +135,8 @@ class _AddNewCustomerFormState extends State<AddNewCustomerForm> {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      child: SafeArea(
+    return Scaffold(
+      body: SafeArea(
         child: SingleChildScrollView(
           child: Card(
             margin: const EdgeInsets.all(8),

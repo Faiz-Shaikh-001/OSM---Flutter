@@ -10,24 +10,33 @@ class DashboardSummarySection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // BlocBuilder handles the subscription to the DashboardBloc
+    // Every time emit() is called in the Bloc, this builder re-runs.
+
     return BlocBuilder<DashboardBloc, DashboardState>(
       builder: (context, state) {
+        debugPrint(
+          "Current UI State: ${state.status} - Count: ${state.activeOrderCount}",
+        );
+        // Boolean flag to show placeholders if the data is still fetching
         final isLoading = state.status == DashboardStatus.loading;
 
         return SizedBox(
+          // Responsive width: taking upto 90% of the screen width
           width: MediaQuery.of(context).size.width * .90,
           child: Column(
             children: [
+              // First Row: High-level metrics (Orders and Sales)
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
                   SummaryChip(
                     color: Colors.blue[100],
                     svg: AppIcons.order(),
-                    title: "Total Orders",
+                    title: "Total Active Orders",
                     content: isLoading
                         ? "..."
-                        : state.activeOrdersCount.toString(),
+                        : state.activeOrderCount.toString(),
                   ),
                   SummaryChip(
                     color: Colors.green[100],
@@ -35,11 +44,13 @@ class DashboardSummarySection extends StatelessWidget {
                     title: "Today's Sale",
                     content: isLoading
                         ? "..."
-                        : "₹${state.dailySales.toStringAsFixed(0)}",
+                        : "₹${state.dailySales.toString()}",
                   ),
                 ],
               ),
               SizedBox(height: 20),
+
+              // Second Row: Operational alerts (Payments and Inventory)
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
@@ -47,8 +58,11 @@ class DashboardSummarySection extends StatelessWidget {
                     color: Colors.yellow[100],
                     svg: AppIcons.pendingOrder(),
                     title: "Pending Payments",
-                    content: isLoading ? "..." : "₹${state.pendingPayments.toStringAsFixed(0)}",
+                    content: isLoading
+                        ? "..."
+                        : "₹${state.pendingPayments.toString()}",
                   ),
+                  // Specialized Navigation for the Low Stock alert
                   GestureDetector(
                     onTap: () {
                       Navigator.push(
@@ -62,7 +76,9 @@ class DashboardSummarySection extends StatelessWidget {
                       color: Colors.red[100],
                       svg: AppIcons.lowStock(),
                       title: "Low Stock",
-                      content: isLoading ? "..." : state.lowStockCount.toString(),
+                      content: isLoading
+                          ? "..."
+                          : state.lowStockCount.toString(),
                     ),
                   ),
                 ],

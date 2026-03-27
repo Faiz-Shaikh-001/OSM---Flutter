@@ -1821,7 +1821,7 @@ const FrameVariantModelSchema = Schema(
     r'size': PropertySchema(
       id: 7,
       name: r'size',
-      type: IsarType.long,
+      type: IsarType.string,
     ),
     r'sku': PropertySchema(
       id: 8,
@@ -1866,6 +1866,12 @@ int _frameVariantModelEstimateSize(
     }
   }
   {
+    final value = object.size;
+    if (value != null) {
+      bytesCount += 3 + value.length * 3;
+    }
+  }
+  {
     final value = object.sku;
     if (value != null) {
       bytesCount += 3 + value.length * 3;
@@ -1887,7 +1893,7 @@ void _frameVariantModelSerialize(
   writer.writeLong(offsets[4], object.purchasePrice);
   writer.writeLong(offsets[5], object.quantity);
   writer.writeLong(offsets[6], object.salesPrice);
-  writer.writeLong(offsets[7], object.size);
+  writer.writeString(offsets[7], object.size);
   writer.writeString(offsets[8], object.sku);
 }
 
@@ -1905,7 +1911,7 @@ FrameVariantModel _frameVariantModelDeserialize(
     purchasePrice: reader.readLongOrNull(offsets[4]),
     quantity: reader.readLongOrNull(offsets[5]),
     salesPrice: reader.readLongOrNull(offsets[6]),
-    size: reader.readLongOrNull(offsets[7]),
+    size: reader.readStringOrNull(offsets[7]),
     sku: reader.readStringOrNull(offsets[8]),
   );
   return object;
@@ -1933,7 +1939,7 @@ P _frameVariantModelDeserializeProp<P>(
     case 6:
       return (reader.readLongOrNull(offset)) as P;
     case 7:
-      return (reader.readLongOrNull(offset)) as P;
+      return (reader.readStringOrNull(offset)) as P;
     case 8:
       return (reader.readStringOrNull(offset)) as P;
     default:
@@ -2809,49 +2815,58 @@ extension FrameVariantModelQueryFilter
   }
 
   QueryBuilder<FrameVariantModel, FrameVariantModel, QAfterFilterCondition>
-      sizeEqualTo(int? value) {
+      sizeEqualTo(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
         property: r'size',
         value: value,
+        caseSensitive: caseSensitive,
       ));
     });
   }
 
   QueryBuilder<FrameVariantModel, FrameVariantModel, QAfterFilterCondition>
       sizeGreaterThan(
-    int? value, {
+    String? value, {
     bool include = false,
+    bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
         include: include,
         property: r'size',
         value: value,
+        caseSensitive: caseSensitive,
       ));
     });
   }
 
   QueryBuilder<FrameVariantModel, FrameVariantModel, QAfterFilterCondition>
       sizeLessThan(
-    int? value, {
+    String? value, {
     bool include = false,
+    bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.lessThan(
         include: include,
         property: r'size',
         value: value,
+        caseSensitive: caseSensitive,
       ));
     });
   }
 
   QueryBuilder<FrameVariantModel, FrameVariantModel, QAfterFilterCondition>
       sizeBetween(
-    int? lower,
-    int? upper, {
+    String? lower,
+    String? upper, {
     bool includeLower = true,
     bool includeUpper = true,
+    bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.between(
@@ -2860,6 +2875,77 @@ extension FrameVariantModelQueryFilter
         includeLower: includeLower,
         upper: upper,
         includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<FrameVariantModel, FrameVariantModel, QAfterFilterCondition>
+      sizeStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'size',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<FrameVariantModel, FrameVariantModel, QAfterFilterCondition>
+      sizeEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'size',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<FrameVariantModel, FrameVariantModel, QAfterFilterCondition>
+      sizeContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'size',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<FrameVariantModel, FrameVariantModel, QAfterFilterCondition>
+      sizeMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'size',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<FrameVariantModel, FrameVariantModel, QAfterFilterCondition>
+      sizeIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'size',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<FrameVariantModel, FrameVariantModel, QAfterFilterCondition>
+      sizeIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'size',
+        value: '',
       ));
     });
   }

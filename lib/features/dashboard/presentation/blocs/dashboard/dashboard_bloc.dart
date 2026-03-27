@@ -4,6 +4,7 @@ import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:osm/core/either.dart';
+import 'package:osm/core/value_objects/money.dart';
 import 'package:osm/features/dashboard/domain/entities/activity.dart';
 import 'package:osm/features/dashboard/domain/usecases/watch_recent_activities.dart';
 import 'package:osm/features/inventory/domain/entities/accessory/accessory.dart';
@@ -16,6 +17,9 @@ import 'package:osm/features/orders/domain/entities/order.dart';
 import 'package:osm/features/orders/domain/entities/order_enums.dart';
 import 'package:osm/features/orders/domain/failures/order_failure.dart';
 import 'package:osm/features/orders/domain/usecases/get_orders.dart';
+import 'package:osm/features/orders/domain/usecases/watch_active_order_count.dart';
+import 'package:osm/features/orders/domain/usecases/watch_pending_payments.dart';
+import 'package:osm/features/orders/domain/usecases/watch_todays_sale.dart';
 
 part 'dashboard_event.dart';
 part 'dashboard_state.dart';
@@ -25,18 +29,30 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
   final GetAllFrames _getAllFrames;
   final GetAllAccessories _getAllAccessories;
   final WatchRecentActivities _watchRecentActivities;
+  final WatchActiveOrderCount _watchActiveOrderCount;
+  final WatchPendingPayments _watchPendingPayments;
+  final WatchTodaysSale _watchTodaysSale;
 
   StreamSubscription? _activitySubscription;
+  StreamSubscription? _orderCountSubscription;
+  StreamSubscription? _pendingPaymentSubscription;
+  StreamSubscription? _todaysSaleSubscription;
 
   DashboardBloc({
     required GetOrders getOrders,
     required GetAllFrames getAllFrames,
     required GetAllAccessories getAllAccessories,
     required WatchRecentActivities watchRecentActivities,
+    required WatchActiveOrderCount watchActiveOrderCount,
+    required WatchPendingPayments watchPendingPayments,
+    required WatchTodaysSale watchTodaysSale,
   }) : _getOrders = getOrders,
        _getAllFrames = getAllFrames,
        _getAllAccessories = getAllAccessories,
        _watchRecentActivities = watchRecentActivities,
+       _watchActiveOrderCount = watchActiveOrderCount,
+       _watchPendingPayments = watchPendingPayments,
+       _watchTodaysSale = watchTodaysSale,
        super(const DashboardState()) {
     on<DashboardStarted>(_onDashboardStarted);
     on<DashboardRefreshRequested>(_onDashboardRefreshRequested);
@@ -49,15 +65,34 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
   ) async {
     emit(state.copyWith(status: DashboardStatus.loading));
 
+    // Initial manual laod for static/inventory data
     await _loadDashboardSnapshot(emit);
 
+    // Setup Activity Stream (Reactive)
     _activitySubscription?.cancel();
-
     _activitySubscription = _watchRecentActivities.call().listen(
       (activities) => add(DashboardDataUpdated(activities: activities)),
       onError: (error) {
         debugPrint(error);
       },
+    );
+
+    // Setup Order Count Stream (Reactive)
+    _orderCountSubscription?.cancel();
+    _orderCountSubscription = _watchActiveOrderCount.call().listen(
+      (count) => add(DashboardDataUpdated(activeOrderCount: count)),
+    );
+
+    // Setup Pending Payment Stream (Reactive)
+    _pendingPaymentSubscription?.cancel();
+    _pendingPaymentSubscription = _watchPendingPayments.call().listen(
+      (payment) => add(DashboardDataUpdated(pendingPayments: payment)),
+    );
+
+    // Setup Todays Sale Stream (Reactive)
+    _todaysSaleSubscription?.cancel();
+    _todaysSaleSubscription = _watchTodaysSale.call().listen(
+      (sale) => add(DashboardDataUpdated(todaysSale: sale)),
     );
   }
 
@@ -72,7 +107,14 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
     DashboardDataUpdated event,
     Emitter<DashboardState> emit,
   ) {
-    emit(state.copyWith(recentActivities: event.activities));
+    emit(
+      state.copyWith(
+        recentActivities: event.activities,
+        activeOrderCount: event.activeOrderCount ?? state.activeOrderCount,
+        pendingPayments: event.pendingPayments ?? state.pendingPayments,
+        dailySales: event.todaysSale ?? state.dailySales,
+      ),
+    );
   }
 
   Future<void> _loadDashboardSnapshot(Emitter<DashboardState> emit) async {
@@ -104,10 +146,6 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
         .where((o) => _isSameDay(o.createdAt, today))
         .fold(0.0, (sum, o) => sum + o.totalAmount.value);
 
-    final activeCount = orders
-        .where((o) => o.status != OrderStatus.completed)
-        .length;
-
     final totalPendingPayments = orders.fold(0.0, (sum, o) {
       if (o.status != OrderStatus.cancelled) {
         return sum + (o.totalAmount.value - o.paidAmount.value);
@@ -138,10 +176,7 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
     emit(
       state.copyWith(
         status: DashboardStatus.success,
-        dailySales: dailyTotal,
-        activeOrdersCount: activeCount,
         lowStockCount: lowStockCount,
-        pendingPayments: totalPendingPayments,
         weeklySalesData: weeklySummary,
       ),
     );
@@ -153,6 +188,7 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
   @override
   Future<void> close() {
     _activitySubscription?.cancel();
+    _orderCountSubscription?.cancel();
     return super.close();
   }
 }

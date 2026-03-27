@@ -21,10 +21,22 @@ class DashboardStoreChanged extends DashboardEvent {
 
 class DashboardDataUpdated extends DashboardEvent {
   final List<Activity>? activities;
-  final int? activeOrdersCount;
+  final int? activeOrderCount;
+  final Money? pendingPayments;
+  final Money? todaysSale;
 
-  const DashboardDataUpdated({this.activities, this.activeOrdersCount});
+  const DashboardDataUpdated({
+    this.activities,
+    this.activeOrderCount,
+    this.pendingPayments,
+    this.todaysSale,
+  });
 
   @override
-  List<Object?> get props => [activities, activeOrdersCount];
+  List<Object?> get props => [
+    activities,
+    activeOrderCount,
+    pendingPayments,
+    todaysSale,
+  ];
 }
