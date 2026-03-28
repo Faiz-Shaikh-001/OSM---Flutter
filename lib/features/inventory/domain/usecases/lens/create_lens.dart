@@ -57,6 +57,7 @@ class CreateLens {
       createdAt: DateTime.now(),
       companyName: input.companyName,
       productName: input.productName,
+      productCode: input.productCode,
       lensType: input.lensType,
       supportedMaterials: input.supportedMaterials,
       minIndex: input.minIndex,
