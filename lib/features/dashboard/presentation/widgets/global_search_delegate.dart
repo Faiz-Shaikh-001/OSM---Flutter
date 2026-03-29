@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:osm/features/dashboard/presentation/blocs/global_search/global_search_bloc.dart';
+import 'package:osm/features/dashboard/presentation/models/search_results_ui_model.dart';
 
 class GlobalSearchDelegate extends SearchDelegate {
   @override
@@ -13,7 +14,6 @@ class GlobalSearchDelegate extends SearchDelegate {
         IconButton(
           icon: const Icon(Icons.clear),
           onPressed: () {
-            query = '';
             context.read<GlobalSearchBloc>().add(const QueryChanged(''));
           },
         ),
@@ -47,6 +47,10 @@ class GlobalSearchDelegate extends SearchDelegate {
           return const Center(child: CircularProgressIndicator());
         }
 
+        if (state is GlobalSearchEmpty) {
+          return const Center(child: Text('No results found'));
+        }
+
         if (state is GlobalSearchLoaded) {
           return ListView.builder(
             itemCount: state.results.length,
@@ -57,14 +61,10 @@ class GlobalSearchDelegate extends SearchDelegate {
                 leading: Icon(item.icon),
                 title: Text(item.title),
                 subtitle: Text(item.subtitle),
-                onTap: () => close(context, item),
+                onTap: () => _handleNavigation(context, item),
               );
             },
           );
-        }
-
-        if (state is GlobalSearchEmpty) {
-          return const Center(child: Text('No results found'));
         }
 
         if (state is GlobalSearchError) {
@@ -76,4 +76,7 @@ class GlobalSearchDelegate extends SearchDelegate {
     );
   }
 
+  void _handleNavigation(BuildContext context, SearchResultUiModel item) {
+    close(context, item);
+  }
 }

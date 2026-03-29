@@ -28,6 +28,7 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        
     }
 
     buildTypes {
@@ -37,6 +38,28 @@ android {
             signingConfig = signingConfigs.getByName("debug")
         }
     }
+}
+
+configurations.all {
+    resolutionStrategy {
+        force("androidx.browser:browser:1.8.0")
+        force("androidx.appcompat:appcompat:1.7.0")
+        force("androidx.activity:activity:1.9.2")
+        force("androidx.activity:activity-ktx:1.9.2")
+        force("androidx.core:core:1.13.1")
+        force("androidx.core:core-ktx:1.13.1")
+        force("androidx.fragment:fragment:1.8.2")
+        force("androidx.fragment:fragment-ktx:1.8.2")
+    }
+}
+dependencies {
+    implementation("androidx.appcompat:appcompat:1.7.0")
+    implementation("androidx.activity:activity:1.9.2")
+    implementation("androidx.activity:activity-ktx:1.9.2")
+    implementation("androidx.core:core:1.13.1")
+    implementation("androidx.core:core-ktx:1.13.1")
+    implementation("androidx.fragment:fragment:1.8.2")
+    implementation("androidx.fragment:fragment-ktx:1.8.2")
 }
 
 flutter {

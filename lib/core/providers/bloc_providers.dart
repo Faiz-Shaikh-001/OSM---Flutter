@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+
+// Core & Utilities
 import 'package:osm/core/repositories/index_counter_repository.dart';
 import 'package:osm/core/services/isar_service.dart';
 import 'package:osm/core/usecases/resolve_qr_scan.dart';
+import 'package:osm/core/value_objects/id.dart';
+
+// Customer Feature
 import 'package:osm/features/customer/data/repositories/customer_local_repository.dart';
 import 'package:osm/features/customer/domain/repositories/customer_repository.dart';
 import 'package:osm/features/customer/domain/usecases/add_customer.dart';
@@ -14,6 +19,8 @@ import 'package:osm/features/customer/domain/usecases/update_customer.dart';
 import 'package:osm/features/customer/domain/usecases/watch_customers_stream.dart';
 import 'package:osm/features/customer/presentation/bloc/customer/customer_bloc.dart';
 import 'package:osm/features/customer/presentation/bloc/customer_details/customer_details_bloc.dart';
+
+// Dashboard & Search
 import 'package:osm/features/dashboard/application/search/search_everything.dart';
 import 'package:osm/features/dashboard/data/sources_impl/accessory_search_source_impl.dart';
 import 'package:osm/features/dashboard/data/sources_impl/customer_search_source_impl.dart';
@@ -27,7 +34,12 @@ import 'package:osm/features/dashboard/domain/usecases/watch_recent_activities.d
 import 'package:osm/features/dashboard/presentation/blocs/activity/activity_bloc.dart';
 import 'package:osm/features/dashboard/presentation/blocs/dashboard/dashboard_bloc.dart';
 import 'package:osm/features/dashboard/presentation/blocs/global_search/global_search_bloc.dart';
+
+// Doctors
+import 'package:osm/features/doctors/domain/repositories/doctor_repository.dart';
 import 'package:osm/features/doctors/data/repositories/doctor_local_repository.dart';
+
+// Inventory
 import 'package:osm/features/inventory/data/repositories/accessory_local_repository.dart';
 import 'package:osm/features/inventory/data/repositories/frame_local_repository.dart';
 import 'package:osm/features/inventory/data/repositories/lens_local_repository.dart';
@@ -64,6 +76,8 @@ import 'package:osm/features/inventory/presentation/blocs/frames/frame_list/fram
 import 'package:osm/features/inventory/presentation/blocs/lens/lens_detail/lens_detail_bloc.dart';
 import 'package:osm/features/inventory/presentation/blocs/lens/lens_list/lens_list_bloc.dart';
 import 'package:osm/features/inventory/presentation/blocs/qr_scan/qr_scan_bloc.dart';
+
+// Orders
 import 'package:osm/features/orders/data/repositories/order_local_repository.dart';
 import 'package:osm/features/orders/domain/repositories/order_repository.dart';
 import 'package:osm/features/orders/domain/usecases/add_payment.dart';
@@ -73,18 +87,36 @@ import 'package:osm/features/orders/domain/usecases/watch_active_order_count.dar
 import 'package:osm/features/orders/domain/usecases/watch_pending_payments.dart';
 import 'package:osm/features/orders/domain/usecases/watch_todays_sale.dart';
 import 'package:osm/features/orders/presentation/blocs/order_submission/order_submission_bloc.dart';
+
+// Prescription
 import 'package:osm/features/prescription/domain/repositories/prescription_repository.dart';
 import 'package:osm/features/prescription/domain/usecases/add_prescription.dart';
 import 'package:osm/features/prescription/domain/usecases/get_prescription_history.dart';
 import 'package:osm/features/prescription/presentation/bloc/add_prescription/add_prescription_bloc.dart';
 import 'package:osm/features/prescription/presentation/bloc/prescription_timeline/prescription_timeline_bloc.dart';
+
+// Store & Staff
 import 'package:osm/features/store/domain/repositories/store_location_repository.dart';
 import 'package:osm/features/store/domain/usecases/get_all_store_location.dart';
 import 'package:osm/features/store/domain/usecases/get_store_locations.dart';
 import 'package:osm/features/store/domain/usecases/set_active_store_location.dart';
+import 'package:osm/features/store/domain/usecases/add_store_location.dart';
+import 'package:osm/features/store/domain/usecases/update_store_location.dart';
+import 'package:osm/features/store/domain/usecases/delete_store_location.dart';
 import 'package:osm/features/store/presentation/bloc/store_location_bloc.dart';
+import 'package:osm/features/staff/data/repositories/staff_repository_impl.dart';
+import 'package:osm/features/staff/domain/usecases/add_staff.dart';
+import 'package:osm/features/staff/domain/usecases/get_staff.dart';
+import 'package:osm/features/staff/domain/usecases/update_staff.dart';
+import 'package:osm/features/staff/domain/usecases/delete_staff.dart';
+import 'package:osm/features/staff/presentation/bloc/staff_bloc.dart';
+import 'package:osm/features/staff/presentation/bloc/staff_event.dart';
+
+// Settings
+import 'package:osm/features/settings/settings_di.dart';
 
 List<BlocProvider> buildBlocProviders(BuildContext context) {
+  // Repository extraction from Context
   final storeLocationRepository = context.read<StoreLocationRepository>();
   final customerRepository = context.read<CustomerRepository>();
   final frameRepository = context.read<FrameRepository>();
@@ -94,11 +126,13 @@ List<BlocProvider> buildBlocProviders(BuildContext context) {
   final prescriptionRepository = context.read<PrescriptionRepository>();
   final activityReposistory = context.read<ActivityRepository>();
   final orderRepository = context.read<OrderRepository>();
-  // final doctorRepository = context.read<DoctorRepository>();
+  final doctorRepository = context.read<DoctorRepository>();
   final isarService = context.read<IsarService>();
+  // Manual Repo initialization for Staff
+  final staffRepository = StaffRepositoryImpl(isarService);
 
   return [
-    // BlocProviders
+    // Activity Bloc
     BlocProvider<ActivityBloc>(
       create: (_) => ActivityBloc(
         saveActivity: SaveActivity(activityReposistory),
@@ -106,34 +140,21 @@ List<BlocProvider> buildBlocProviders(BuildContext context) {
       ),
     ),
 
+    // Unified Global Search Bloc (SourceImpl Pattern)
     BlocProvider<GlobalSearchBloc>(
       create: (_) => GlobalSearchBloc(
         searchEverything: SearchEverything(
-          orderSearch: OrderSearchSourceImpl(
-            isarService,
-            OrderLocalRepository(),
-          ),
-          customerSearch: CustomerSearchSourceImpl(
-            isarService,
-            CustomerLocalRepository(),
-          ),
-          frameSearch: FrameSearchSourceImpl(
-            isarService,
-            FrameLocalRepository(),
-          ),
+          orderSearch: OrderSearchSourceImpl(isarService, OrderLocalRepository()),
+          customerSearch: CustomerSearchSourceImpl(isarService, CustomerLocalRepository()),
+          frameSearch: FrameSearchSourceImpl(isarService, FrameLocalRepository()),
           lensSearch: LensSearchSourceImpl(isarService, LensLocalRepository()),
-          accessorySearch: AccessorySearchSourceImpl(
-            isarService,
-            AccessoryLocalRepository(),
-          ),
-          doctorSearch: DoctorSearchSourceImpl(
-            isarService,
-            DoctorLocalRepository(),
-          ),
+          accessorySearch: AccessorySearchSourceImpl(isarService, AccessoryLocalRepository()),
+          doctorSearch: DoctorSearchSourceImpl(isarService, DoctorLocalRepository()),
         ),
       ),
     ),
 
+    // Dashboard Bloc with full stats
     BlocProvider<DashboardBloc>(
       create: (_) => DashboardBloc(
         getOrders: GetOrders(orderRepository),
@@ -146,14 +167,19 @@ List<BlocProvider> buildBlocProviders(BuildContext context) {
       ),
     ),
 
+    // Store Location Bloc (Full CRUD)
     BlocProvider<StoreLocationBloc>(
       create: (_) => StoreLocationBloc(
         getStoreLocations: GetStoreLocations(storeLocationRepository),
         getAllStoreLocation: GetAllStoreLocation(storeLocationRepository),
         setActiveStoreLocation: SetActiveStoreLocation(storeLocationRepository),
+        addStoreLocation: AddStoreLocation(storeLocationRepository),
+        updateStoreLocation: UpdateStoreLocation(storeLocationRepository),
+        deleteStoreLocation: DeleteStoreLocation(storeLocationRepository),
       )..add(LoadStoreLocations()),
     ),
 
+    // Customer Blocs
     BlocProvider<CustomerBloc>(
       create: (_) => CustomerBloc(
         addCustomer: AddCustomer(customerRepository),
@@ -176,6 +202,7 @@ List<BlocProvider> buildBlocProviders(BuildContext context) {
       ),
     ),
 
+    // Inventory Blocs: Frames
     BlocProvider<FrameListBloc>(
       create: (_) => FrameListBloc(
         getAllFrames: GetAllFrames(frameRepository),
@@ -192,6 +219,7 @@ List<BlocProvider> buildBlocProviders(BuildContext context) {
       create: (_) => FrameDetailBloc(GetFrameById(frameRepository)),
     ),
 
+    // Inventory Blocs: Lens
     BlocProvider<LensListBloc>(
       create: (_) => LensListBloc(
         getAllLenses: GetAllLenses(lensRepository),
@@ -208,15 +236,13 @@ List<BlocProvider> buildBlocProviders(BuildContext context) {
       create: (_) => LensDetailBloc(GetLensById(lensRepository)),
     ),
 
+    // Inventory Blocs: Accessory
     BlocProvider<AccessoryListBloc>(
       create: (_) => AccessoryListBloc(
         getAllAccessories: GetAllAccessories(accessoryRepository),
         getAccessoriesByBrand: GetAccessoriesByBrand(accessoryRepository),
         getAccessoriesByName: GetAccessoriesByName(accessoryRepository),
-        createAccessory: CreateAccessory(
-          accessoryRepository,
-          counterRepository,
-        ),
+        createAccessory: CreateAccessory(accessoryRepository, counterRepository),
         deleteAccessory: DeleteAccessory(accessoryRepository),
         updateAccessory: UpdateAccessory(accessoryRepository),
       ),
@@ -228,6 +254,7 @@ List<BlocProvider> buildBlocProviders(BuildContext context) {
       ),
     ),
 
+    // Utilities & QR
     BlocProvider<QrScanBloc>(
       create: (_) => QrScanBloc(
         resolveQrScan: ResolveQrScan(
@@ -238,6 +265,7 @@ List<BlocProvider> buildBlocProviders(BuildContext context) {
       ),
     ),
 
+    // Prescription Blocs
     BlocProvider<PrescriptionTimelineBloc>(
       create: (_) => PrescriptionTimelineBloc(
         getPrescriptionHistory: GetPrescriptionHistory(prescriptionRepository),
@@ -250,11 +278,25 @@ List<BlocProvider> buildBlocProviders(BuildContext context) {
       ),
     ),
 
+    // Order Submission Bloc
     BlocProvider<OrderSubmissionBloc>(
       create: (_) => OrderSubmissionBloc(
         createOrderFromDraft: CreateOrderFromDraft(orderRepository),
         addPayment: AddPayment(orderRepository),
       ),
     ),
+
+    // Staff Bloc (Store Specific)
+    BlocProvider<StaffBloc>(
+      create: (_) => StaffBloc(
+        getStaff: GetStaff(staffRepository),
+        addStaff: AddStaff(staffRepository),
+        updateStaff: UpdateStaff(staffRepository),
+        deleteStaff: DeleteStaff(staffRepository),
+      )..add(LoadStaff(storeId: const StoreLocationId('1'))),
+    ),
+
+    // Settings spread operator
+    ...settingsBlocProviders(),
   ];
 }

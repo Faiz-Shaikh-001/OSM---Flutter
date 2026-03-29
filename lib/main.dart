@@ -60,9 +60,12 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Root Widget: Sets up the visual framework and initial route
-    return const MaterialApp(
+    final themeProvider = context.watch<ThemeProvider>();
+    return  MaterialApp(
       debugShowCheckedModeBanner: false,
+      themeMode: themeProvider.themeMode,
+      theme: ThemeData.light(),
+      darkTheme: ThemeData.dark(),
       home: DashboardScreen(),
     );
   }

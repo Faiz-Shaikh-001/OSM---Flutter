@@ -14,7 +14,6 @@ import 'package:osm/features/inventory/domain/failures/frames/frame_failure.dart
 import 'package:osm/features/inventory/domain/usecases/accessory/get_all_accessories.dart';
 import 'package:osm/features/inventory/domain/usecases/frames/get_all_frames.dart';
 import 'package:osm/features/orders/domain/entities/order.dart';
-import 'package:osm/features/orders/domain/entities/order_enums.dart';
 import 'package:osm/features/orders/domain/failures/order_failure.dart';
 import 'package:osm/features/orders/domain/usecases/get_orders.dart';
 import 'package:osm/features/orders/domain/usecases/watch_active_order_count.dart';
@@ -141,17 +140,6 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
     }
 
     final today = DateTime.now();
-
-    final dailyTotal = orders
-        .where((o) => _isSameDay(o.createdAt, today))
-        .fold(0.0, (sum, o) => sum + o.totalAmount.value);
-
-    final totalPendingPayments = orders.fold(0.0, (sum, o) {
-      if (o.status != OrderStatus.cancelled) {
-        return sum + (o.totalAmount.value - o.paidAmount.value);
-      }
-      return sum;
-    });
 
     int lowStockCount = 0;
 
